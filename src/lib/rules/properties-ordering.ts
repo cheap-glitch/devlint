@@ -4,7 +4,7 @@ import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ jsonAst, parameters: ordering }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined ) {
+	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.MissingData);
 	}
 	if (ordering === undefined || typeof ordering !== 'string') {

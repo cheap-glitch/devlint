@@ -104,7 +104,7 @@ import { capitalize } from '../src/lib/reports';
 })();
 
 // https://github.com/microsoft/tsdoc/blob/master/api-demo/src/Formatter.ts
-/*
+/* disabled
 function renderDocNode(docNode: tsdoc.DocNode): string {
 	if (!docNode) {
 		return '';
@@ -123,7 +123,7 @@ function renderDocNode(docNode: tsdoc.DocNode): string {
 */
 
 // https://github.com/microsoft/tsdoc/blob/600ecd97c94fa21c6122a88a6fa9c689caa85d97/api-demo/src/advancedDemo.ts#L124
-/*
+/* disabled
 function dumpTSDocTree(docNode: tsdoc.DocNode, indent = ''): void {
 	if (docNode instanceof tsdoc.DocExcerpt) {
 		console.log(chalk.gray(indent + docNode.excerptKind + ' = ') + chalk.cyan(JSON.stringify(docNode.content.toString())));

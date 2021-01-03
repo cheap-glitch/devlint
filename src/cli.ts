@@ -10,7 +10,7 @@ import { RuleStatus, RuleErrorType, parseRules  } from './lib/rules';
 import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 const cliOptions: Record<string, Options> = {
-	// fix:{ type: 'boolean', default: false, description: 'Automatically fix problems'                   },
+	fix:   { type: 'boolean', default: false, description: 'Automatically fix problems'                   },
 	quiet: { type: 'boolean', default: false, description: 'Do not print anything to stdout',  alias: 'q' },
 };
 
