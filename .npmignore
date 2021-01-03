@@ -1,0 +1,9 @@
+# Build scripts
+/scripts/
+
+# Code coverage
+/.coverage/
+/.coveralls.yml
+
+# Environment variables
+/*.env

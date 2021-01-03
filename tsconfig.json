@@ -1,0 +1,27 @@
+{
+  "include": [
+    "./bin/devlint.ts",
+    "./scripts/*.ts",
+    "./src/index.ts",
+    "./src/rules/*.ts"
+  ],
+  "compilerOptions": {
+    "outDir":                     "./build",
+    "module":                     "commonjs",
+    "moduleResolution":           "node",
+    "resolveJsonModule":          true,
+    "target":                     "es2018",
+    "lib":                        ["es2019"],
+    "strict":                     true,
+    "esModuleInterop":            true,
+		"noEmitOnError":              true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedParameters":         true,
+    "downlevelIteration":         true,
+    "noImplicitAny":              true,
+    "noImplicitReturns":          true,
+    "noImplicitThis":             true,
+    "noUnusedLocals":             true,
+    "removeComments":             true
+  }
+}
