@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import * as tsdoc from '@microsoft/tsdoc';
 
+import { getAbsolutePath, readFileContents, getFilenamesInDirectory } from '../src/lib/helpers/fs';
 import { capitalize } from '../src/lib/reports';
-import { getAbsolutePath, readFileContents, getFilenamesInDirectory } from '../src/helpers/fs';
 
 // https://github.com/microsoft/tsdoc/blob/master/api-demo/src/simpleDemo.ts
 (async () => {

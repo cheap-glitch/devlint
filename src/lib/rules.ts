@@ -1,8 +1,8 @@
 import { JsonObject, JsonValue } from 'type-fest';
 import { JsonValue as JsonAst } from 'jsonast';
 
-import { Line } from '../helpers/text';
-import { joinPathSegments } from '../helpers/fs';
+import { Line } from './helpers/text';
+import { joinPathSegments } from './helpers/fs';
 
 export type RuleResult = true | RuleError;
 

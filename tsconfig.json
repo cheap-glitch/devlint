@@ -3,7 +3,7 @@
     "./bin/devlint.ts",
     "./scripts/*.ts",
     "./src/index.ts",
-    "./src/rules/*.ts"
+    "./src/lib/rules/*.ts"
   ],
   "compilerOptions": {
     "outDir":                     "./build",

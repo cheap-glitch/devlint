@@ -1,4 +1,5 @@
-import { RuleContext, RuleResult, RuleError, RuleErrorType, isJsonObjectAst } from '..';
+import { isJsonObjectAst } from '../helpers/json';
+import { RuleContext, RuleResult, RuleError, RuleErrorType, } from '../rules';
 
 export default function({ lines, jsonAst }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {

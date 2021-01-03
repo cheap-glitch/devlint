@@ -2,8 +2,8 @@ import { homedir } from 'os';
 import { JsonValue } from 'type-fest';
 import yargs, { Options } from 'yargs';
 
-import { isJsonObjectValue } from './helpers/json';
-import { joinPathSegments, getAbsolutePath, readFileContents } from './helpers/fs';
+import { isJsonObjectValue } from './lib/helpers/json';
+import { joinPathSegments, getAbsolutePath, readFileContents } from './lib/helpers/fs';
 
 import { lint } from './lib/linter';
 import { RuleStatus, RuleErrorType, parseRules  } from './lib/rules';

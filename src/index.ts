@@ -22,5 +22,5 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-export { RuleContext, RuleResult, RuleError, RuleErrorType } from './lib/rules';
-export { isJsonObjectValue, isJsonObjectAst } from './helpers/json';
+export { lint } from './lib/linter';
+export { parseRules, RuleContext, RuleResult, RuleError, RuleErrorType } from './lib/rules';

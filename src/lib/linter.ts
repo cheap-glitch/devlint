@@ -1,6 +1,6 @@
-import { getLines } from '../helpers/text';
-import { getAbsolutePath, getFilenamesInDirectory, tryReadingFileContents } from '../helpers/fs';
-import { isJsonObjectValue, tryParsingJsonObject, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from '../helpers/json';
+import { getLines } from './helpers/text';
+import { getAbsolutePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
+import { isJsonObjectValue, tryParsingJsonObject, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { RuleObject, RulesMap, RuleContext, RuleResult, RuleError, RuleErrorType } from './rules';
 

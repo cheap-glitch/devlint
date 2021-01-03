@@ -1,4 +1,4 @@
-import { RuleContext, RuleResult, RuleError } from '..';
+import { RuleContext, RuleResult, RuleError } from '../rules';
 
 /**
  * Ensures the target does not contain any "empty" lines, i.e. lines with a zero length
