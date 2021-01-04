@@ -39,9 +39,15 @@
       "es6": true,
       "node": true
     },
-    "rules": {
-      "tsdoc/syntax": "warn"
-    }
+    "rules": {},
+    "overrides": [
+      {
+        "files": ["./test/helpers.test.ts"],
+        "rules": {
+          "space-in-parens": "off"
+        }
+      }
+    ]
   },
   "jest": {
     "preset": "ts-jest",
