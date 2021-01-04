@@ -22,6 +22,9 @@ export class RuleError extends Error {
 		this.type  = typeof data === 'number' ? data : RuleErrorType.Failed;
 		this.start = start;
 		this.end   = end;
+
+		// https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+		Object.setPrototypeOf(this, RuleError.prototype);
 	}
 }
 
