@@ -1,6 +1,6 @@
 import { homedir } from 'os';
 import { JsonValue } from 'type-fest';
-import yargs, { Options } from 'yargs';
+import yargs from 'yargs';
 
 import { isJsonObjectValue } from './lib/helpers/json';
 import { joinPathSegments, getAbsolutePath, readFileContents } from './lib/helpers/fs';
@@ -9,19 +9,16 @@ import { lint } from './lib/linter';
 import { RuleStatus, RuleErrorType, parseRules  } from './lib/rules';
 import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
-const cliOptions: Record<string, Options> = {
-	fix:   { type: 'boolean', default: false, description: 'Automatically fix problems'                   },
-	quiet: { type: 'boolean', default: false, description: 'Do not print anything to stdout',  alias: 'q' },
-};
-
 export async function cli(): Promise<void> {
-	const options        = yargs(process.argv.slice(2)).options(cliOptions).argv;
-	const foldersToLint  = options._.length === 0 ? ['.'] : options._;
-	const configFilename = getAbsolutePath([homedir(), '.devlintrc.json']);
+	const options = yargs(process.argv.slice(2)).options({
+		fix:   { type: 'boolean', default: false, description: 'Automatically fix problems'                   },
+		quiet: { type: 'boolean', default: false, description: 'Do not print anything to stdout',  alias: 'q' },
+		rules: { type: 'string',  default: '*',   description: 'Set specific rules to consider'               },
+	}).argv;
 
 	let config: JsonValue;
 	try {
-		config = JSON.parse(await readFileContents(configFilename));
+		config = JSON.parse(await readFileContents([homedir(), '.devlintrc.json']));
 	} catch(error) {
 		error.message = 'Failed to parse config file: ' + error.message;
 		throw error;
@@ -30,13 +27,13 @@ export async function cli(): Promise<void> {
 		throw new Error('Invalid config object');
 	}
 
-	const rules = parseRules(config?.rules ?? {});
+	const rules = parseRules(config?.rules ?? {}, options.rules === '*' ? undefined : options.rules.split(','));
 	if (rules.size === 0) {
 		return;
 	}
 	console.info(rules);
 
-	for (const folder of foldersToLint) {
+	for (const folder of (options._.length === 0 ? ['.'] : options._)) {
 		if (typeof folder !== 'string') {
 			continue;
 		}
@@ -80,10 +77,9 @@ export async function cli(): Promise<void> {
 			.filter(Boolean);
 
 			if (!options.quiet && reports.length > 0) {
-				const fullTargetPath = [
-					getAbsolutePath([process.cwd(), folder, targetFilePath]),
-					targetPropertiesPathSegments.length > 0 ? '#' : '', ...targetPropertiesPathSegments,
-				].join('');
+				const fullTargetPath = getAbsolutePath([process.cwd(), folder, targetFilePath])
+					+ (targetPropertiesPathSegments.length > 0 ? '#' : '')
+					+ targetPropertiesPathSegments;
 
 				console.log('\n' + formattedHeader(fullTargetPath) + '\n' + reports.join('\n'));
 			}

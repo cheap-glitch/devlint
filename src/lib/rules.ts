@@ -2,7 +2,8 @@ import { JsonObject, JsonValue } from 'type-fest';
 import { JsonValue as JsonAst } from 'jsonast';
 
 import { Line } from './helpers/text';
-import { joinPathSegments } from './helpers/fs';
+import { FsPath, joinPathSegments } from './helpers/fs';
+import { PropertiesPath, parsePropertiesPath, formatPropertiesPath, isJsonObjectValue } from './helpers/json';
 
 export type RuleResult = true | RuleError;
 
@@ -49,9 +50,11 @@ export type RulesMap = Map<string, Map<string, Array<RuleObject>>>;
 export interface RuleObject {
 	name:        string
 	status:      RuleStatus,
-	target:      Array<string>,
+	target:      RuleTarget,
 	parameters?: JsonValue,
 }
+
+export type RuleTarget = [FsPath, PropertiesPath];
 
 export enum RuleStatus {
 	Off     = 'off',
@@ -60,52 +63,42 @@ export enum RuleStatus {
 	Skipped = 'skipped',
 }
 
-export function parseRules(ruleObject: JsonValue): RulesMap {
+export function parseRules(ruleObject: JsonValue, selectedRules?: Array<string>): RulesMap {
 	const rulesMap = new Map();
 
-	for (const rule of parseRuleObject(ruleObject, ['.'])) {
-		const [targetFilePath, targetPropertiesPathSegments] = splitTargetPaths(rule.target);
-		if (targetFilePath === undefined || targetPropertiesPathSegments === undefined) {
+	for (const rule of parseRuleObject(ruleObject, [['.'], []])) {
+		if (selectedRules !== undefined && !selectedRules.includes(rule.name)) {
+			continue;
+		}
+
+		const [targetFsPath, targetPropertiesPath] = rule.target;
+		if (targetFsPath.length === 0) {
 			// TODO: report some error/warning?
 			continue;
 		}
 
-		const targetPropertiesPath = targetPropertiesPathSegments.join('.');
-		rule.target = targetPropertiesPathSegments;
+		const targetFsPathString         = joinPathSegments(targetFsPath);
+		const targetPropertiesPathString = formatPropertiesPath(targetPropertiesPath);
 
 		// Group rules by file targets and then by property paths
-		const targetFileRules = rulesMap.get(targetFilePath);
+		const targetFileRules = rulesMap.get(targetFsPathString);
 		if (targetFileRules !== undefined) {
-			const targetRules = targetFileRules.get(targetPropertiesPath);
+			const targetRules = targetFileRules.get(targetPropertiesPathString);
 			if (targetRules !== undefined) {
 				targetRules.push(rule);
 			} else {
-				targetFileRules.set(targetPropertiesPath, [rule]);
+				targetFileRules.set(targetPropertiesPathString, [rule]);
 			}
 		} else {
-			rulesMap.set(targetFilePath, new Map([[targetPropertiesPath, [rule]]]));
+			rulesMap.set(targetFsPathString, new Map([[targetPropertiesPathString, [rule]]]));
 		}
 	}
 
 	return rulesMap;
 }
 
-// Extract and merge the file path segments together while splitting the properties path as needed
-function splitTargetPaths(target: Array<string>): [string, Array<string>] | [undefined, undefined] {
-	const separatorIndex         = target.indexOf('#');
-	const filePathSegments       = separatorIndex !== -1 ? target.slice(0, separatorIndex)  : target;
-	const propertiesPathSegments = separatorIndex !== -1 ? target.slice(separatorIndex + 1) : [];
-
-	// Return `undefined` if the target is missing a file path
-	if (filePathSegments.length === 0) {
-		return [undefined, undefined];
-	}
-
-	return [joinPathSegments(filePathSegments), propertiesPathSegments.flatMap(segment => segment.split('.')).filter(Boolean)];
-}
-
-function parseRuleObject(ruleObject: JsonValue, parentTarget: Array<string>): Array<RuleObject> {
-	if (ruleObject === null || typeof ruleObject !== 'object' || Array.isArray(ruleObject)) {
+function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array<RuleObject> {
+	if (!isJsonObjectValue(ruleObject)) {
 		return [];
 	}
 
@@ -139,9 +132,23 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: Array<string>): Ar
 
 		// Sub-target
 		if (typeof value === 'object') {
-			const childTarget = key.startsWith('#') ? ['#', key.slice(1)] : [key];
+			const [fsPath, propertiesPath] = parentTarget;
 
-			rules.push(...parseRuleObject(value, [...parentTarget, ...childTarget]));
+			// The hashtag indicates the start of the properties path
+			if (key.startsWith('#')) {
+				if (propertiesPath.length > 0) {
+					// TODO: throw an error here?
+					return rules;
+				}
+
+				propertiesPath.push(key.slice(1));
+			} else if (propertiesPath.length > 0) {
+				propertiesPath.push(...parsePropertiesPath(key));
+			} else {
+				fsPath.push(key);
+			}
+
+			rules.push(...parseRuleObject(value, [fsPath, propertiesPath]));
 		}
 
 		return rules;
