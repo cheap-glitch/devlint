@@ -63,7 +63,7 @@ for (const filename of rulesToTest) {
 }
 
 afterAll(async () => {
-	const untestedRules = (await getFilenamesInDirectory(getAbsolutePath([pathToRuleModules]), file => !rulesToTest.includes(file.name)));
+	const untestedRules = (await getFilenamesInDirectory([pathToRuleModules], file => !rulesToTest.includes(file.name)));
 	if (untestedRules.length > 0) {
 		console.warn('Untested rules:\n' + untestedRules.map(rule => '  * ' + rule.replace('.js', '')).join('\n'));
 	}

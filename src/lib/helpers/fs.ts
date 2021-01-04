@@ -2,13 +2,15 @@ import { posix } from 'path';
 import { Dirent } from 'fs';
 import { readFile, readdir } from 'fs/promises';
 
-export async function getFilenamesInDirectory(path: string, filter?: (file: Dirent) => boolean): Promise<Array<string>> {
-	return (await readdir(path, { withFileTypes: true }))
+export type FsPath = Array<string>;
+
+export async function getFilenamesInDirectory(path: FsPath, filter?: (file: Dirent) => boolean): Promise<Array<string>> {
+	return (await readdir(getAbsolutePath(path), { withFileTypes: true }))
 		.filter(directoryEntry => directoryEntry.isFile() && (filter === undefined || filter(directoryEntry)))
 		.map(directoryEntry => directoryEntry.name);
 }
 
-export async function tryReadingFileContents(path: string): Promise<string | Error> {
+export async function tryReadingFileContents(path: FsPath): Promise<string | Error> {
 	let contents;
 	try {
 		contents = await readFileContents(path);
@@ -19,8 +21,8 @@ export async function tryReadingFileContents(path: string): Promise<string | Err
 	return contents;
 }
 
-export async function readFileContents(path: string): Promise<string> {
-	return readFile(path, { encoding: 'utf8' });
+export async function readFileContents(path: FsPath): Promise<string> {
+	return readFile(getAbsolutePath(path), { encoding: 'utf8' });
 }
 
 export function getAbsolutePath(pathSegments: Array<string>): string {

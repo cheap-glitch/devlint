@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import * as tsdoc from '@microsoft/tsdoc';
 
-import { getAbsolutePath, readFileContents, getFilenamesInDirectory } from '../src/lib/helpers/fs';
+import { readFileContents, getFilenamesInDirectory } from '../src/lib/helpers/fs';
 import { capitalize } from '../src/lib/reports';
 
 // https://github.com/microsoft/tsdoc/blob/master/api-demo/src/simpleDemo.ts
@@ -9,7 +9,7 @@ import { capitalize } from '../src/lib/reports';
 	const parser = new tsdoc.TSDocParser();
 
 	const pathToRulesFolder = [__dirname, '..', '..', 'src', 'rules'];
-	const rulesFilenames    = await getFilenamesInDirectory(getAbsolutePath(pathToRulesFolder), file => file.name.endsWith('.ts'));
+	const rulesFilenames    = await getFilenamesInDirectory(pathToRulesFolder, file => file.name.endsWith('.ts'));
 
 	for (const filename of rulesFilenames) {
 		const logError = (message: string): void => {
@@ -17,7 +17,7 @@ import { capitalize } from '../src/lib/reports';
 			process.exitCode = 1;
 		};
 
-		const fileContents = await readFileContents(getAbsolutePath([...pathToRulesFolder, filename]));
+		const fileContents = await readFileContents([...pathToRulesFolder, filename]);
 		const docComments  = fileContents.match(new RegExp(/\/\*\*.+?\*\//, 'sg'));
 
 		if (!docComments) {
