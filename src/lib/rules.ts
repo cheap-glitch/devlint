@@ -25,7 +25,7 @@ export class RuleError extends Error {
 
 export enum RuleErrorType {
 	UnknownRule,
-	MissingData,
+	InvalidData,
 	InvalidParameters,
 	Failed,
 }

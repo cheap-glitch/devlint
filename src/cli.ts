@@ -59,9 +59,9 @@ export async function cli(): Promise<void> {
 						totals.skipped++;
 						return skippedRuleReport(rule, 'unknown rule');
 
-					case RuleErrorType.MissingData:
+					case RuleErrorType.InvalidData:
 						totals.skipped++;
-						return skippedRuleReport(rule, 'invalid data or rule does not apply to file type');
+						return skippedRuleReport(rule, 'invalid data or rule does not apply to target');
 
 					case RuleErrorType.InvalidParameters:
 						totals.skipped++;

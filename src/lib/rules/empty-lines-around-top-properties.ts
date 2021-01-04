@@ -3,7 +3,7 @@ import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonAst }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
-		return new RuleError(RuleErrorType.MissingData);
+		return new RuleError(RuleErrorType.InvalidData);
 	}
 
 	for (const { key } of jsonAst.members) {
