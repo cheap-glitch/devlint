@@ -22,5 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+export { RuleContext, RuleResult, RuleError, RuleErrorType } from './lib/rules';
+
 export { lint } from './lib/linter';
-export { parseRules, RuleContext, RuleResult, RuleError, RuleErrorType } from './lib/rules';
+export { parseRules } from './lib/rules';

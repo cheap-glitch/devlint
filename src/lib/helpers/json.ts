@@ -1,7 +1,7 @@
 import { JsonValue, JsonObject } from 'type-fest';
 import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst } from 'jsonast';
 
-export type PropertiesPath = Array<string | number>;
+import { PropertiesPath } from './properties';
 
 export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPath: PropertiesPath): JsonAst | undefined {
 	let currentPropertyAst = jsonAst;
@@ -73,12 +73,4 @@ export function isJsonObjectAst(jsonAst: JsonAst | undefined): jsonAst is JsonOb
 
 export function isJsonObjectValue(jsonValue: JsonValue | undefined): jsonValue is JsonObject {
 	return typeof jsonValue === 'object' && jsonValue !== null && !Array.isArray(jsonValue);
-}
-
-export function formatPropertiesPath(path: PropertiesPath): string {
-	return path.length > 0 ? ('.' + path.map(pathSegment => typeof pathSegment === 'number' ? ('[' + pathSegment + ']') : pathSegment).join('.')) : '';
-}
-
-export function parsePropertiesPath(rawPath: string): PropertiesPath {
-	return rawPath.split('.').filter(Boolean).map(pathSegment => /^\d+$/.test(pathSegment) ? Number.parseInt(pathSegment, 10) : pathSegment);
 }

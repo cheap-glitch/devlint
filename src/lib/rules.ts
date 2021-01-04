@@ -2,8 +2,9 @@ import { JsonObject, JsonValue } from 'type-fest';
 import { JsonValue as JsonAst } from 'jsonast';
 
 import { Line } from './helpers/text';
+import { isJsonObjectValue } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
-import { PropertiesPath, parsePropertiesPath, formatPropertiesPath, isJsonObjectValue } from './helpers/json';
+import { PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
 
 export type RuleResult = true | RuleError;
 
