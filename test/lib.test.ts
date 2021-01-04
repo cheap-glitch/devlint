@@ -38,13 +38,13 @@ describe("parseRules", () => {
 					{
 						name:       'first-rule',
 						status:     'error',
-						target:     [],
+						target:     [['.', 'filename.ext'], []],
 						parameters: undefined,
 					},
 					{
 						name:       'third-rule',
 						status:     'warn',
-						target:     [],
+						target:     [['.', 'filename.ext'], []],
 						parameters: undefined,
 					},
 				]],
@@ -68,13 +68,13 @@ describe("parseRules", () => {
 					{
 						name:       'first-rule',
 						status:     'error',
-						target:     [],
+						target:     [['.', 'filename.ext'], []],
 						parameters: 'foo',
 					},
 					{
 						name:       'third-rule',
 						status:     'warn',
-						target:     [],
+						target:     [['.', 'filename.ext'], []],
 						parameters: ['foo', { foo: 'bar' }],
 					},
 				]],
@@ -94,6 +94,10 @@ describe("parseRules", () => {
 
 					'.foo.bar': {
 						'third-rule': 'error',
+
+						'[2]': {
+							'fourth-rule': 'error',
+						},
 					},
 				},
 			},
@@ -104,23 +108,31 @@ describe("parseRules", () => {
 					{
 						name:       'first-rule',
 						status:     'error',
-						target:     [],
+						target:     [['.', 'filename.ext'], []],
 						parameters: undefined,
 					},
 				]],
-				['property', [
+				['.property', [
 					{
 						name:       'second-rule',
 						status:     'error',
-						target:     ['property'],
+						target:     [['.', 'filename.ext'], ['property']],
 						parameters: undefined,
 					},
 				]],
-				['property.foo.bar', [
+				['.property.foo.bar', [
 					{
 						name:       'third-rule',
 						status:     'error',
-						target:     ['property', 'foo', 'bar'],
+						target:     [['.', 'filename.ext'], ['property', 'foo', 'bar']],
+						parameters: undefined,
+					},
+				]],
+				['.property.foo.bar[2]', [
+					{
+						name:       'fourth-rule',
+						status:     'error',
+						target:     [['.', 'filename.ext'], ['property', 'foo', 'bar', 2]],
 						parameters: undefined,
 					},
 				]],
