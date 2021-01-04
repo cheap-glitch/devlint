@@ -6,7 +6,7 @@ export function formatPropertiesPath(path: PropertiesPath): string {
 
 export function parsePropertiesPath(rawPath: string): PropertiesPath {
 	return rawPath
-		.replace(/\[(?<index>\d+)\]/g, '.$<index>')
+		.replace(/\[(?<index>\d+)]/g, '.$<index>')
 		.split('.').filter(Boolean)
 		.map(pathSegment => /^\d+$/.test(pathSegment) ? Number.parseInt(pathSegment, 10) : pathSegment);
 }

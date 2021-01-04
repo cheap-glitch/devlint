@@ -121,7 +121,7 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 
 		// Rule state and parameters
 		if (Array.isArray(value)) {
-			if (value.length != 2) {
+			if (value.length !== 2) {
 				// TODO: throw an error here?
 				continue;
 			}
