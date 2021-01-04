@@ -68,19 +68,15 @@ export enum RuleStatus {
 }
 
 export function parseRules(ruleObject: JsonValue, selectedRules?: Array<string>): RulesMap {
-	const rulesMap = new Map();
+	const rules = parseRuleObject(ruleObject, [['.'], []]);
 
-	for (const rule of parseRuleObject(ruleObject, [['.'], []])) {
+	const rulesMap = new Map();
+	for (const rule of rules) {
 		if (selectedRules !== undefined && !selectedRules.includes(rule.name)) {
 			continue;
 		}
 
 		const [targetFsPath, targetPropertiesPath] = rule.target;
-		if (targetFsPath.length === 0) {
-			// TODO: report some error/warning?
-			continue;
-		}
-
 		const targetFsPathString         = joinPathSegments(targetFsPath);
 		const targetPropertiesPathString = formatPropertiesPath(targetPropertiesPath);
 
@@ -106,10 +102,11 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 		return [];
 	}
 
-	return Object.entries(ruleObject).reduce((rules: Array<RuleObject>, [key, value]) => {
+	const rules: Array<RuleObject> = [];
+	for (const [key, value] of Object.entries(ruleObject)) {
 		if (value === null) {
 			// TODO: throw an error here?
-			return rules;
+			continue;
 		}
 
 		// Rule state
@@ -118,45 +115,56 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 			if (status !== RuleStatus.Off) {
 				rules.push({ name: key, status, parameters: undefined, target: parentTarget });
 			}
+
+			continue;
 		}
 
 		// Rule state and parameters
-		if (Array.isArray(value) && value.length >= 2) {
-			const rawStatus = value[0];
+		if (Array.isArray(value)) {
+			if (value.length != 2) {
+				// TODO: throw an error here?
+				continue;
+			}
+
+			const [rawStatus, parameters] = value;
 			if (typeof rawStatus !== 'string') {
 				// TODO: throw an error here?
-				return rules;
+				continue;
 			}
 
 			const status = parseRuleStatus(rawStatus);
 			if (status !== RuleStatus.Off) {
-				rules.push({ name: key, status, parameters: value[1], target: parentTarget });
+				rules.push({ name: key, status, parameters, target: parentTarget });
 			}
+
+			continue;
 		}
 
 		// Sub-target
 		if (typeof value === 'object') {
-			const [fsPath, propertiesPath] = parentTarget;
+			const [parentFsPath, parentPropertiesPath] = parentTarget;
+			const childFsPath         = [...parentFsPath];
+			const childPropertiesPath = [...parentPropertiesPath];
 
 			// The hashtag indicates the start of the properties path
 			if (key.startsWith('#')) {
-				if (propertiesPath.length > 0) {
+				if (parentPropertiesPath.length > 0) {
 					// TODO: throw an error here?
-					return rules;
+					continue;
 				}
 
-				propertiesPath.push(key.slice(1));
-			} else if (propertiesPath.length > 0) {
-				propertiesPath.push(...parsePropertiesPath(key));
+				childPropertiesPath.push(...parsePropertiesPath(key.slice(1)));
+			} else if (parentPropertiesPath.length > 0) {
+				childPropertiesPath.push(...parsePropertiesPath(key));
 			} else {
-				fsPath.push(key);
+				childFsPath.push(key);
 			}
 
-			rules.push(...parseRuleObject(value, [fsPath, propertiesPath]));
+			rules.push(...parseRuleObject(value, [childFsPath, childPropertiesPath]));
 		}
+	}
 
-		return rules;
-	}, []);
+	return rules;
 }
 
 function parseRuleStatus(status: number | string): RuleStatus {
