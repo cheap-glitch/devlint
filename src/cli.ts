@@ -1,5 +1,4 @@
 import yargs from 'yargs';
-import { version } from '../package.json';
 
 import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
 
@@ -9,7 +8,8 @@ import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } fro
 
 export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
-		.usage(`DevLint v${version}\n`)
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		.usage(`DevLint v${require(getAbsolutePath([__dirname, '..', '..', 'package.json'])).version}\n`)
 		.usage('Usage:\n  $0 [OPTION]... [DIR]\n\nArguments:\n  <DIR>  The directory in which to lint  [default: "."]')
 		.example([
 			['$0',                   'Lint in the current directory'],

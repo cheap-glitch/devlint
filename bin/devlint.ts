@@ -6,7 +6,6 @@ import { release } from 'os';
 import { formatWithOptions } from 'util';
 
 import { cli } from '../src/cli';
-import { version } from '../package.json';
 
 (async () => {
 	process.on('uncaughtException',  onFatalError);
@@ -48,7 +47,8 @@ function onFatalError(error: unknown) {
 	]; // }}}
 
 	console.error([
-		`DevLint v${version} (Node v${process.versions.node} on ${release()})`,
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		`DevLint v${require('../package.json').version} (Node v${process.versions.node} on ${release()})`,
 		'',
 		faces[Math.floor(Math.random() * faces.length)],
 		'An unexpected error has occurred!',
