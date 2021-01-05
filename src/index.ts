@@ -7,7 +7,7 @@
  * A meta-linter  to verify  configuration  files,  projects  structure and  git
  * repositories.
  *
- * Copyright (c) 2020-present, cheap glitch
+ * Copyright (c) 2021-present, cheap glitch
  *
  * Permission  to use,  copy, modify,  and/or distribute  this software  for any
  * purpose  with or  without  fee is  hereby granted,  provided  that the  above
@@ -22,7 +22,5 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-export { RuleContext, RuleResult, RuleError, RuleErrorType } from './lib/rules';
-
+export * from './lib/rules';
 export { lint } from './lib/linter';
-export { parseRules } from './lib/rules';
