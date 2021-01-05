@@ -32,7 +32,7 @@ export default function({ jsonAst, parameters: ordering }: RuleContext): RuleRes
 	for (const [index, { key }] of jsonAst.members.entries()) {
 		const previousKey = jsonAst.members[index - 1]?.key ?? undefined;
 		if (previousKey && errorChecker(key, previousKey)) {
-			return new RuleError(errorMessage, { ...key.pos.start });
+			return new RuleError(errorMessage, key);
 		}
 	}
 

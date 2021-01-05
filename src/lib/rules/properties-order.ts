@@ -1,7 +1,7 @@
 import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ jsonAst, parameters: properties }: RuleContext): RuleResult {
+export default function({ lines, jsonAst, parameters: properties }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
@@ -17,18 +17,18 @@ export default function({ jsonAst, parameters: properties }: RuleContext): RuleR
 			const propertyAfter  = properties[index + 1];
 
 			if (propertyBefore !== undefined && propertyAfter !== undefined) {
-				return new RuleError(`property "${key.value}" is not between "${propertyBefore}" and "${propertyAfter}"`, { ...key.pos.start });
+				return new RuleError(`property "${key.value}" is not between "${propertyBefore}" and "${propertyAfter}"`, key, lines);
 			}
 
 			if (propertyBefore !== undefined) {
-				return new RuleError(`property "${key.value}" is not after "${propertyBefore}"`, { ...key.pos.start });
+				return new RuleError(`property "${key.value}" is not after "${propertyBefore}"`, key, lines);
 			}
 
 			if (propertyAfter !== undefined) {
-				return new RuleError(`property "${key.value}" is not before "${propertyAfter}"`, { ...key.pos.start });
+				return new RuleError(`property "${key.value}" is not before "${propertyAfter}"`, key, lines);
 			}
 
-			return new RuleError(`property "${key.value}" is not in the right place`, { ...key.pos.start });
+			return new RuleError(`property "${key.value}" is not in the right place`, key, lines);
 		}
 		lastIndex = index;
 	}

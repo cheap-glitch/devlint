@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from 'type-fest';
-import { JsonValue as JsonAst } from 'jsonast';
+import { JsonValue as JsonAst, JsonString as JsonStringAst } from 'jsonast';
 
 import { Line } from './helpers/text';
 import { isJsonObjectValue } from './helpers/json';
@@ -9,20 +9,36 @@ import { PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './hel
 export type RuleResult = true | RuleError;
 
 export class RuleError extends Error {
-	readonly type:    RuleErrorType;
-	readonly message: string;
-	readonly start:   RuleErrorLocation | undefined;
-	readonly end:     RuleErrorLocation | undefined;
+	readonly type:     RuleErrorType;
+	readonly start?:   RuleErrorLocation;
+	readonly end?:     RuleErrorLocation;
+	readonly snippet?: Array<string>;
 
-	constructor(data: string | RuleErrorType, start?: RuleErrorLocation, end?: RuleErrorLocation) {
-		const message = typeof data === 'string' ? data : '';
-		super(message);
-		this.message = message;
+	constructor(errorType: RuleErrorType);
+	constructor(message: string, start?: RuleErrorLocation, end?: RuleErrorLocation, lines?: Array<Line>);
+	constructor(message: string, jsonAstKey: JsonStringAst, lines?: Array<Line>);
+	constructor(
+		errorTypeOrMessage: string | RuleErrorType,
+		startOrJsonAstKey?: RuleErrorLocation | JsonStringAst,
+		endOrLines?: RuleErrorLocation | Array<Line>,
+		lines?: Array<Line>) {
 
-		this.type  = typeof data === 'number' ? data : RuleErrorType.Failed;
-		this.start = start;
-		this.end   = end;
+		// Set the error message
+		super(typeof errorTypeOrMessage === 'string' ? errorTypeOrMessage : '');
 
+		this.type  = typeof errorTypeOrMessage === 'number' ? errorTypeOrMessage : RuleErrorType.Failed;
+		this.start = (startOrJsonAstKey && 'pos' in startOrJsonAstKey) ? { ...startOrJsonAstKey.pos.start } : startOrJsonAstKey;
+		this.end   = (startOrJsonAstKey && 'pos' in startOrJsonAstKey) ? { ...startOrJsonAstKey.pos.end   } : !Array.isArray(endOrLines) ? endOrLines : undefined;
+
+		if (this.start && this.end) {
+			if (Array.isArray(endOrLines)) {
+				this.snippet = endOrLines.slice(Math.max(0, this.start.line - 1), this.end.line + 2).map(line => line.text);
+			} else if (lines) {
+				this.snippet = lines.slice(Math.max(0, this.start.line - 1), this.end.line + 2).map(line => line.text);
+			}
+		}
+
+		// Fix the prototype's name
 		// https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
 		Object.setPrototypeOf(this, RuleError.prototype);
 	}
