@@ -21,12 +21,14 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:clean": "rm -r build &> /dev/null && npm run build && npm run test:install",
     "docs:build": "vitepress build docs",
     "docs:dev": "vitepress dev docs",
     "docs:serve": "vitepress serve docs",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "prepublishOnly": "npm run build",
     "test": "jest",
+    "test:install": "sudo npm uninstall -g devlint && sudo npm link",
     "upload:coverage": "coveralls < .coverage/lcov.info"
   },
   "eslintConfig": {
