@@ -19,6 +19,7 @@ export async function cli(): Promise<void> {
 			quiet: { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                          },
 			rules: { type: 'string',  default: '*',               description: 'Specify a comma-separated list of rule names to consider' },
 		})
+		.epilogue('https://devlint.org')
 		.epilogue('Copyright © 2021-present, cheap glitch')
 		.epilogue('This software is distributed under the ISC license')
 		.argv;

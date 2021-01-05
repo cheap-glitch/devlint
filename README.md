@@ -1,4 +1,4 @@
-# DevLint
+# 🤖 DevLint
 
 ![License](https://badgen.net/github/license/cheap-glitch/devlint?color=green)
 ![Latest release](https://badgen.net/github/release/cheap-glitch/devlint?color=green)
@@ -13,7 +13,7 @@ npm i devlint
 ## License
 
 ```text
-Copyright (c) 2020-present, cheap glitch
+Copyright (c) 2021-present, cheap glitch
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby  granted, provided that the above copyright notice
