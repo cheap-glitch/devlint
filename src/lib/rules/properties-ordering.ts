@@ -11,18 +11,18 @@ export default function({ jsonAst, parameters: ordering }: RuleContext): RuleRes
 		return new RuleError(RuleErrorType.InvalidParameters);
 	}
 
-	const collator = new Intl.Collator();
+	const compare = (new Intl.Collator('en', { numeric: true })).compare;
 	let errorChecker;
 	let errorMessage;
 
 	switch (ordering) {
 		case 'alphabetical':
-			errorChecker = (key: JsonStringAst, previousKey: JsonStringAst) => collator.compare(previousKey.value, key.value) > 0;
+			errorChecker = (key: JsonStringAst, previousKey: JsonStringAst) => compare(previousKey.value, key.value) > 0;
 			errorMessage = 'properties not in alphabetical order';
 			break;
 
 		case 'alphabetical-blocks':
-			errorChecker = (key: JsonStringAst, previousKey: JsonStringAst) => collator.compare(previousKey.value, key.value) > 0 && previousKey.pos.end.line > key.pos.start.line + 1;
+			errorChecker = (key: JsonStringAst, previousKey: JsonStringAst) => compare(previousKey.value, key.value) > 0 && previousKey.pos.end.line > key.pos.start.line + 1;
 			errorMessage = 'properties block not in alphabetical order';
 			break;
 
