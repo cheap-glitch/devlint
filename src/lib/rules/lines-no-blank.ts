@@ -1,11 +1,13 @@
 import { RuleContext, RuleResult, RuleError } from '../rules';
 
 /**
- * Ensures the target does not contain any "empty" lines, i.e. lines with a zero length
- * or lines containing only whitespace characters.
+ * Ensures the target does not contain any "empty" lines, i.e. lines with a
+ * zero length or lines containing only whitespace characters.
+ *
+ * {{{
  *
  * @remarks
- * Empty target will not trigger this rule.
+ * Empty targets will not trigger this rule.
  *
  * @example
  *
@@ -28,9 +30,10 @@ import { RuleContext, RuleResult, RuleError } from '../rules';
  *
  * ```
  *
+ * }}}
  */
 export default function({ contents, lines }: RuleContext): RuleResult {
-	// Ingore empty files
+	// Ingore empty targets
 	if (contents === '') {
 		return true;
 	}
