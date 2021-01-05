@@ -1,12 +1,31 @@
+import { homedir } from 'os';
+import { JsonValue } from 'type-fest';
+
 import { getLines } from './helpers/text';
-import { getAbsolutePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
+import { getAbsolutePath, getFilenamesInDirectory, readFileContents, tryReadingFileContents } from './helpers/fs';
 import { isJsonObjectValue, tryParsingJsonObject, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
-import { RuleObject, RulesMap, RuleContext, RuleResult, RuleError, RuleErrorType } from './rules';
+import { RuleObject, RuleContext, RuleResult, RuleError, RuleErrorType, parseRules } from './rules';
 
 const pathToRulesFolder = [__dirname, 'rules'];
 
-export async function lint(workingDirectory: string, rules: RulesMap): Promise<Map<[string, string], Array<[RuleObject, RuleResult]>>> {
+export async function lint(workingDirectory: string, rulesNames?: Array<string>): Promise<Map<[string, string], Array<[RuleObject, RuleResult]>>> {
+	let config: JsonValue;
+	try {
+		config = JSON.parse(await readFileContents([homedir(), '.devlintrc.json']));
+	} catch(error) {
+		error.message = 'Failed to parse config file: ' + error.message;
+		throw error;
+	}
+	if (!isJsonObjectValue(config)) {
+		throw new Error('Invalid config object');
+	}
+
+	const rules = parseRules(config?.rules ?? {}, rulesNames);
+	if (rules.size === 0) {
+		return new Map();
+	}
+
 	const requiredValidators = new Set([...rules.values()].flatMap(targetFileRules => [...targetFileRules.values()].flatMap(rules => rules.map(({ name }) => name + '.js'))));
 	const validators = Object.fromEntries(
 		(await getFilenamesInDirectory(pathToRulesFolder, file => requiredValidators.has(file.name))).map(filename => {

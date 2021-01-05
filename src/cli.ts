@@ -1,12 +1,9 @@
-import { homedir } from 'os';
-import { JsonValue } from 'type-fest';
 import yargs from 'yargs';
 
-import { isJsonObjectValue } from './lib/helpers/json';
-import { joinPathSegments, getAbsolutePath, readFileContents } from './lib/helpers/fs';
+import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
 
 import { lint } from './lib/linter';
-import { RuleStatus, RuleErrorType, parseRules  } from './lib/rules';
+import { RuleStatus, RuleErrorType } from './lib/rules';
 import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 export async function cli(): Promise<void> {
@@ -28,23 +25,7 @@ export async function cli(): Promise<void> {
 
 	const workingDirectory = (typeof options._[0] === 'string') ? options._[0] : '.';
 
-	let config: JsonValue;
-	try {
-		config = JSON.parse(await readFileContents([homedir(), '.devlintrc.json']));
-	} catch(error) {
-		error.message = 'Failed to parse config file: ' + error.message;
-		throw error;
-	}
-	if (!isJsonObjectValue(config)) {
-		throw new Error('Invalid config object');
-	}
-
-	const rules = parseRules(config?.rules ?? {}, options.rules === '*' ? undefined : options.rules.split(','));
-	if (rules.size === 0) {
-		return;
-	}
-
-	const results = await lint(joinPathSegments([process.cwd(), workingDirectory]), rules);
+	const results = await lint(joinPathSegments([process.cwd(), workingDirectory]), (options.rules === '*') ? undefined : options.rules.split(','));
 	const totals  = {
 		errors:   0,
 		warnings: 0,
