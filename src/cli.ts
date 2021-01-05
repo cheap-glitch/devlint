@@ -21,6 +21,7 @@ export async function cli(): Promise<void> {
 			fix:     { type: 'boolean', default: false,             description: 'Automatically fix problems'                                                         },
 			quiet:   { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                                                    },
 			rules:   { type: 'string',  default: '*',               description: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
+			skipped: { type: 'boolean', default: true,              description: 'Print skipped rules (disable with --no-skipped)'                                    },
 			v:       { type: 'count',   default: 0,                 description: 'Enable verbose output (repeat to increase the verbosity level)'                     },
 			verbose: { type: 'number',  default: 0,                 description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
 		})
@@ -50,15 +51,15 @@ export async function cli(): Promise<void> {
 			switch (result.type) {
 				case RuleErrorType.UnknownRule:
 					totals.skipped++;
-					return skippedRuleReport(verbosityLevel, rule, 'unknown rule');
+					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'unknown rule') : '';
 
 				case RuleErrorType.InvalidData:
 					totals.skipped++;
-					return skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target');
+					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target') : '';
 
 				case RuleErrorType.InvalidParameters:
 					totals.skipped++;
-					return skippedRuleReport(verbosityLevel, rule, `invalid parameters (cf. https://devlint.org/rules/${rule.name})`);
+					return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameters (cf. https://devlint.org/rules/${rule.name})`) : '';
 
 				case RuleErrorType.Failed:
 					switch (rule.status) {
