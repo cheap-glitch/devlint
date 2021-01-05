@@ -1,4 +1,5 @@
 import yargs from 'yargs';
+import { version } from '../package.json';
 
 import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
 
@@ -23,6 +24,8 @@ export async function cli(): Promise<void> {
 			v:       { type: 'count',   default: 0,                 description: 'Enable verbose output (repeat to increase the verbosity level)'                     },
 			verbose: { type: 'number',  default: 0,                 description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
 		})
+		.completion('completion', 'Generate auto-completion script')
+		.epilogue('Enable auto-completion with one of the following commands:\n  Linux  devlint completion >> ~/.bashrc\n  OSX    devlint completion >> ~/.bash_profile\n')
 		.epilogue('https://devlint.org')
 		.epilogue('Copyright © 2021-present, cheap glitch')
 		.epilogue('This software is distributed under the ISC license')
