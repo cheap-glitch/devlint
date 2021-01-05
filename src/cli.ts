@@ -10,11 +10,21 @@ import { RuleStatus, RuleErrorType, parseRules  } from './lib/rules';
 import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 export async function cli(): Promise<void> {
-	const options = yargs(process.argv.slice(2)).options({
-		fix:   { type: 'boolean', default: false, description: 'Automatically fix problems'                   },
-		quiet: { type: 'boolean', default: false, description: 'Do not print anything to stdout',  alias: 'q' },
-		rules: { type: 'string',  default: '*',   description: 'Set specific rules to consider'               },
-	}).argv;
+	const options = yargs(process.argv.slice(2))
+		.usage('Usage:\n  $0 [OPTION]... [DIR]\n\nArguments:\n  <DIR>  The directory in which to lint  [default: "."]')
+		.example([
+			['$0',                                     'Lint in the current directory'],
+			['$0 path/to/directory',                   'Lint in the specified directory'],
+			['$0 --rules lines-no-empty,match-object', 'Lint using only the listed rules'],
+		])
+		.options({
+			fix:   { type: 'boolean', default: false,             description: 'Automatically fix problems'                               },
+			quiet: { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                          },
+			rules: { type: 'string',  default: '*',               description: 'Specify a comma-separated list of rule names to consider' },
+		})
+		.epilogue('Copyright © 2021-present, cheap glitch')
+		.epilogue('This software is distributed under the ISC license')
+		.argv;
 
 	const workingDirectory = (typeof options._[0] === 'string') ? options._[0] : '.';
 
