@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 
+import { capitalize, countWord } from './helpers/text';
 import { RuleStatus, RuleObject, RuleError } from './rules';
 
 const labels: Record<RuleStatus, string> = {
@@ -17,26 +18,32 @@ export function totalsReport(errors: number, warnings: number, skipped: number):
 	return errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message;
 }
 
-export function ruleErrorReport(rule: RuleObject, error: RuleError): string {
-	return report(error.start ? (error.start.line + ':' + error.start.column) : '', rule.status, error.message, rule.name);
+export function skippedRuleReport(verbosityLevel: number, rule: RuleObject, reason: string): string {
+	rule.status = RuleStatus.Skipped;
+
+	return report(verbosityLevel, rule, new RuleError(reason));
 }
 
-export function skippedRuleReport(rule: RuleObject, reason: string): string {
-	return report('', RuleStatus.Skipped, reason, rule.name);
+export function ruleErrorReport(verbosityLevel: number, rule: RuleObject, error: RuleError): string {
+	return report(verbosityLevel, rule, error);
+}
+
+function report(verbosityLevel: number, rule: RuleObject, error: RuleError): string {
+	const location    = error.start ? (error.start.line + ':' + error.start.column) : '';
+	const basicReport = chalk` {dim ${location.padStart(5)}}  ${labels[rule.status]}  ${capitalize(error.message)}  {dim ${rule.name}}`;
+
+	switch (verbosityLevel) {
+		case 0:  return basicReport;
+		default: return basicReport + (error.snippet ? '\n\n' + formattedSnippet(error.snippet, error.start ? Math.max(0, error.start.line - 1) : 0) : '');
+	}
+}
+
+function formattedSnippet(snippet: Array<string>, firstLineNumber: number): string {
+	const lineNumbersColumnWidth = Math.max(2, (firstLineNumber + snippet.length).toString().length);
+
+	return snippet.map((line, index) => chalk`{black.inverse ${(firstLineNumber + index).toString().padStart(lineNumbersColumnWidth, ' ')}}${line}`).join('\n');
 }
 
 export function formattedHeader(text: string): string {
 	return chalk.underline(text);
-}
-
-function report(location: string, status: RuleStatus, message: string, ruleName: string): string {
-	return chalk` {dim ${location.padStart(5)}}  ${labels[status]}  ${capitalize(message)}  {dim ${ruleName}}`;
-}
-
-function countWord(word: string, count: number): string {
-	return count + ' ' + word + (count > 1 ? 's' : '');
-}
-
-export function capitalize(message: string): string {
-	return message.slice(0, 1).toUpperCase() + message.slice(1);
 }

@@ -5,8 +5,8 @@ import 'v8-compile-cache';
 import { release } from 'os';
 import { formatWithOptions } from 'util';
 
-import { version } from '../package.json';
 import { cli } from '../src/cli';
+import { version } from '../package.json';
 
 (async () => {
 	process.on('uncaughtException',  onFatalError);
@@ -57,5 +57,6 @@ function onFatalError(error: unknown) {
 
 		// TODO: add link to GitHub issues
 	].join('\n'));
+
 	process.exitCode = 2;
 }

@@ -8,16 +8,20 @@ import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } fro
 
 export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
+		.usage(`DevLint v${version}\n`)
 		.usage('Usage:\n  $0 [OPTION]... [DIR]\n\nArguments:\n  <DIR>  The directory in which to lint  [default: "."]')
 		.example([
-			['$0',                                     'Lint in the current directory'],
-			['$0 path/to/directory',                   'Lint in the specified directory'],
-			['$0 --rules lines-no-empty,match-object', 'Lint using only the listed rules'],
+			['$0',                   'Lint in the current directory'],
+			['$0 path/to/directory', 'Lint in the specified directory'],
+			['$0 --rules a,b,c',     'Lint using only the listed rules'],
+			['$0 -vv',               'Set the verbosity level to 2'],
 		])
 		.options({
-			fix:   { type: 'boolean', default: false,             description: 'Automatically fix problems'                               },
-			quiet: { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                          },
-			rules: { type: 'string',  default: '*',               description: 'Specify a comma-separated list of rule names to consider' },
+			fix:     { type: 'boolean', default: false,             description: 'Automatically fix problems'                                                         },
+			quiet:   { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                                                    },
+			rules:   { type: 'string',  default: '*',               description: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
+			v:       { type: 'count',   default: 0,                 description: 'Enable verbose output (repeat to increase the verbosity level)'                     },
+			verbose: { type: 'number',  default: 0,                 description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
 		})
 		.epilogue('https://devlint.org')
 		.epilogue('Copyright © 2021-present, cheap glitch')
@@ -25,6 +29,7 @@ export async function cli(): Promise<void> {
 		.argv;
 
 	const workingDirectory = (typeof options._[0] === 'string') ? options._[0] : '.';
+	const verbosityLevel   = Math.max(0, options.verbose === undefined ? 1 : (options.verbose !== 0 && !Number.isNaN(options.verbose)) ? Math.trunc(options.verbose) : options.v);
 
 	const results = await lint(joinPathSegments([process.cwd(), workingDirectory]), (options.rules === '*') ? undefined : options.rules.split(','));
 	const totals  = {
@@ -42,22 +47,22 @@ export async function cli(): Promise<void> {
 			switch (result.type) {
 				case RuleErrorType.UnknownRule:
 					totals.skipped++;
-					return skippedRuleReport(rule, 'unknown rule');
+					return skippedRuleReport(verbosityLevel, rule, 'unknown rule');
 
 				case RuleErrorType.InvalidData:
 					totals.skipped++;
-					return skippedRuleReport(rule, 'invalid data or rule does not apply to target');
+					return skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target');
 
 				case RuleErrorType.InvalidParameters:
 					totals.skipped++;
-					return skippedRuleReport(rule, `invalid parameters (cf. https://devlint.org/rules/${rule.name})`);
+					return skippedRuleReport(verbosityLevel, rule, `invalid parameters (cf. https://devlint.org/rules/${rule.name})`);
 
 				case RuleErrorType.Failed:
 					switch (rule.status) {
 						case RuleStatus.Error:   totals.errors++;   break;
 						case RuleStatus.Warning: totals.warnings++; break;
 					}
-					return ruleErrorReport(rule, result);
+					return ruleErrorReport(verbosityLevel, rule, result);
 			}
 
 			return undefined;
