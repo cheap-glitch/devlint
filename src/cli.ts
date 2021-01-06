@@ -24,7 +24,7 @@ export async function cli(): Promise<void> {
 			rules:   { type: 'string',  default: '*',               description: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
 			skipped: { type: 'boolean', default: true,              description: 'Print skipped rules (disable with --no-skipped)'                                    },
 			v:       { type: 'count',   default: 0,                 description: 'Enable verbose output (repeat to increase the verbosity level)'                     },
-			verbose: { type: 'number',  default: 0,                 description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
+			verbose: { type: 'number',                              description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
 		})
 		.completion('completion', 'Generate auto-completion script')
 		.epilogue('Enable auto-completion with one of the following commands:\n  Linux  devlint completion >> ~/.bashrc\n  OSX    devlint completion >> ~/.bash_profile\n')
@@ -33,8 +33,16 @@ export async function cli(): Promise<void> {
 		.epilogue('This software is distributed under the ISC license')
 		.argv;
 
+	let verbosityLevel = options.v;
+	if (!Number.isNaN(options.verbose)) {
+		if (options.verbose !== undefined) {
+			verbosityLevel = Math.max(0, Math.trunc(options.verbose));
+		} else if (process.argv.includes('--verbose')) {
+			verbosityLevel = 1;
+		}
+	}
+
 	const workingDirectory = (typeof options._[0] === 'string') ? options._[0] : '.';
-	const verbosityLevel   = Math.max(0, options.verbose === undefined ? 1 : (options.verbose !== 0 && !Number.isNaN(options.verbose)) ? Math.trunc(options.verbose) : options.v);
 
 	const results = await lint(joinPathSegments([process.cwd(), workingDirectory]), (options.rules === '*') ? undefined : options.rules.split(','));
 	const totals  = {
