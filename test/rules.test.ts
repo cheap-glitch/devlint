@@ -3,7 +3,7 @@ import { JsonValue } from 'type-fest';
 
 import { getLines } from '../src/lib/helpers/text';
 import { tryParsingJsonObject, tryParsingJsonAst } from '../src/lib/helpers/json';
-import { joinPathSegments, getAbsolutePath, getFilenamesInDirectory } from '../src/lib/helpers/fs';
+import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
 
 import { RuleContext, RuleError, RuleErrorLocation } from '../src/lib/rules';
 
@@ -61,10 +61,3 @@ for (const filename of rulesToTest) {
 		}
 	});
 }
-
-afterAll(async () => {
-	const untestedRules = (await getFilenamesInDirectory([pathToRuleModules], file => !rulesToTest.includes(file.name)));
-	if (untestedRules.length > 0) {
-		console.warn('Untested rules:\n' + untestedRules.map(rule => '  * ' + rule.replace('.js', '')).join('\n'));
-	}
-});

@@ -56,6 +56,11 @@
   "jest": {
     "preset": "ts-jest",
     "collectCoverage": true,
+    "collectCoverageFrom": [
+      "./src/lib/**/*.ts",
+      "!./src/lib/rules/*.ts",
+      "./build/src/lib/rules/*.js"
+    ],
     "coverageDirectory": ".coverage"
   },
   "dependencies": {
