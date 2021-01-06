@@ -34,7 +34,7 @@ function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefi
 	}
 
 	if (model === null || value === null || typeof model !== 'object' || typeof value !== 'object') {
-		return (model === value) ? true : propertiesPath;
+		return (model === value) || propertiesPath;
 	}
 
 	if (Array.isArray(model) || Array.isArray(value)) {
