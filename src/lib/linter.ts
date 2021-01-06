@@ -47,7 +47,7 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 			lines:      getLines(fileContents),
 			jsonObject: tryParsingJsonObject(fileContents),
 			jsonAst:    tryParsingJsonAst(fileContents),
-			parameters: undefined,
+			parameter:  undefined,
 		};
 
 		for (const [target, rules] of targetFileRules) {
@@ -61,7 +61,7 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 
 					// Target is the whole file
 					if (targetPropertiesPath.length === 0) {
-						context.parameters = rule.parameters;
+						context.parameter = rule.parameter;
 						result = validators[rule.name](context);
 					// Target is a property in the file (assumed to be JSON)
 					} else {
@@ -76,7 +76,7 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 									lines:      getLines(textSlice),
 									jsonObject: propertyValue,
 									jsonAst:    propertyAst,
-									parameters: rule.parameters,
+									parameter:  rule.parameter,
 								});
 							}
 						}

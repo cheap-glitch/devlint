@@ -36,16 +36,16 @@ describe("parseRules", () => {
 			['filename.ext', new Map([
 				['', [
 					{
-						name:       'first-rule',
-						status:     'error',
-						target:     [['.', 'filename.ext'], []],
-						parameters: undefined,
+						name:      'first-rule',
+						status:    'error',
+						target:    [['.', 'filename.ext'], []],
+						parameter: undefined,
 					},
 					{
-						name:       'third-rule',
-						status:     'warn',
-						target:     [['.', 'filename.ext'], []],
-						parameters: undefined,
+						name:      'third-rule',
+						status:    'warn',
+						target:    [['.', 'filename.ext'], []],
+						parameter: undefined,
 					},
 				]],
 			])],
@@ -53,7 +53,7 @@ describe("parseRules", () => {
 
 	}); // }}}
 
-	test("rule status & parameters", () => { // {{{
+	test("rule status & parameter", () => { // {{{
 
 		expect(parseRules({
 			'filename.ext': {
@@ -66,16 +66,16 @@ describe("parseRules", () => {
 			['filename.ext', new Map([
 				['', [
 					{
-						name:       'first-rule',
-						status:     'error',
-						target:     [['.', 'filename.ext'], []],
-						parameters: 'foo',
+						name:      'first-rule',
+						status:    'error',
+						target:    [['.', 'filename.ext'], []],
+						parameter: 'foo',
 					},
 					{
-						name:       'third-rule',
-						status:     'warn',
-						target:     [['.', 'filename.ext'], []],
-						parameters: ['foo', { foo: 'bar' }],
+						name:      'third-rule',
+						status:    'warn',
+						target:    [['.', 'filename.ext'], []],
+						parameter: ['foo', { foo: 'bar' }],
 					},
 				]],
 			])],
@@ -106,34 +106,34 @@ describe("parseRules", () => {
 			['filename.ext', new Map([
 				['', [
 					{
-						name:       'first-rule',
-						status:     'error',
-						target:     [['.', 'filename.ext'], []],
-						parameters: undefined,
+						name:      'first-rule',
+						status:    'error',
+						target:    [['.', 'filename.ext'], []],
+						parameter: undefined,
 					},
 				]],
 				['.property', [
 					{
-						name:       'second-rule',
-						status:     'error',
-						target:     [['.', 'filename.ext'], ['property']],
-						parameters: undefined,
+						name:      'second-rule',
+						status:    'error',
+						target:    [['.', 'filename.ext'], ['property']],
+						parameter: undefined,
 					},
 				]],
 				['.property.foo.bar', [
 					{
-						name:       'third-rule',
-						status:     'error',
-						target:     [['.', 'filename.ext'], ['property', 'foo', 'bar']],
-						parameters: undefined,
+						name:      'third-rule',
+						status:    'error',
+						target:    [['.', 'filename.ext'], ['property', 'foo', 'bar']],
+						parameter: undefined,
 					},
 				]],
 				['.property.foo.bar[2]', [
 					{
-						name:       'fourth-rule',
-						status:     'error',
-						target:     [['.', 'filename.ext'], ['property', 'foo', 'bar', 2]],
-						parameters: undefined,
+						name:      'fourth-rule',
+						status:    'error',
+						target:    [['.', 'filename.ext'], ['property', 'foo', 'bar', 2]],
+						parameter: undefined,
 					},
 				]],
 			])],

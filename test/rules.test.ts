@@ -18,11 +18,11 @@ interface TestSnippetsCollection {
 type TestSnippet = string | [string, JsonValue];
 
 function buildSnippetContext(snippet: TestSnippet): RuleContext {
-	const [contents, parameters] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
+	const [contents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
 	return {
-		contents,
-		parameters,
+		contents, parameter,
+
 		lines:      getLines(contents),
 		jsonObject: tryParsingJsonObject(contents),
 		jsonAst:    tryParsingJsonAst(contents),

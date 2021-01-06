@@ -1,12 +1,12 @@
 import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ lines, jsonAst, parameters: position }: RuleContext): RuleResult {
+export default function({ lines, jsonAst, parameter: position }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (typeof position !== 'string') {
-		return new RuleError(RuleErrorType.InvalidParameters);
+		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
 	let checkLineAbove;
@@ -31,7 +31,7 @@ export default function({ lines, jsonAst, parameters: position }: RuleContext): 
 			};
 			break;
 
-		default: return new RuleError(RuleErrorType.InvalidParameters);
+		default: return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
 	for (const [index, { key }] of jsonAst.members.entries()) {

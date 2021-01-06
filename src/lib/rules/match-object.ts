@@ -5,12 +5,12 @@ import { isJsonObjectValue, isJsonObjectAst, tryGettingJsonAstProperty } from '.
 
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ jsonObject, jsonAst, parameters: model }: RuleContext): RuleResult {
+export default function({ jsonObject, jsonAst, parameter: model }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (!isJsonObjectValue(model)) {
-		return new RuleError(RuleErrorType.InvalidParameters);
+		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
 	const result = matchJsonValues(model, jsonObject);

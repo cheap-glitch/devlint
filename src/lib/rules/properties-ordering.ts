@@ -3,12 +3,12 @@ import { JsonString as JsonStringAst } from 'jsonast';
 import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ jsonAst, parameters: ordering }: RuleContext): RuleResult {
+export default function({ jsonAst, parameter: ordering }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (ordering === undefined || typeof ordering !== 'string') {
-		return new RuleError(RuleErrorType.InvalidParameters);
+		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
 	const compare = (new Intl.Collator('en', { numeric: true })).compare;
@@ -26,7 +26,7 @@ export default function({ jsonAst, parameters: ordering }: RuleContext): RuleRes
 			errorMessage = 'properties block not in alphabetical order';
 			break;
 
-		default: return new RuleError(RuleErrorType.InvalidParameters);
+		default: return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
 	for (const [index, { key }] of jsonAst.members.entries()) {

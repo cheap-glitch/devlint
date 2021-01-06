@@ -57,7 +57,7 @@ export async function cli(): Promise<void> {
 					totals.skipped++;
 					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target') : '';
 
-				case RuleErrorType.InvalidParameters:
+				case RuleErrorType.InvalidParameter:
 					totals.skipped++;
 					return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameters (cf. https://devlint.org/rules/${rule.name})`) : '';
 

@@ -21,8 +21,8 @@ export class RuleError extends Error {
 		errorTypeOrMessage: string | RuleErrorType,
 		startOrJsonAstKey?: RuleErrorLocation | JsonStringAst,
 		endOrLines?: RuleErrorLocation | Array<Line>,
-		lines?: Array<Line>) {
-
+		lines?: Array<Line>
+	) {
 		// Set the error message
 		super(typeof errorTypeOrMessage === 'string' ? errorTypeOrMessage : '');
 
@@ -47,7 +47,7 @@ export class RuleError extends Error {
 export enum RuleErrorType {
 	UnknownRule,
 	InvalidData,
-	InvalidParameters,
+	InvalidParameter,
 	Failed,
 }
 
@@ -62,7 +62,7 @@ export interface RuleContext {
 	lines:       Array<Line>,
 	jsonObject?: JsonObject,
 	jsonAst?:    JsonAst,
-	parameters?: JsonValue,
+	parameter?:  JsonValue,
 }
 
 export type RulesMap = Map<string, Map<string, Array<RuleObject>>>;
@@ -71,7 +71,7 @@ export interface RuleObject {
 	name:        string
 	status:      RuleStatus,
 	target:      RuleTarget,
-	parameters?: JsonValue,
+	parameter?: JsonValue,
 }
 
 export type RuleTarget = [FsPath, PropertiesPath];
@@ -129,20 +129,20 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 		if (typeof value === 'string' || typeof value === 'number') {
 			const status = parseRuleStatus(value);
 			if (status !== RuleStatus.Off) {
-				rules.push({ name: key, status, parameters: undefined, target: parentTarget });
+				rules.push({ name: key, status, parameter: undefined, target: parentTarget });
 			}
 
 			continue;
 		}
 
-		// Rule state and parameters
+		// Rule state and parameter
 		if (Array.isArray(value)) {
 			if (value.length !== 2) {
 				// TODO: throw an error here?
 				continue;
 			}
 
-			const [rawStatus, parameters] = value;
+			const [rawStatus, parameter] = value;
 			if (typeof rawStatus !== 'string') {
 				// TODO: throw an error here?
 				continue;
@@ -150,7 +150,7 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 
 			const status = parseRuleStatus(rawStatus);
 			if (status !== RuleStatus.Off) {
-				rules.push({ name: key, status, parameters, target: parentTarget });
+				rules.push({ name: key, status, parameter, target: parentTarget });
 			}
 
 			continue;
