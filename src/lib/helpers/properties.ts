@@ -1,3 +1,5 @@
+export const PROPERTIES_PATH_STARTING_CHARACTER = '@';
+
 export type PropertiesPath = Array<string | number>;
 
 export function formatPropertiesPath(path: PropertiesPath): string {

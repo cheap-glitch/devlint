@@ -4,7 +4,7 @@ import { JsonValue as JsonAst, JsonString as JsonStringAst } from 'jsonast';
 import { Line } from './helpers/text';
 import { isJsonObjectValue } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
-import { PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
+import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
 
 export type RuleResult = true | RuleError;
 
@@ -163,7 +163,7 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 			const childPropertiesPath = [...parentPropertiesPath];
 
 			// The hashtag indicates the start of the properties path
-			if (key.startsWith('#')) {
+			if (key.startsWith(PROPERTIES_PATH_STARTING_CHARACTER)) {
 				if (parentPropertiesPath.length > 0) {
 					// TODO: throw an error here?
 					continue;

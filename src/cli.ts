@@ -1,6 +1,7 @@
 import yargs from 'yargs';
 
 import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
+import { PROPERTIES_PATH_STARTING_CHARACTER } from './lib/helpers/properties';
 
 import { lint } from './lib/linter';
 import { RuleStatus, RuleErrorType } from './lib/rules';
@@ -42,7 +43,7 @@ export async function cli(): Promise<void> {
 		skipped:  0,
 	};
 
-	for (const [[targetFsPath, targetPropertiesPathSegments], targetResults] of results) {
+	for (const [[targetFsPath, targetPropertiesPath], targetResults] of results) {
 		const reports = targetResults.map(([rule, result]) => {
 			if (result === true) {
 				return '';
@@ -74,7 +75,7 @@ export async function cli(): Promise<void> {
 		.filter(Boolean);
 
 		if (!options.quiet && reports.length > 0) {
-			const fullTargetPath = getAbsolutePath([process.cwd(), workingDirectory, targetFsPath]) + targetPropertiesPathSegments.replace('.', '#');
+			const fullTargetPath = getAbsolutePath([process.cwd(), workingDirectory, targetFsPath]) + targetPropertiesPath.replace('.', PROPERTIES_PATH_STARTING_CHARACTER);
 			console.log('\n' + formattedHeader(fullTargetPath) + '\n' + reports.join('\n'));
 		}
 	}
