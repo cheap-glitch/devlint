@@ -68,7 +68,7 @@ export function tryParsingJsonObject(json: string): JsonObject | undefined {
 }
 
 export function isJsonObjectAst(jsonAst: JsonAst | undefined): jsonAst is JsonObjectAst {
-	return jsonAst !== undefined && ('members' in jsonAst);
+	return jsonAst !== undefined && jsonAst.type === 'object';
 }
 
 export function isJsonObjectValue(jsonValue: JsonValue | undefined): jsonValue is JsonObject {

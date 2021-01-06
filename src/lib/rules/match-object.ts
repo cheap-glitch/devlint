@@ -6,7 +6,7 @@ import { isJsonObjectValue, isJsonObjectAst, tryGettingJsonAstProperty } from '.
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonObject, jsonAst, parameter: model }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
+	if (!isJsonObjectAst(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (!isJsonObjectValue(model)) {
