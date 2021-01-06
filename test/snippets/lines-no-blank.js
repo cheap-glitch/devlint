@@ -11,10 +11,11 @@ module.exports = {
 	failing: {
 		defaultErrorMessage: 'line should not be empty',
 		snippets: [
-			["\n",         { start: { line: 1, column: 1, char: 0 } }],
-			["\nfoo",      { start: { line: 1, column: 1, char: 0 } }],
-			["foo\n\n",    { start: { line: 2, column: 1, char: 4 } }],
-			["foo\n\nbar", { start: { line: 2, column: 1, char: 4 } }],
+			["\n",            '', { line: 1, column: 1, char: 0 }, { line: 1, column: 1, char: 0 }],
+			["\nfoo",         '', { line: 1, column: 1, char: 0 }, { line: 1, column: 1, char: 0 }],
+			["foo\n\n",       '', { line: 2, column: 1, char: 4 }, { line: 2, column: 1, char: 4 }],
+			["foo\n\nbar",    '', { line: 2, column: 1, char: 4 }, { line: 2, column: 1, char: 4 }],
+			["foo\n\t \nbar", '', { line: 2, column: 1, char: 4 }, { line: 2, column: 3, char: 6 }],
 		]
 	},
 }

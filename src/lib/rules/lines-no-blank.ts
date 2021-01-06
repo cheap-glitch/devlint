@@ -16,13 +16,13 @@ export default function({ contents, lines }: RuleContext): RuleResult {
 		}
 
 		const start = {
-			line:   emptyLineIndex,
+			line:   emptyLineIndex + 1,
 			column: 1,
 			char:   lines[emptyLineIndex].startChar,
 		};
 		const end = {
-			line:   emptyLineIndex,
-			column: lines[emptyLineIndex].text.length + 1,
+			line:   emptyLineIndex + 1,
+			column: 1 + lines[emptyLineIndex].text.length,
 			char:   lines[emptyLineIndex].startChar + lines[emptyLineIndex].text.length,
 		};
 

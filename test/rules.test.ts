@@ -11,7 +11,7 @@ interface TestSnippetsCollection {
 	passing: Array<TestSnippet>,
 	failing: {
 		defaultErrorMessage?: string,
-		snippets: Array<[TestSnippet, { message?: string, start: RuleErrorLocation, end?: RuleErrorLocation }]>,
+		snippets: Array<[TestSnippet, string | undefined, RuleErrorLocation | undefined, RuleErrorLocation | undefined]>,
 	}
 }
 
@@ -48,7 +48,7 @@ for (const filename of rulesToTest) {
 			// eslint-disable-next-line jest/valid-title
 			test(JSON.stringify(snippet), () => expect(validator(context)).toBe(true));
 		}
-		for (const [snippet, error] of failingSnippets.snippets) {
+		for (const [snippet, errorMessage, errorStart, errorEnd] of failingSnippets.snippets) {
 			const context = buildSnippetContext(snippet);
 
 			// eslint-disable-next-line jest/valid-title
@@ -56,7 +56,7 @@ for (const filename of rulesToTest) {
 				const result = validator(context);
 
 				expect(result).toBeInstanceOf(Error);
-				expect(result).toMatchObject({ ...new RuleError(error.message || failingSnippets.defaultErrorMessage || '', error.start, error.end) });
+				expect(result).toMatchObject({ ...new RuleError(errorMessage || failingSnippets.defaultErrorMessage || '', errorStart, errorEnd) });
 			});
 		}
 	});
