@@ -10,6 +10,10 @@ const labels: Record<RuleStatus, string> = {
 	[RuleStatus.Skipped]:   chalk.gray('skipped'),
 };
 
+export function formattedHeader(text: string): string {
+	return chalk.underline(text);
+}
+
 export function totalsReport(errors: number, warnings: number, skipped: number): string {
 	const message = (errors === 0 && warnings === 0)
 		? 'Skipped ' + countWord('rule', skipped)
@@ -38,12 +42,12 @@ function report(verbosityLevel: number, rule: RuleObject, error: RuleError): str
 	}
 }
 
-function formattedSnippet(snippet: Array<string>, firstLineNumber: number): string {
-	const lineNumbersColumnWidth = Math.max(2, (firstLineNumber + snippet.length).toString().length);
+function formattedSnippet(snippet: Array<string>, startingLine: number): string {
+	const minTabIndent           = Math.min(...snippet.map(line => (line.match(/^\t+/)     ?? ['']    )[0].length));
+	const minSpaceIndent         = Math.min(...snippet.map(line => (line.match(/^\t*( +)/) ?? ['', ''])[1].length));
+	const lineNumbersColumnWidth = Math.max(2, (startingLine + snippet.length).toString().length) + 1;
 
-	return snippet.map((line, index) => chalk`{black.inverse ${(firstLineNumber + index).toString().padStart(lineNumbersColumnWidth, ' ')}}${line}`).join('\n');
-}
-
-export function formattedHeader(text: string): string {
-	return chalk.underline(text);
+	return snippet.map((line, index) => {
+		return chalk`{inverse.bgGray.dim.black ${(startingLine + index).toString().padStart(lineNumbersColumnWidth, ' ')} }{yellow ${line.slice(minTabIndent + minSpaceIndent)}}`;
+	}).join('\n');
 }
