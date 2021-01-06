@@ -17,18 +17,18 @@ export default function({ lines, jsonAst, parameter: properties }: RuleContext):
 			const propertyAfter  = properties[index + 1];
 
 			if (propertyBefore !== undefined && propertyAfter !== undefined) {
-				return new RuleError(`property "${key.value}" is not between "${propertyBefore}" and "${propertyAfter}"`, key, lines);
+				return new RuleError(`property "${key.value}" is not between "${propertyBefore}" and "${propertyAfter}"`, key.pos, lines);
 			}
 
 			if (propertyBefore !== undefined) {
-				return new RuleError(`property "${key.value}" is not after "${propertyBefore}"`, key, lines);
+				return new RuleError(`property "${key.value}" is not after "${propertyBefore}"`, key.pos, lines);
 			}
 
 			if (propertyAfter !== undefined) {
-				return new RuleError(`property "${key.value}" is not before "${propertyAfter}"`, key, lines);
+				return new RuleError(`property "${key.value}" is not before "${propertyAfter}"`, key.pos, lines);
 			}
 
-			return new RuleError(`property "${key.value}" is not in the right place`, key, lines);
+			return new RuleError(`property "${key.value}" is not in the right place`, key.pos, lines);
 		}
 		lastIndex = index;
 	}

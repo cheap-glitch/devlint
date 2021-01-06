@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from 'type-fest';
-import { JsonValue as JsonAst, JsonString as JsonStringAst } from 'jsonast';
+import { JsonValue as JsonAst, Position as JsonAstPosition } from 'jsonast';
 
 import { Line } from './helpers/text';
 import { cutSnippet } from './helpers/snippets';
@@ -17,10 +17,10 @@ export class RuleError extends Error {
 
 	constructor(errorType: RuleErrorType);
 	constructor(message: string, start?: RuleErrorLocation, end?: RuleErrorLocation, lines?: Array<Line>);
-	constructor(message: string, jsonAstKey?: JsonStringAst, lines?: Array<Line>);
+	constructor(message: string, jsonAstKey?: JsonAstPosition, lines?: Array<Line>);
 	constructor(
 		errorTypeOrMessage: string | RuleErrorType,
-		startOrJsonAstKey?: RuleErrorLocation | JsonStringAst,
+		startOrJsonAstPos?: RuleErrorLocation | JsonAstPosition,
 		endOrLines?: RuleErrorLocation | Array<Line>,
 		lines?: Array<Line>
 	) {
@@ -28,8 +28,8 @@ export class RuleError extends Error {
 		super(typeof errorTypeOrMessage === 'string' ? errorTypeOrMessage : '');
 
 		this.type  = typeof errorTypeOrMessage === 'number' ? errorTypeOrMessage : RuleErrorType.Failed;
-		this.start = (startOrJsonAstKey && 'pos' in startOrJsonAstKey) ? { ...startOrJsonAstKey.pos.start } : startOrJsonAstKey;
-		this.end   = (startOrJsonAstKey && 'pos' in startOrJsonAstKey) ? { ...startOrJsonAstKey.pos.end   } : !Array.isArray(endOrLines) ? endOrLines : undefined;
+		this.start = (startOrJsonAstPos && 'start' in startOrJsonAstPos) ? { ...startOrJsonAstPos.start } : startOrJsonAstPos;
+		this.end   = (startOrJsonAstPos &&   'end' in startOrJsonAstPos) ? { ...startOrJsonAstPos.end   } : !Array.isArray(endOrLines) ? endOrLines : undefined;
 
 		if (this.start && this.end) {
 			if (Array.isArray(endOrLines)) {

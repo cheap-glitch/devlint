@@ -13,7 +13,7 @@ export default function({ lines, jsonAst }: RuleContext): RuleResult {
 	const properties = jsonAst.members.map(({ key }) => key.value);
 	for (const [index, property] of properties.entries()) {
 		if (properties.indexOf(property) !== index) {
-			return new RuleError(`duplicated property \`${property}\``, jsonAst.members[index].key, lines);
+			return new RuleError(`duplicated property \`${property}\``, jsonAst.members[index].key.pos, lines);
 		}
 	}
 

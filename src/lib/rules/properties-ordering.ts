@@ -35,7 +35,7 @@ export default function({ lines, jsonAst, parameter: ordering }: RuleContext): R
 	for (const [index, { key }] of jsonAst.members.entries()) {
 		const previousKey = jsonAst.members[index - 1]?.key ?? undefined;
 		if (previousKey && errorChecker(key, previousKey)) {
-			return new RuleError(errorMessage, key, lines);
+			return new RuleError(errorMessage, key.pos, lines);
 		}
 	}
 
