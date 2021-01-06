@@ -64,21 +64,22 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 						context.parameter = rule.parameter;
 						result = validators[rule.name](context);
 					// Target is a property in the file (assumed to be JSON)
-					} else {
-						if (context.jsonObject !== undefined && context.jsonAst !== undefined) {
-							const propertyValue = tryGettingJsonObjectProperty(context.jsonObject, targetPropertiesPath);
-							const propertyAst   = tryGettingJsonAstProperty(context.jsonAst,       targetPropertiesPath);
+					} else if (context.jsonObject !== undefined && context.jsonAst !== undefined) {
+						const propertyValue = tryGettingJsonObjectProperty(context.jsonObject, targetPropertiesPath);
+						const propertyAst   = tryGettingJsonAstProperty(context.jsonAst, targetPropertiesPath);
 
-							if (isJsonObjectValue(propertyValue) && propertyAst !== undefined) {
-								const textSlice = context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char);
-								result = validators[rule.name]({
-									contents:   textSlice,
-									lines:      getLines(textSlice),
-									jsonObject: propertyValue,
-									jsonAst:    propertyAst,
-									parameter:  rule.parameter,
-								});
-							}
+						if (propertyValue === undefined) {
+							// The property doesn't exist in the object, so the rule is not considered at all
+							result = true;
+						} else if (isJsonObjectValue(propertyValue) && propertyAst !== undefined) {
+							const textSlice = context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char);
+							result = validators[rule.name]({
+								contents:   textSlice,
+								lines:      getLines(textSlice),
+								jsonObject: propertyValue,
+								jsonAst:    propertyAst,
+								parameter:  rule.parameter,
+							});
 						}
 					}
 				}
