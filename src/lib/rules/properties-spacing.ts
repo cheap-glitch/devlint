@@ -2,15 +2,18 @@ import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonAst, parameter: position }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
+	if (!isJsonObjectAst(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (typeof position !== 'string') {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	let checkLineAbove, checkLineBelow;
+	if (jsonAst.members === undefined) {
+		return true;
+	}
 
+	let checkLineAbove, checkLineBelow;
 	switch (position) {
 		case 'around':
 			checkLineAbove = (lineIndex: number) => lines[lineIndex - 1].text === '';

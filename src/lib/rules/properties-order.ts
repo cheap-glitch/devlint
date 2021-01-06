@@ -2,7 +2,7 @@ import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonAst, parameter: properties }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
+	if (!isJsonObjectAst(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (properties === undefined || !Array.isArray(properties) || properties.some(property => typeof property !== 'string')) {
@@ -10,7 +10,7 @@ export default function({ lines, jsonAst, parameter: properties }: RuleContext):
 	}
 
 	let lastIndex = -1;
-	for (const { key } of jsonAst.members) {
+	for (const { key } of (jsonAst.members ?? [])) {
 		const index = properties.findIndex(property => property === key.value);
 		if (index !== -1 && index < lastIndex) {
 			const propertyBefore = properties[index - 1];

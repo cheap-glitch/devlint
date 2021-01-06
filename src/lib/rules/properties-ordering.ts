@@ -4,11 +4,15 @@ import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonAst, parameter: ordering }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
+	if (!isJsonObjectAst(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (ordering === undefined || typeof ordering !== 'string') {
 		return new RuleError(RuleErrorType.InvalidParameter);
+	}
+
+	if (jsonAst.members === undefined) {
+		return true;
 	}
 
 	let errorChecker, errorMessage;
