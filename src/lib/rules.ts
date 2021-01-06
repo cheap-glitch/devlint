@@ -2,6 +2,7 @@ import { JsonObject, JsonValue } from 'type-fest';
 import { JsonValue as JsonAst, JsonString as JsonStringAst } from 'jsonast';
 
 import { Line } from './helpers/text';
+import { cutSnippet } from './helpers/snippets';
 import { isJsonObjectValue } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
 import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
@@ -16,7 +17,7 @@ export class RuleError extends Error {
 
 	constructor(errorType: RuleErrorType);
 	constructor(message: string, start?: RuleErrorLocation, end?: RuleErrorLocation, lines?: Array<Line>);
-	constructor(message: string, jsonAstKey: JsonStringAst, lines?: Array<Line>);
+	constructor(message: string, jsonAstKey?: JsonStringAst, lines?: Array<Line>);
 	constructor(
 		errorTypeOrMessage: string | RuleErrorType,
 		startOrJsonAstKey?: RuleErrorLocation | JsonStringAst,
@@ -32,9 +33,9 @@ export class RuleError extends Error {
 
 		if (this.start && this.end) {
 			if (Array.isArray(endOrLines)) {
-				this.snippet = endOrLines.slice(Math.max(0, this.start.line - 1), this.end.line + 2).map(line => line.text);
+				this.snippet = cutSnippet(endOrLines, this.start, this.end);
 			} else if (lines) {
-				this.snippet = lines.slice(Math.max(0, this.start.line - 1), this.end.line + 2).map(line => line.text);
+				this.snippet = cutSnippet(lines, this.start, this.end);
 			}
 		}
 

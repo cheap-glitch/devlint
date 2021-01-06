@@ -9,8 +9,7 @@ export default function({ lines, jsonAst, parameter: position }: RuleContext): R
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	let checkLineAbove;
-	let checkLineBelow;
+	let checkLineAbove, checkLineBelow;
 
 	switch (position) {
 		case 'around':
@@ -36,9 +35,9 @@ export default function({ lines, jsonAst, parameter: position }: RuleContext): R
 
 	for (const [index, { key }] of jsonAst.members.entries()) {
 		if (!checkLineAbove(key.pos.start.line, index)) {
-			return new RuleError('missing empty line above', { ...key.pos.start });
+			return new RuleError('missing empty line above', key, lines);
 		} else if (!checkLineBelow(key.pos.end.line, index, jsonAst.members.length - 1)) {
-			return new RuleError('missing empty line below', { ...key.pos.end   });
+			return new RuleError('missing empty line below', key, lines);
 		}
 	}
 

@@ -1,37 +1,5 @@
 import { RuleContext, RuleResult, RuleError } from '../rules';
 
-/**
- * Ensures the target does not contain any "empty" lines, i.e. lines with a
- * zero length or lines containing only whitespace characters.
- *
- * {{{
- *
- * @remarks
- * Empty targets will not trigger this rule.
- *
- * @example
- *
- * ```
- * foo
- * bar
- * ```
- *
- * @example
- *
- * ```
- * foo
- *
- * bar
- * ```
- *
- * ```
- * foo
- * bar
- *
- * ```
- *
- * }}}
- */
 export default function({ contents, lines }: RuleContext): RuleResult {
 	// Ingore empty targets
 	if (contents === '') {
@@ -47,7 +15,18 @@ export default function({ contents, lines }: RuleContext): RuleResult {
 			return true;
 		}
 
-		return new RuleError('line should not be empty', { line: emptyLineIndex + 1, column: 1, char: lines[emptyLineIndex].startChar });
+		const start = {
+			line:   emptyLineIndex,
+			column: 1,
+			char:   lines[emptyLineIndex].startChar,
+		};
+		const end = {
+			line:   emptyLineIndex,
+			column: lines[emptyLineIndex].text.length + 1,
+			char:   lines[emptyLineIndex].startChar + lines[emptyLineIndex].text.length,
+		};
+
+		return new RuleError('line should not be empty', start, end, lines);
 	}
 
 	return true;

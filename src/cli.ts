@@ -5,7 +5,7 @@ import { PROPERTIES_PATH_STARTING_CHARACTER } from './lib/helpers/properties';
 
 import { lint } from './lib/linter';
 import { RuleStatus, RuleErrorType } from './lib/rules';
-import { formattedHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
+import { formatHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
@@ -76,7 +76,7 @@ export async function cli(): Promise<void> {
 
 		if (!options.quiet && reports.length > 0) {
 			const fullTargetPath = getAbsolutePath([process.cwd(), workingDirectory, targetFsPath]) + targetPropertiesPath.replace('.', PROPERTIES_PATH_STARTING_CHARACTER);
-			console.log('\n' + formattedHeader(fullTargetPath) + '\n' + reports.join('\n'));
+			console.log('\n' + formatHeader(fullTargetPath) + '\n' + reports.join('\n'));
 		}
 	}
 

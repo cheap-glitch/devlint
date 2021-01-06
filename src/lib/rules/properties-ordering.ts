@@ -3,7 +3,7 @@ import { JsonString as JsonStringAst } from 'jsonast';
 import { isJsonObjectAst } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ jsonAst, parameter: ordering }: RuleContext): RuleResult {
+export default function({ lines, jsonAst, parameter: ordering }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
@@ -11,9 +11,8 @@ export default function({ jsonAst, parameter: ordering }: RuleContext): RuleResu
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
+	let errorChecker, errorMessage;
 	const compare = (new Intl.Collator('en', { numeric: true })).compare;
-	let errorChecker;
-	let errorMessage;
 
 	switch (ordering) {
 		case 'alphabetical':
@@ -32,7 +31,7 @@ export default function({ jsonAst, parameter: ordering }: RuleContext): RuleResu
 	for (const [index, { key }] of jsonAst.members.entries()) {
 		const previousKey = jsonAst.members[index - 1]?.key ?? undefined;
 		if (previousKey && errorChecker(key, previousKey)) {
-			return new RuleError(errorMessage, key);
+			return new RuleError(errorMessage, key, lines);
 		}
 	}
 

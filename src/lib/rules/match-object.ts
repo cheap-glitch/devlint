@@ -5,7 +5,7 @@ import { isJsonObjectValue, isJsonObjectAst, tryGettingJsonAstProperty } from '.
 
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ jsonObject, jsonAst, parameter: model }: RuleContext): RuleResult {
+export default function({ lines, jsonObject, jsonAst, parameter: model }: RuleContext): RuleResult {
 	if (!isJsonObjectAst(jsonAst) || jsonAst.members === undefined) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
@@ -15,9 +15,14 @@ export default function({ jsonObject, jsonAst, parameter: model }: RuleContext):
 
 	const result = matchJsonValues(model, jsonObject);
 	if (Array.isArray(result)) {
-		const jsonKeyAst = tryGettingJsonAstProperty(jsonAst, result);
+		const jsonValueAst = tryGettingJsonAstProperty(jsonAst, result);
 
-		return new RuleError('failed to match property `' + formatPropertiesPath(result) + '`', jsonKeyAst ? { ...jsonKeyAst.pos.start } : undefined);
+		return new RuleError(
+			`failed to match property \`${formatPropertiesPath(result)}\``,
+			jsonValueAst ? { ...jsonValueAst.pos.start } : undefined,
+			jsonValueAst ? { ...jsonValueAst.pos.end   } : undefined,
+			lines
+		);
 	}
 
 	return true;
