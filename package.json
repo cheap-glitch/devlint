@@ -28,6 +28,7 @@
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "prepublishOnly": "npm run build",
     "test": "jest",
+    "test:watch": "jest --watch --collectCoverage=false",
     "test:install": "sudo npm uninstall -g devlint && sudo npm link",
     "upload:coverage": "coveralls < .coverage/lcov.info"
   },
