@@ -89,7 +89,7 @@ describe("parseRules", () => {
 			'filename.ext': {
 				'first-rule': 'error',
 
-				'@property': {
+				'#property': {
 					'second-rule': 'error',
 
 					'.foo.bar': {
