@@ -1,8 +1,8 @@
 import { parseRules } from '../src/lib/rules';
 
-describe("parseRules", () => {
+describe('parseRules', () => {
 
-	test("invalid rule object", () => { // {{{
+	test('invalid rule object', () => { // {{{
 
 		expect(parseRules('')).toEqual(new Map());
 		expect(parseRules([])).toEqual(new Map());
@@ -11,7 +11,7 @@ describe("parseRules", () => {
 
 	}); // }}}
 
-	test("invalid rules", () => { // {{{
+	test('invalid rules', () => { // {{{
 
 		// eslint-disable-next-line unicorn/no-null
 		expect(parseRules({ 'filename.ext': { 'rule-name': null            } })).toEqual(new Map());
@@ -23,7 +23,7 @@ describe("parseRules", () => {
 
 	}); // }}}
 
-	test("rule status", () => { // {{{
+	test('rule status', () => { // {{{
 
 		expect(parseRules({
 			'filename.ext': {
@@ -53,7 +53,7 @@ describe("parseRules", () => {
 
 	}); // }}}
 
-	test("rule status & parameter", () => { // {{{
+	test('rule status & parameter', () => { // {{{
 
 		expect(parseRules({
 			'filename.ext': {
@@ -83,7 +83,7 @@ describe("parseRules", () => {
 
 	}); // }}}
 
-	test("nested targets", () => { // {{{
+	test('nested targets', () => { // {{{
 
 		expect(parseRules({
 			'filename.ext': {
