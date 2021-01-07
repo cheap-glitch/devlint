@@ -23,7 +23,7 @@ export function totalsReport(errors: number, warnings: number, skipped: number):
 		? 'Skipped ' + countWord('rule', skipped)
 		: countWord('problem', errors + warnings) + ` (${countWord('error', errors)}, ${countWord('warning', warnings)}, ${skipped} skipped)`;
 
-	return errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message;
+	return chalk.bold(errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message);
 }
 
 export function skippedRuleReport(verbosityLevel: number, rule: RuleObject, reason: string): string {
@@ -37,13 +37,13 @@ export function ruleErrorReport(verbosityLevel: number, rule: RuleObject, error:
 }
 
 function report(verbosityLevel: number, rule: RuleObject, error: RuleError): string {
-	const location     = chalk.dim((error.start ? (error.start.line + ':' + error.start.column) : '').padStart(6, ' '));
+	const location     = chalk.dim((error.start ? (error.start.line + ':' + error.start.column) : '').padEnd(5, ' '));
 	const informations = chalk`${labels[rule.status]}  ${capitalize(error.message)}  {dim ${rule.name}}`;
 
 	if (verbosityLevel >= 1) {
 		return `  ${informations}\n\n` + (error.snippet && error.start && error.end
 			? formatSnippet(error.snippet, error.start, error.end, rule.status)
-			: ` at ${joinPathSegments(rule.target[0])}${error.start ? ':' + location : ''}`
+			: `  at ${joinPathSegments(rule.target[0])}${error.start ? ':' + location : ''}`
 		);
 	}
 

@@ -3,7 +3,7 @@
 import 'v8-compile-cache';
 
 import chalk from 'chalk';
-import { release } from 'os';
+// import { release } from 'os';
 import { formatWithOptions } from 'util';
 
 import { cli } from '../src/cli';
@@ -58,9 +58,10 @@ function onFatalError(error: unknown) {
 		(error instanceof Error)
 			? colorErrorStack(error.stack ?? `${error.constructor.name}: ${error.message}`)
 			: `Raw error data:\n${formatWithOptions({ colors: true }, '%o', error)}`,
-		'',
-		`Node version: ${process.versions.node}`,
-		`System: ${release()}`,
+		// '',
+		// `Node version: ${process.versions.node}`,
+		// `System: ${release()}`,
+		// '',
 		// TODO: add link to GitHub issues
 	].join('\n'));
 
