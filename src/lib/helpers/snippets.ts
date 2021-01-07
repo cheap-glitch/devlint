@@ -6,6 +6,10 @@ import { RuleStatus, RuleErrorLocation } from '../rules';
 export type Snippet = Array<Line>;
 
 export function formatSnippet(snippet: Snippet, start: RuleErrorLocation, end: RuleErrorLocation, ruleStatus: RuleStatus): string {
+	if (snippet.length === 0) {
+		return '';
+	}
+
 	const minTabIndent           = Math.min(...snippet.map(line => (line.text.match(/^\t+/)     ??     [''])[0].length));
 	const minSpaceIndent         = Math.min(...snippet.map(line => (line.text.match(/^\t*( +)/) ?? ['', ''])[1].length));
 	const lineNumbersColumnWidth = Math.max(2, snippet[snippet.length - 1].number.toString().length) + 1;
@@ -24,8 +28,8 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorLocation, end: R
 }
 
 export function cutSnippet(lines: Array<Line>, start: RuleErrorLocation, end: RuleErrorLocation): Snippet {
-	const firstLineIndex = Math.max(0, start.line - lines[0].number - 1);
-	const lastLineIndex  = Math.max(firstLineIndex, end.line - lines[0].number + 1);
+	const firstLineIndex = Math.max(0, start.line - (lines[0]?.number ?? 0) - 1);
+	const lastLineIndex  = Math.max(firstLineIndex, end.line - (lines[0]?.number ?? 0) + 1);
 
 	return lines.slice(firstLineIndex, lastLineIndex + 1);
 }

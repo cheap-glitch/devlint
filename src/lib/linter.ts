@@ -74,7 +74,7 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 						} else {
 							result = validators[rule.name]({
 								contents:  context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char),
-								lines:     context.lines.slice(propertyAst.pos.start.line, propertyAst.pos.end.line),
+								lines:     context.lines.slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line),
 								jsonValue: propertyValue,
 								jsonAst:   propertyAst,
 								parameter: rule.parameter,
