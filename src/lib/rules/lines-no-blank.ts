@@ -18,12 +18,12 @@ export default function({ contents, lines }: RuleContext): RuleResult {
 		const start = {
 			line:   emptyLineIndex + 1,
 			column: 1,
-			char:   lines[emptyLineIndex].startChar,
+			char:   lines[emptyLineIndex].char,
 		};
 		const end = {
 			line:   emptyLineIndex + 1,
 			column: 1 + lines[emptyLineIndex].text.length,
-			char:   lines[emptyLineIndex].startChar + lines[emptyLineIndex].text.length,
+			char:   lines[emptyLineIndex].char + lines[emptyLineIndex].text.length,
 		};
 
 		return new RuleError('line should not be empty', start, end, lines);

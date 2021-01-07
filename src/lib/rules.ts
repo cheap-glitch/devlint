@@ -2,7 +2,7 @@ import { JsonObject, JsonValue } from 'type-fest';
 import { JsonValue as JsonAst, Position as JsonAstPosition } from 'jsonast';
 
 import { Line } from './helpers/text';
-import { cutSnippet } from './helpers/snippets';
+import { Snippet, cutSnippet } from './helpers/snippets';
 import { isJsonObjectValue } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
 import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
@@ -13,11 +13,11 @@ export class RuleError extends Error {
 	readonly type:     RuleErrorType;
 	readonly start?:   RuleErrorLocation;
 	readonly end?:     RuleErrorLocation;
-	readonly snippet?: Array<string>;
+	readonly snippet?: Snippet;
 
 	constructor(errorType: RuleErrorType);
 	constructor(message: string, start?: RuleErrorLocation, end?: RuleErrorLocation, lines?: Array<Line>);
-	constructor(message: string, jsonAstKey?: JsonAstPosition, lines?: Array<Line>);
+	constructor(message: string, jsonAstPosition?: JsonAstPosition, lines?: Array<Line>);
 	constructor(
 		errorTypeOrMessage: string | RuleErrorType,
 		startOrJsonAstPos?: RuleErrorLocation | JsonAstPosition,

@@ -72,10 +72,9 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 							// The property doesn't exist in the object, so the rule is not considered at all
 							result = true;
 						} else if (isJsonObjectValue(propertyValue) && propertyAst !== undefined) {
-							const textSlice = context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char);
 							result = validators[rule.name]({
-								contents:   textSlice,
-								lines:      getLines(textSlice),
+								contents:   context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char),
+								lines:      context.lines.slice(propertyAst.pos.start.line, propertyAst.pos.end.line),
 								jsonObject: propertyValue,
 								jsonAst:    propertyAst,
 								parameter:  rule.parameter,

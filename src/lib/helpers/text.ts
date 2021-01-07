@@ -1,20 +1,25 @@
 export interface Line {
-	text:      string,
-	startChar: number,
+	char:   number,
+	number: number,
+	text:   string,
 }
 
 export function getLines(text: string): Array<Line> {
 	const lines: Array<Line> = [];
 
-	let currentChar = 0;
+	let char   = 0;
+	let number = 1;
+
 	for (const line of text.split(/(\r?\n)/)) {
 		if (line === '\n' || line === '\r\n') {
-			currentChar += line.length;
+			char += line.length;
 			continue;
 		}
 
-		lines.push({ text: line, startChar: currentChar });
-		currentChar += line.length;
+		lines.push({ char, number, text: line });
+
+		char += line.length;
+		number ++;
 	}
 
 	return lines;

@@ -1,18 +1,31 @@
 import chalk from 'chalk';
 
-import { Line } from './text';
-import { RuleErrorLocation } from '../rules';
+import { Line, capitalize } from './text';
+import { RuleStatus, RuleErrorLocation } from '../rules';
 
-export function formatSnippet(snippet: Array<string>, startingLine: number): string {
-	const minTabIndent           = Math.min(...snippet.map(line => (line.match(/^\t+/)     ??     [''])[0].length));
-	const minSpaceIndent         = Math.min(...snippet.map(line => (line.match(/^\t*( +)/) ?? ['', ''])[1].length));
-	const lineNumbersColumnWidth = Math.max(2, (startingLine + snippet.length).toString().length) + 1;
+export type Snippet = Array<Line>;
 
-	return snippet.map((line, index) => {
-		return chalk`{inverse.bgGray.dim.black ${(startingLine + index).toString().padStart(lineNumbersColumnWidth, ' ')} }{yellow ${line.slice(minTabIndent + minSpaceIndent)}}`;
+export function formatSnippet(snippet: Snippet, start: RuleErrorLocation, end: RuleErrorLocation, ruleStatus: RuleStatus): string {
+	const minTabIndent           = Math.min(...snippet.map(line => (line.text.match(/^\t+/)     ??     [''])[0].length));
+	const minSpaceIndent         = Math.min(...snippet.map(line => (line.text.match(/^\t*( +)/) ?? ['', ''])[1].length));
+	const lineNumbersColumnWidth = Math.max(2, snippet[snippet.length - 1].number.toString().length) + 1;
+	const highlightColor         = ruleStatus === RuleStatus.Error ? 'red' : 'yellow';
+
+	return snippet.map(line => {
+		const lineContents      = line.text.slice(minTabIndent + minSpaceIndent);
+		const lineNumbersColumn = line.number.toString().padStart(lineNumbersColumnWidth, ' ');
+
+		const isLineInError     = (start.line <= line.number && line.number <= end.line);
+		const lineColor         = isLineInError ? highlightColor : 'dim';
+		const lineNumberColor   = isLineInError ? 'bg' + capitalize(highlightColor) : 'bgGray';
+
+		return chalk`{inverse.${lineNumberColor}.dim.${isLineInError ? 'bold.' : ''}black ${lineNumbersColumn} } {${isLineInError ? 'bold.' : ''}${lineColor} ${lineContents}}`;
 	}).join('\n');
 }
 
-export function cutSnippet(lines: Array<Line>, start: RuleErrorLocation, end: RuleErrorLocation): Array<string> {
-	return lines.slice(Math.max(0, start.line - 1), end.line + 2).map(line => line.text);
+export function cutSnippet(lines: Array<Line>, start: RuleErrorLocation, end: RuleErrorLocation): Snippet {
+	const firstLineIndex = Math.max(0, start.line - lines[0].number - 1);
+	const lastLineIndex  = Math.max(firstLineIndex, end.line - lines[0].number + 1);
+
+	return lines.slice(firstLineIndex, lastLineIndex + 1);
 }

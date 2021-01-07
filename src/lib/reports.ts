@@ -40,6 +40,6 @@ function report(verbosityLevel: number, rule: RuleObject, error: RuleError): str
 
 	switch (verbosityLevel) {
 		case 0:  return basicReport;
-		default: return basicReport + (error.snippet ? '\n\n' + formatSnippet(error.snippet, error.start ? Math.max(0, error.start.line - 1) : 0) : '');
+		default: return basicReport + ((error.snippet && error.start && error.end) ? '\n\n' + formatSnippet(error.snippet, error.start, error.end, rule.status) : '');
 	}
 }
