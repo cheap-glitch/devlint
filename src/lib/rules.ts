@@ -1,9 +1,9 @@
-import { JsonObject, JsonValue } from 'type-fest';
+import { JsonValue } from 'type-fest';
 import { JsonValue as JsonAst, Position as JsonAstPosition } from 'jsonast';
 
 import { Line } from './helpers/text';
 import { Snippet, cutSnippet } from './helpers/snippets';
-import { isJsonObjectValue } from './helpers/json';
+import { isJsonValueObject } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
 import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
 
@@ -59,19 +59,19 @@ export interface RuleErrorLocation {
 }
 
 export interface RuleContext {
-	contents:    string,
-	lines:       Array<Line>,
-	jsonObject?: JsonObject,
-	jsonAst?:    JsonAst,
-	parameter?:  JsonValue,
+	contents:   string,
+	lines:      Array<Line>,
+	jsonValue?: JsonValue,
+	jsonAst?:   JsonAst,
+	parameter?: JsonValue,
 }
 
 export type RulesMap = Map<string, Map<string, Array<RuleObject>>>;
 
 export interface RuleObject {
-	name:        string
-	status:      RuleStatus,
-	target:      RuleTarget,
+	name:       string
+	status:     RuleStatus,
+	target:     RuleTarget,
 	parameter?: JsonValue,
 }
 
@@ -115,7 +115,7 @@ export function parseRules(ruleObject: JsonValue, selectedRules?: Array<string>)
 }
 
 function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array<RuleObject> {
-	if (!isJsonObjectValue(ruleObject)) {
+	if (!isJsonValueObject(ruleObject)) {
 		return [];
 	}
 

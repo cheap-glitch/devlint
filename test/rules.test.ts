@@ -2,8 +2,8 @@ import { readdirSync } from 'fs';
 import { JsonValue } from 'type-fest';
 
 import { getLines } from '../src/lib/helpers/text';
-import { tryParsingJsonObject, tryParsingJsonAst } from '../src/lib/helpers/json';
 import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
+import { tryParsingJsonValue, tryParsingJsonAst } from '../src/lib/helpers/json';
 
 import { RuleContext, RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/rules';
 
@@ -68,10 +68,10 @@ function buildSnippetContext(snippet: TestSnippet): RuleContext {
 	const contents = rawContents.split('\n').map(line => line.slice(minIndentationLevel)).join('\n');
 
 	return {
-		contents, parameter,
-
-		lines:      getLines(contents),
-		jsonObject: tryParsingJsonObject(contents),
-		jsonAst:    tryParsingJsonAst(contents),
+		contents,
+		lines:     getLines(contents),
+		jsonValue: tryParsingJsonValue(contents),
+		jsonAst:   tryParsingJsonAst(contents),
+		parameter,
 	};
 }

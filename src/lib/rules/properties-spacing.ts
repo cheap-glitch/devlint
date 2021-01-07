@@ -1,8 +1,8 @@
-import { isJsonObjectAst } from '../helpers/json';
+import { isJsonAstObject } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonAst, parameter: position }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst)) {
+	if (!isJsonAstObject(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (typeof position !== 'string') {

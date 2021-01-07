@@ -1,8 +1,8 @@
-import { isJsonObjectAst } from '../helpers/json';
+import { isJsonAstObject } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export default function({ lines, jsonAst, parameter: properties }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst)) {
+	if (!isJsonAstObject(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
 	if (properties === undefined || !Array.isArray(properties) || properties.some(property => typeof property !== 'string')) {

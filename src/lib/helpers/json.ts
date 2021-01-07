@@ -11,7 +11,7 @@ export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPath: Prop
 		if (currentPropertyAst.type === 'array' && currentPropertyAst.elements !== undefined && typeof propertyKey === 'number') {
 			subPropertyAst = currentPropertyAst.elements[propertyKey];
 		}
-		if (isJsonObjectAst(currentPropertyAst) && currentPropertyAst.members !== undefined && typeof propertyKey === 'string') {
+		if (isJsonAstObject(currentPropertyAst) && currentPropertyAst.members !== undefined && typeof propertyKey === 'string') {
 			subPropertyAst = currentPropertyAst.members.find(({ key }) => key.value === propertyKey)?.value;
 		}
 
@@ -32,7 +32,7 @@ export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertiesPat
 		if (Array.isArray(currentPropertyValue) && typeof propertyKey === 'number') {
 			subPropertyValue = currentPropertyValue[propertyKey];
 		}
-		if (isJsonObjectValue(currentPropertyValue) && typeof propertyKey === 'string') {
+		if (isJsonValueObject(currentPropertyValue) && typeof propertyKey === 'string') {
 			subPropertyValue = currentPropertyValue[propertyKey];
 		}
 
@@ -56,7 +56,7 @@ export function tryParsingJsonAst(json: string): JsonAst | undefined {
 	return jsonAst;
 }
 
-export function tryParsingJsonObject(json: string): JsonObject | undefined {
+export function tryParsingJsonValue(json: string): JsonValue | undefined {
 	let jsonValue;
 	try {
 		jsonValue = JSON.parse(json);
@@ -64,13 +64,13 @@ export function tryParsingJsonObject(json: string): JsonObject | undefined {
 		return undefined;
 	}
 
-	return isJsonObjectValue(jsonValue) ? jsonValue : undefined;
+	return jsonValue;
 }
 
-export function isJsonObjectAst(jsonAst: JsonAst | undefined): jsonAst is JsonObjectAst {
+export function isJsonAstObject(jsonAst: JsonAst | undefined): jsonAst is JsonObjectAst {
 	return jsonAst !== undefined && jsonAst.type === 'object';
 }
 
-export function isJsonObjectValue(jsonValue: JsonValue | undefined): jsonValue is JsonObject {
+export function isJsonValueObject(jsonValue: JsonValue | undefined): jsonValue is JsonObject {
 	return typeof jsonValue === 'object' && jsonValue !== null && !Array.isArray(jsonValue);
 }

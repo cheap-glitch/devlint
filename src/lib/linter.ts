@@ -3,7 +3,7 @@ import { JsonValue } from 'type-fest';
 
 import { getLines } from './helpers/text';
 import { getAbsolutePath, getFilenamesInDirectory, readFileContents, tryReadingFileContents } from './helpers/fs';
-import { isJsonObjectValue, tryParsingJsonObject, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
+import { isJsonValueObject, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { RuleObject, RuleContext, RuleResult, RuleError, RuleErrorType, parseRules } from './rules';
 
@@ -17,7 +17,7 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 		error.message = 'Failed to parse config file: ' + error.message;
 		throw error;
 	}
-	if (!isJsonObjectValue(config)) {
+	if (!isJsonValueObject(config)) {
 		throw new Error('Invalid config object');
 	}
 
@@ -43,11 +43,11 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 		}
 
 		const context: RuleContext = {
-			contents:   fileContents,
-			lines:      getLines(fileContents),
-			jsonObject: tryParsingJsonObject(fileContents),
-			jsonAst:    tryParsingJsonAst(fileContents),
-			parameter:  undefined,
+			contents:  fileContents,
+			lines:     getLines(fileContents),
+			jsonValue: tryParsingJsonValue(fileContents),
+			jsonAst:   tryParsingJsonAst(fileContents),
+			parameter: undefined,
 		};
 
 		for (const [target, rules] of targetFileRules) {
@@ -64,20 +64,20 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 						context.parameter = rule.parameter;
 						result = validators[rule.name](context);
 					// Target is a property in the file (assumed to be JSON)
-					} else if (context.jsonObject !== undefined && context.jsonAst !== undefined) {
-						const propertyValue = tryGettingJsonObjectProperty(context.jsonObject, targetPropertiesPath);
+					} else if (isJsonValueObject(context.jsonValue) && context.jsonAst !== undefined) {
+						const propertyValue = tryGettingJsonObjectProperty(context.jsonValue, targetPropertiesPath);
 						const propertyAst   = tryGettingJsonAstProperty(context.jsonAst, targetPropertiesPath);
 
-						if (propertyValue === undefined) {
+						if (propertyValue === undefined || propertyAst === undefined) {
 							// The property doesn't exist in the object, so the rule is not considered at all
 							result = true;
-						} else if (isJsonObjectValue(propertyValue) && propertyAst !== undefined) {
+						} else {
 							result = validators[rule.name]({
-								contents:   context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char),
-								lines:      context.lines.slice(propertyAst.pos.start.line, propertyAst.pos.end.line),
-								jsonObject: propertyValue,
-								jsonAst:    propertyAst,
-								parameter:  rule.parameter,
+								contents:  context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char),
+								lines:     context.lines.slice(propertyAst.pos.start.line, propertyAst.pos.end.line),
+								jsonValue: propertyValue,
+								jsonAst:   propertyAst,
+								parameter: rule.parameter,
 							});
 						}
 					}

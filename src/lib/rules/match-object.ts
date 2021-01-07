@@ -1,19 +1,19 @@
 import { JsonValue } from 'type-fest';
 
 import { PropertiesPath, formatPropertiesPath } from '../helpers/properties';
-import { isJsonObjectValue, isJsonObjectAst, tryGettingJsonAstProperty } from '../helpers/json';
+import { isJsonValueObject, isJsonAstObject, tryGettingJsonAstProperty } from '../helpers/json';
 
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ lines, jsonObject, jsonAst, parameter: model }: RuleContext): RuleResult {
-	if (!isJsonObjectAst(jsonAst)) {
+export default function({ lines, jsonValue, jsonAst, parameter: model }: RuleContext): RuleResult {
+	if (!isJsonAstObject(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}
-	if (!isJsonObjectValue(model)) {
+	if (!isJsonValueObject(model)) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const result = matchJsonValues(model, jsonObject);
+	const result = matchJsonValues(model, jsonValue);
 	if (Array.isArray(result)) {
 		const jsonValueAst = tryGettingJsonAstProperty(jsonAst, result);
 
