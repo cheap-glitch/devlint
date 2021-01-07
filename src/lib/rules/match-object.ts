@@ -18,7 +18,7 @@ export default function({ lines, jsonObject, jsonAst, parameter: model }: RuleCo
 		const jsonValueAst = tryGettingJsonAstProperty(jsonAst, result);
 
 		return new RuleError(
-			`failed to match property \`${formatPropertiesPath(result)}\``,
+			`failed to match property "${formatPropertiesPath(result)}"`,
 			jsonValueAst ? { ...jsonValueAst.pos.start } : undefined,
 			jsonValueAst ? { ...jsonValueAst.pos.end   } : undefined,
 			lines

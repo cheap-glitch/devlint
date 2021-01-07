@@ -1,11 +1,10 @@
 import yargs from 'yargs';
 
 import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
-import { PROPERTIES_PATH_STARTING_CHARACTER } from './lib/helpers/properties';
 
 import { lint } from './lib/linter';
 import { RuleStatus, RuleErrorType } from './lib/rules';
-import { formatHeader, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
+import { formatTargetPath, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
@@ -84,8 +83,12 @@ export async function cli(): Promise<void> {
 		.filter(Boolean);
 
 		if (!options.quiet && reports.length > 0) {
-			const fullTargetPath = getAbsolutePath([process.cwd(), workingDirectory, targetFsPath]) + targetPropertiesPath.replace('.', PROPERTIES_PATH_STARTING_CHARACTER);
-			console.log('\n' + formatHeader(fullTargetPath) + '\n' + reports.join('\n'));
+			console.log(
+				'\n' +
+				formatTargetPath(getAbsolutePath([process.cwd(), workingDirectory, targetFsPath]), targetPropertiesPath) +
+				'\n' +
+				reports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
+			);
 		}
 	}
 

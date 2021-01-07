@@ -1,7 +1,9 @@
 import chalk from 'chalk';
 
 import { formatSnippet } from './helpers/snippets';
+import { joinPathSegments } from './helpers/fs';
 import { capitalize, countWord } from './helpers/text';
+import { PROPERTIES_PATH_STARTING_CHARACTER } from './helpers/properties';
 
 import { RuleStatus, RuleObject, RuleError } from './rules';
 
@@ -12,8 +14,8 @@ const labels: Record<RuleStatus, string> = {
 	[RuleStatus.Skipped]:   chalk.gray('skipped'),
 };
 
-export function formatHeader(text: string): string {
-	return chalk.underline(text);
+export function formatTargetPath(fsPath: string, propertiesPath?: string): string {
+	return chalk.underline(fsPath + (propertiesPath ? propertiesPath.replace('.', chalk.bold(PROPERTIES_PATH_STARTING_CHARACTER)) : ''));
 }
 
 export function totalsReport(errors: number, warnings: number, skipped: number): string {
@@ -35,11 +37,15 @@ export function ruleErrorReport(verbosityLevel: number, rule: RuleObject, error:
 }
 
 function report(verbosityLevel: number, rule: RuleObject, error: RuleError): string {
-	const location    = error.start ? (error.start.line + ':' + error.start.column) : '';
-	const basicReport = chalk` {dim ${location.padStart(5)}}  ${labels[rule.status]}  ${capitalize(error.message)}  {dim ${rule.name}}`;
+	const location     = chalk.dim((error.start ? (error.start.line + ':' + error.start.column) : '').padStart(6, ' '));
+	const informations = chalk`${labels[rule.status]}  ${capitalize(error.message)}  {dim ${rule.name}}`;
 
-	switch (verbosityLevel) {
-		case 0:  return basicReport;
-		default: return basicReport + ((error.snippet && error.start && error.end) ? '\n\n' + formatSnippet(error.snippet, error.start, error.end, rule.status) : '');
+	if (verbosityLevel >= 1) {
+		return `  ${informations}\n\n` + (error.snippet && error.start && error.end
+			? formatSnippet(error.snippet, error.start, error.end, rule.status)
+			: ` at ${joinPathSegments(rule.target[0])}${error.start ? ':' + location : ''}`
+		);
 	}
+
+	return `  ${location}  ${informations}`;
 }

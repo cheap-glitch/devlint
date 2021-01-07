@@ -11,7 +11,7 @@ export default function({ lines, jsonObject, jsonAst, parameter: requiredPropert
 
 	const missingProperty = requiredProperties.find(property => typeof property !== 'string' || !Object.keys(jsonObject).includes(property));
 	if (missingProperty !== undefined) {
-		return new RuleError(`missing required property \`${missingProperty}\``, jsonAst.pos, lines);
+		return new RuleError(`missing required property "${missingProperty}"`, jsonAst.pos, lines);
 	}
 
 	return true;
