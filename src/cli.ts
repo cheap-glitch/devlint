@@ -11,7 +11,8 @@ export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		.usage(`DevLint v${require(getAbsolutePath([__dirname, '..', '..', 'package.json'])).version}\n`)
-		.usage('Usage:\n  $0 [OPTION]... [DIR]\n\nArguments:\n  <DIR>  The directory in which to lint  [default: "."]')
+		.usage('Usage:\n  $0 [OPTION]... [DIR]...\n')
+		.usage(`Arguments:\n  <DIR>  Path to a project directory (if no paths are specified,\n${' '.repeat(9)}defaults to the current working directory)`)
 		.example([
 			['$0',                   'Lint in the current directory'],
 			['$0 path/to/directory', 'Lint in the specified directory'],
@@ -22,7 +23,7 @@ export async function cli(): Promise<void> {
 			fix:     { type: 'boolean', default: false,             description: 'Automatically fix problems'                                                         },
 			quiet:   { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                                                    },
 			rules:   { type: 'string',  default: '*',               description: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
-			skipped: { type: 'boolean', default: true,              description: 'Print skipped rules (disable with --no-skipped)'                                    },
+			skipped: { type: 'boolean', default: true,              description: 'Print a report for skipped rules (disable with --no-skipped)'                       },
 			v:       { type: 'count',   default: 0,                 description: 'Enable verbose output (repeat to increase the verbosity level)'                     },
 			verbose: { type: 'number',                              description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
 		})
