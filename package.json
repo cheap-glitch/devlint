@@ -22,15 +22,15 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rm -r build &> /dev/null && npm run build && npm run test:install",
+    "coverage:collect": "jest --collectCoverage",
+    "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
     "docs:dev": "vitepress dev docs",
     "docs:serve": "vitepress serve docs",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "prepublishOnly": "npm run build",
     "test": "jest",
-    "test:watch": "jest --watch --collectCoverage=false",
-    "test:install": "sudo npm uninstall -g devlint && sudo npm link",
-    "upload:coverage": "coveralls < .coverage/lcov.info"
+    "test:install": "sudo npm uninstall -g devlint && sudo npm link"
   },
   "eslintConfig": {
     "root": true,
@@ -56,13 +56,12 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "collectCoverage": true,
+    "coverageDirectory": ".coverage",
     "collectCoverageFrom": [
       "./src/lib/**/*.ts",
       "!./src/lib/rules/*.ts",
       "./build/src/lib/rules/*.js"
-    ],
-    "coverageDirectory": ".coverage"
+    ]
   },
   "dependencies": {
     "chalk": "^4.1.0",
