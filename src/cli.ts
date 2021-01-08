@@ -1,4 +1,6 @@
 import yargs from 'yargs';
+import { constants as fsConstants } from 'fs';
+import { access as testDirectoryAccess } from 'fs/promises';
 
 import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
 
@@ -43,6 +45,7 @@ export async function cli(): Promise<void> {
 	}
 
 	const workingDirectory = (typeof options._[0] === 'string') ? options._[0] : '.';
+	await testDirectoryAccess(workingDirectory, fsConstants.R_OK);
 
 	const results = await lint(joinPathSegments([process.cwd(), workingDirectory]), (options.rules === '*') ? undefined : options.rules.split(','));
 	const totals  = {
@@ -68,7 +71,7 @@ export async function cli(): Promise<void> {
 
 				case RuleErrorType.InvalidParameter:
 					totals.skipped++;
-					return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameters (cf. https://devlint.org/rules/${rule.name})`) : '';
+					return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameter (cf. https://devlint.org/rules/${rule.name})`) : '';
 
 				case RuleErrorType.Failed:
 					switch (rule.status) {
