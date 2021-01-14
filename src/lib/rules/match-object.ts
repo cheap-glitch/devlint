@@ -1,11 +1,12 @@
-import { JsonValue } from 'type-fest';
-
-import { PropertiesPath, formatPropertiesPath } from '../helpers/properties';
+import { matchJsonValues } from './helpers';
+import { formatPropertiesPath } from '../helpers/properties';
 import { isJsonValueObject, isJsonAstObject, tryGettingJsonAstProperty } from '../helpers/json';
 
-import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleErrorType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ lines, jsonValue, jsonAst, parameter: model }: RuleContext): RuleResult {
+export const targetType = RuleTargetType.JsonObject;
+
+export function validator({ lines, jsonValue, jsonAst, parameter: model }: RuleContext): RuleResult {
 	if (!isJsonAstObject(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}

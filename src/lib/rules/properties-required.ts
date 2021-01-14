@@ -1,7 +1,9 @@
 import { isJsonValueObject, isJsonAstObject } from '../helpers/json';
-import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ lines, jsonValue, jsonAst, parameter: requiredProperties }: RuleContext): RuleResult {
+export const targetType = RuleTargetType.JsonObject;
+
+export function validator({ lines, jsonValue, jsonAst, parameter: requiredProperties }: RuleContext): RuleResult {
 	if (jsonValue === undefined || !isJsonValueObject(jsonValue) || !isJsonAstObject(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}

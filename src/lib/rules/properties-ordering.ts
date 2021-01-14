@@ -3,7 +3,9 @@ import { JsonString as JsonStringAst } from 'jsonast';
 import { isJsonAstObject } from '../helpers/json';
 import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
-export default function({ lines, jsonAst, parameter: ordering }: RuleContext): RuleResult {
+export const targetType = RuleTargetType.JsonObject;
+
+export function validator({ lines, jsonAst, parameter: ordering }: RuleContext): RuleResult {
 	if (!isJsonAstObject(jsonAst)) {
 		return new RuleError(RuleErrorType.InvalidData);
 	}

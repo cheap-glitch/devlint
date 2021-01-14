@@ -1,6 +1,8 @@
 import { RuleContext, RuleResult, RuleError } from '../rules';
 
-export default function({ contents, lines }: RuleContext): RuleResult {
+export const targetType = RuleTargetType.FileContents;
+
+export function validator({ contents, lines }: RuleContext): RuleResult {
 	// Ingore empty targets
 	if (contents === '') {
 		return true;
