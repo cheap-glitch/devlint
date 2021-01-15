@@ -2,18 +2,17 @@ import { homedir } from 'os';
 import { JsonValue } from 'type-fest';
 
 import { getLines } from './helpers/text';
-import { getAbsolutePath, getFilenamesInDirectory, readFileContents, tryReadingFileContents } from './helpers/fs';
-import { isJsonValueObject, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
+import { readFileContents, tryGettingDirectoryListing, tryReadingFileContents } from './helpers/fs';
+import { isJsonValueObject, isJsonAstObject, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
-import { RuleObject, RuleContext, RuleResult, RuleError, RuleErrorType, parseRules } from './rules';
-
-const pathToRulesFolder = [__dirname, 'rules'];
+import { loadBuiltinPlugins } from './plugins';
+import { RuleTargetType, RuleObject, RuleResult, RuleError, RuleErrorType, parseRules, buildRuleContext } from './rules';
 
 export async function lint(workingDirectory: string, rulesNames?: Array<string>): Promise<Map<[string, string], Array<[RuleObject, RuleResult]>>> {
 	let config: JsonValue;
 	try {
 		config = JSON.parse(await readFileContents([homedir(), '.devlintrc.json']));
-	} catch(error) {
+	} catch (error) {
 		error.message = 'Failed to parse config file: ' + error.message;
 		throw error;
 	}
@@ -26,67 +25,107 @@ export async function lint(workingDirectory: string, rulesNames?: Array<string>)
 		return new Map();
 	}
 
-	const requiredValidators = new Set([...rules.values()].flatMap(targetFileRules => [...targetFileRules.values()].flatMap(rules => rules.map(({ name }) => name + '.js'))));
-	const validators = Object.fromEntries(
-		(await getFilenamesInDirectory(pathToRulesFolder, file => requiredValidators.has(file.name))).map(filename => {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			return [filename.replace('.js', ''), require(getAbsolutePath([...pathToRulesFolder, filename])).default];
-		})
-	);
+	const requiredRules = new Set([...rules.values()].flatMap(targetFsRules => [...targetFsRules.values()].flatMap(rules => rules.map(({ name }) => name + '.js'))));
+	const loadedRules   = await loadBuiltinPlugins(requiredRules);
 
-	const resultsMap = new Map();
-	await Promise.all([...rules].map(async ([targetFsPathString, targetFileRules]) => {
-		const fileContents = await tryReadingFileContents([workingDirectory, targetFsPathString]);
-		if (fileContents instanceof Error) {
-			// TODO: error? warning?
-			return;
-		}
+	const results = new Map();
+	await Promise.all([...rules.entries()].map(async ([targetFsPathString, targetFsRules]) => {
 
-		const context: RuleContext = {
-			contents:  fileContents,
-			lines:     getLines(fileContents),
-			jsonValue: tryParsingJsonValue(fileContents),
-			jsonAst:   tryParsingJsonAst(fileContents),
-			parameter: undefined,
-		};
+		const directoryListing = await tryGettingDirectoryListing([workingDirectory, targetFsPathString]);
+		const fileContents     = await tryReadingFileContents([workingDirectory, targetFsPathString]);
+		const fileLines        = fileContents !== undefined ? getLines(fileContents) : [];
+		const jsonValue        = fileContents !== undefined ? tryParsingJsonValue(fileContents) : undefined;
+		const jsonAst          = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : undefined;
 
-		for (const [target, rules] of targetFileRules) {
-			resultsMap.set([targetFsPathString, target], rules.map(rule => {
-				let result: RuleResult = new RuleError(RuleErrorType.InvalidData);
-
-				if (validators[rule.name] === undefined) {
-					result = new RuleError(RuleErrorType.UnknownRule);
-				} else {
-					const [, targetPropertiesPath] = rule.target;
-
-					// Target is the whole file
-					if (targetPropertiesPath.length === 0) {
-						context.parameter = rule.parameter;
-						result = validators[rule.name](context);
-					// Target is a property in the file (assumed to be JSON)
-					} else if (isJsonValueObject(context.jsonValue) && context.jsonAst !== undefined) {
-						const propertyValue = tryGettingJsonObjectProperty(context.jsonValue, targetPropertiesPath);
-						const propertyAst   = tryGettingJsonAstProperty(context.jsonAst, targetPropertiesPath);
-
-						if (propertyValue === undefined || propertyAst === undefined) {
-							// The property doesn't exist in the object, so the rule is not considered at all
-							result = true;
-						} else {
-							result = validators[rule.name]({
-								contents:  context.contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char),
-								lines:     context.lines.slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line),
-								jsonValue: propertyValue,
-								jsonAst:   propertyAst,
-								parameter: rule.parameter,
-							});
-						}
-					}
+		[...targetFsRules.entries()].forEach(([targetPropertiesPathString, rules]) => results.set(
+			[targetFsPathString, targetPropertiesPathString],
+			rules.map(rule => [rule, (() => {
+				if (loadedRules[rule.name] === undefined) {
+					return new RuleError(RuleErrorType.UnknownRule);
 				}
 
-				return [rule, result];
-			}));
-		}
+				const [, targetPropertiesPath]  = rule.target;
+				const { targetType, validator } = loadedRules[rule.name];
+
+				/**
+				 * Directory target
+				 */
+				if (targetType === RuleTargetType.DirectoryListing) {
+					if (targetPropertiesPath.length === 0) {
+						return new RuleError(RuleErrorType.InvalidTargetType);
+					}
+
+					// TODO: thow/return error on missing/unaccessible directory?
+					return directoryListing !== undefined ? validator(buildRuleContext({ ...directoryListing, parameter: rule.parameter })) : true;
+				}
+
+				/**
+				 * File target
+				 */
+				if (targetType === RuleTargetType.FileContents) {
+					if (targetPropertiesPath.length === 0) {
+						return new RuleError(RuleErrorType.InvalidTargetType);
+					}
+
+					// TODO: thow/return error on missing/unaccessible file?
+					return fileContents !== undefined ? validator(buildRuleContext({ contents: fileContents, lines: fileLines, parameter: rule.parameter })) : true;
+				}
+
+				/**
+				 * JSON value target
+				 */
+				if (fileContents === undefined) {
+					// TODO: thow/return error on missing/unaccessible file?
+					return true;
+				}
+				if (jsonValue === undefined || jsonAst === undefined) {
+					return new RuleError(RuleErrorType.InvalidTargetType);
+				}
+				if ((targetType === RuleTargetType.JsonValue || targetType === RuleTargetType.JsonString) && targetPropertiesPath.length === 0) {
+					return new RuleError(RuleErrorType.InvalidTargetType);
+				}
+
+				const propertyValue = tryGettingJsonObjectProperty(jsonValue, targetPropertiesPath);
+				const propertyAst   = tryGettingJsonAstProperty(jsonAst,      targetPropertiesPath);
+				if (propertyValue === undefined || propertyAst === undefined) {
+					// The property doesn't exist in the object, so the rule is ignored
+					// TODO: throw/return error if the property is required
+					return true;
+				}
+
+				const context = buildRuleContext({
+					contents:  fileContents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char + 1),
+					lines:     fileLines.slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line),
+					parameter: rule.parameter,
+				});
+
+				switch (targetType) {
+					case RuleTargetType.JsonValue:
+						context.jsonValue = propertyValue;
+						context.jsonAst   = propertyAst;
+						break;
+
+					case RuleTargetType.JsonObject:
+						if (!isJsonValueObject(propertyValue) || !isJsonAstObject(propertyAst)) {
+							return new RuleError(RuleErrorType.InvalidTargetType);
+						}
+						context.jsonObject    = propertyValue;
+						context.jsonObjectAst = propertyAst;
+						break;
+
+					case RuleTargetType.JsonString:
+						if (typeof propertyValue !== 'string' || propertyAst.type !== 'string') {
+							return new RuleError(RuleErrorType.InvalidTargetType);
+						}
+						context.jsonString = propertyValue;
+						context.jsonAst    = propertyAst;
+						break;
+				}
+
+				return validator(context);
+			})()])
+		));
 	}));
 
-	return resultsMap;
+	return results;
 }

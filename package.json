@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "build:clean": "rm -r build &> /dev/null && npm run build && npm run test:install",
+    "clean-build": "rm -r build &> /dev/null && npm run build && npm run test:install",
     "coverage:collect": "jest --collectCoverage",
     "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
@@ -76,7 +76,7 @@
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.21",
     "@types/yargs": "^15.0.12",
-    "eslint": "^7.17.0",
+    "eslint": "^7.18.0",
     "eslint-plugin-tsdoc": "^0.2.10",
     "jest": "^26.6.3",
     "ts-jest": "^26.4.4",
