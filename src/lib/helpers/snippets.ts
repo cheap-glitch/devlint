@@ -1,7 +1,9 @@
 import chalk from 'chalk';
 
 import { Line, capitalize } from './text';
-import { RuleStatus, RuleErrorLocation } from '../rules';
+
+import { RuleStatus } from '../rules';
+import { RuleErrorLocation } from '../errors';
 
 export type Snippet = Array<Line>;
 
@@ -23,7 +25,7 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorLocation, end: R
 		const lineColor         = isLineInError ? highlightColor : 'dim';
 		const lineNumberColor   = isLineInError ? 'bg' + capitalize(highlightColor) : 'bgGray';
 
-		return chalk`{inverse.${lineNumberColor}.dim.${isLineInError ? 'bold.' : ''}black ${lineNumbersColumn} } {${isLineInError ? 'bold.' : ''}${lineColor} ${lineContents}}`;
+		return chalk`  {inverse.${lineNumberColor}.dim.${isLineInError ? 'bold.' : ''}black ${lineNumbersColumn} } {${isLineInError ? 'bold.' : ''}${lineColor} ${lineContents}}`;
 	}).join('\n');
 }
 
