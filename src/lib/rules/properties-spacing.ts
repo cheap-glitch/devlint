@@ -1,17 +1,12 @@
-import { isJsonAstObject } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
-export function validator({ lines, jsonAst, parameter: position }: RuleContext): RuleResult {
-	if (!isJsonAstObject(jsonAst)) {
-		return new RuleError(RuleErrorType.InvalidData);
-	}
+export function validator({ lines, jsonObjectAst, parameter: position }: RuleContext): RuleResult {
 	if (typeof position !== 'string') {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
-
-	if (jsonAst.members === undefined) {
+	if (jsonObjectAst.members === undefined) {
 		return true;
 	}
 
@@ -38,10 +33,10 @@ export function validator({ lines, jsonAst, parameter: position }: RuleContext):
 		default: return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const [index, { key }] of jsonAst.members.entries()) {
+	for (const [index, { key }] of jsonObjectAst.members.entries()) {
 		if (!checkLineAbove(key.pos.start.line, index)) {
 			return new RuleError('missing empty line above', key.pos, lines);
-		} else if (!checkLineBelow(key.pos.end.line, index, jsonAst.members.length - 1)) {
+		} else if (!checkLineBelow(key.pos.end.line, index, jsonObjectAst.members.length - 1)) {
 			return new RuleError('missing empty line below', key.pos, lines);
 		}
 	}

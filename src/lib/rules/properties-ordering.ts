@@ -1,19 +1,14 @@
 import { JsonString as JsonStringAst } from 'jsonast';
 
-import { isJsonAstObject } from '../helpers/json';
-import { RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
-export function validator({ lines, jsonAst, parameter: ordering }: RuleContext): RuleResult {
-	if (!isJsonAstObject(jsonAst)) {
-		return new RuleError(RuleErrorType.InvalidData);
-	}
+export function validator({ lines, jsonObjectAst, parameter: ordering }: RuleContext): RuleResult {
 	if (ordering === undefined || typeof ordering !== 'string') {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
-
-	if (jsonAst.members === undefined) {
+	if (jsonObjectAst.members === undefined) {
 		return true;
 	}
 
@@ -32,8 +27,8 @@ export function validator({ lines, jsonAst, parameter: ordering }: RuleContext):
 		default: return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const [index, { key }] of jsonAst.members.entries()) {
-		const previousKey = jsonAst.members[index - 1]?.key ?? undefined;
+	for (const [index, { key }] of jsonObjectAst.members.entries()) {
+		const previousKey = jsonObjectAst.members[index - 1]?.key ?? undefined;
 		if (previousKey && errorChecker(key, previousKey)) {
 			return new RuleError(`property "${key.value}" is not in alphabetical order`, key.pos, lines);
 		}

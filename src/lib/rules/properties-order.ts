@@ -1,18 +1,17 @@
-import { isJsonAstObject } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
-export function validator({ lines, jsonAst, parameter: properties }: RuleContext): RuleResult {
-	if (!isJsonAstObject(jsonAst)) {
-		return new RuleError(RuleErrorType.InvalidData);
-	}
+export function validator({ lines, jsonObjectAst, parameter: properties }: RuleContext): RuleResult {
 	if (properties === undefined || !Array.isArray(properties) || properties.some(property => typeof property !== 'string')) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
+	if (jsonObjectAst.members === undefined) {
+		return true;
+	}
 
 	let lastIndex = -1;
-	for (const { key } of (jsonAst.members ?? [])) {
+	for (const { key } of jsonObjectAst.members) {
 		const index = properties.findIndex(property => property === key.value);
 		if (index !== -1 && index < lastIndex) {
 			const propertyBefore = properties[index - 1];

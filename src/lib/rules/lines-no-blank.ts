@@ -1,4 +1,4 @@
-import { RuleContext, RuleResult, RuleError } from '../rules';
+import { RuleTargetType, RuleContext, RuleResult, RuleError } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
 
