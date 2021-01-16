@@ -1,4 +1,5 @@
 import yargs from 'yargs';
+import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import { access as testDirectoryAccess } from 'fs/promises';
 
@@ -8,6 +9,8 @@ import { lint } from './lib/linter';
 import { RuleStatus, RuleErrorType } from './lib/rules';
 import { formatTargetPath, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
+const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
+
 export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -16,12 +19,12 @@ export async function cli(): Promise<void> {
 		.usage(`Arguments:\n  <DIR>  Path to a project directory (if no paths are specified,\n${' '.repeat(9)}defaults to the current working directory)`)
 		.example([
 			['$0',                   'Lint in the current directory'],
-			['$0 path/to/directory', 'Lint in the specified directory'],
+			['$0 /a/b/c ../d/e',     'Lint in the specified directories'],
 			['$0 --rules a,b,c',     'Lint using only the listed rules'],
 			['$0 -vv',               'Set the verbosity level to 2'],
 		])
 		.options({
-			fix:     { type: 'boolean', default: false,             description: 'Automatically fix problems'                                                         },
+			// eslint fix: { type: 'boolean', default: false, description: 'Automatically fix problems' },
 			quiet:   { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                                                    },
 			rules:   { type: 'string',  default: '*',               description: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
 			skipped: { type: 'boolean', default: true,              description: 'Print a report for skipped rules (disable with --no-skipped)'                       },
@@ -44,17 +47,19 @@ export async function cli(): Promise<void> {
 		}
 	}
 
-	const workingDirectory = (typeof options._[0] === 'string') ? options._[0] : '.';
-	await testDirectoryAccess(workingDirectory, fsConstants.R_OK);
+	const lintedDirectories = (options._ ?? ['.']).map(arg => normalizePath(arg.toString())).map(arg => isAbsolutePath(arg) ? arg : joinPathSegments([process.cwd(), arg]));
+	for (const directory of lintedDirectories) {
+		await testDirectoryAccess(directory, fsConstants.R_OK);
+	}
 
-	const results = await lint(joinPathSegments([process.cwd(), workingDirectory]), (options.rules === '*') ? undefined : options.rules.split(','));
-	const totals  = {
+	const results = await lint(lintedDirectories, (options.rules === '*') ? undefined : options.rules.split(','));
+
+	const totals = {
 		errors:   0,
 		warnings: 0,
 		skipped:  0,
 	};
-
-	for (const [[targetFsPath, targetPropertiesPath], targetResults] of results) {
+	for (const [[targetFullFsPath, targetPropertiesPath], targetResults] of results) {
 		const reports = targetResults.map(([rule, result]) => {
 			if (result === true) {
 				return '';
@@ -65,7 +70,8 @@ export async function cli(): Promise<void> {
 					totals.skipped++;
 					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'unknown rule') : '';
 
-				case RuleErrorType.InvalidData:
+				case RuleErrorType.InvalidTargetType:
+					// TODO: return an error report here
 					totals.skipped++;
 					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target') : '';
 
@@ -88,7 +94,7 @@ export async function cli(): Promise<void> {
 		if (!options.quiet && reports.length > 0) {
 			console.log(
 				'\n' +
-				formatTargetPath(getAbsolutePath([process.cwd(), workingDirectory, targetFsPath]), targetPropertiesPath) +
+				formatTargetPath(getAbsolutePath([targetFullFsPath]), targetPropertiesPath) +
 				'\n' +
 				reports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
 			);

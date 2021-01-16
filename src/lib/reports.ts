@@ -43,7 +43,7 @@ function report(verbosityLevel: number, rule: RuleObject, error: RuleError): str
 	if (verbosityLevel >= 1) {
 		return `  ${informations}\n\n` + (error.snippet && error.start && error.end
 			? formatSnippet(error.snippet, error.start, error.end, rule.status)
-			: `  at ${joinPathSegments(rule.target[0])}${error.start ? ':' + location : ''}`
+			: chalk.magenta(`  at ${joinPathSegments(rule.target[0])}${error.start ? ':' + location : ''}`)
 		);
 	}
 
