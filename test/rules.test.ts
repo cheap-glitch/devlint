@@ -3,9 +3,10 @@ import { JsonValue } from 'type-fest';
 
 import { getLines } from '../src/lib/helpers/text';
 import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
-import { tryParsingJsonValue, tryParsingJsonAst } from '../src/lib/helpers/json';
+import { isJsonValueObject, isJsonAstObject, tryParsingJsonValue, tryParsingJsonAst } from '../src/lib/helpers/json';
 
-import { RuleContext, RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/rules';
+import { RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/errors';
+import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
 
 interface TestSnippetsCollection {
 	passing: Array<TestSnippet>,
@@ -17,24 +18,24 @@ interface TestSnippetsCollection {
 
 type TestSnippet = string | [string, JsonValue];
 
-const pathToRuleModules = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
+const pathToRulePlugins = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
 const rulesToTest = readdirSync(getAbsolutePath([__dirname, 'snippets']), { withFileTypes: true })
 	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
 	            .map(file => file.name);
 
 for (const filename of rulesToTest) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const validator = require(getAbsolutePath([pathToRuleModules, filename])).default;
+	const { targetType, validator } = require(getAbsolutePath([pathToRulePlugins, filename]));
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([__dirname, 'snippets', filename]));
 
 	// eslint-disable-next-line jest/valid-title
 	describe(filename.replace(/\.js$/, ''), () => {
 		for (const snippet of passingSnippets) {
-			const context = buildSnippetContext(snippet);
+			const context = buildSnippetContext(targetType, snippet);
 
 			// eslint-disable-next-line jest/valid-title
-			test([context.contents, context.parameter ? JSON.stringify(context.parameter) : ''].filter(Boolean).join('\n'), () => {
+			test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
 				const result = validator(context);
 				if (result instanceof Error) {
 					console.error(result);
@@ -44,13 +45,13 @@ for (const filename of rulesToTest) {
 			});
 		}
 		for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets.snippets) {
-			const context = buildSnippetContext(snippet);
-			const error   = typeof errorTypeOrMessage === 'number'
+			const context = buildSnippetContext(targetType, snippet);
+			const error = typeof errorTypeOrMessage === 'number'
 				? new RuleError(errorTypeOrMessage)
 				: new RuleError(errorTypeOrMessage || failingSnippets.defaultErrorMessage || '', errorStart, errorEnd);
 
 			// eslint-disable-next-line jest/valid-title
-			test([context.contents, context.parameter ? JSON.stringify(context.parameter) : ''].filter(Boolean).join('\n'), () => {
+			test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
 				const result = validator(context);
 
 				expect(result).toBeInstanceOf(Error);
@@ -60,18 +61,47 @@ for (const filename of rulesToTest) {
 	});
 }
 
-function buildSnippetContext(snippet: TestSnippet): RuleContext {
+function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
 	// Remove the superfluous indentation
 	const minIndentationLevel = Math.min(...rawContents.split('\n').filter(line => line.length > 0).map(line => (line.match(/^\t*/) ?? [''])[0].length));
 	const contents = rawContents.split('\n').map(line => line.slice(minIndentationLevel)).join('\n');
 
-	return {
-		contents,
-		lines:     getLines(contents),
-		jsonValue: tryParsingJsonValue(contents),
-		jsonAst:   tryParsingJsonAst(contents),
-		parameter,
-	};
+	const lines     = getLines(contents);
+	const jsonValue = tryParsingJsonValue(contents);
+	const jsonAst   = tryParsingJsonAst(contents);
+
+	switch (targetType) {
+		case RuleTargetType.DirectoryListing:
+			// TODO
+			throw new Error();
+
+		case RuleTargetType.FileContents:
+			return buildRuleContext({ contents, lines, parameter });
+
+		default:
+			if (jsonValue === undefined || jsonAst === undefined) {
+				throw new Error();
+			}
+
+			switch(targetType) {
+				case RuleTargetType.JsonValue:
+					return buildRuleContext({ contents, lines, jsonValue, jsonAst, parameter });
+
+				case RuleTargetType.JsonObject:
+					if (!isJsonValueObject(jsonValue) || !isJsonAstObject(jsonAst)) {
+						throw new Error();
+					}
+					return buildRuleContext({ contents, lines, jsonObject: jsonValue, jsonObjectAst: jsonAst, parameter });
+
+				case RuleTargetType.JsonString:
+					if (typeof jsonValue !== 'string') {
+						throw new Error();
+					}
+					return buildRuleContext({ contents, lines, jsonString: jsonValue, jsonAst: jsonAst, parameter });
+			}
+	}
+
+	return buildRuleContext({});
 }

@@ -141,4 +141,32 @@ describe('parseRules', () => {
 
 	}); // }}}
 
+	test('top-level rules', () => { // {{{
+
+		expect(parseRules({
+			'first-rule':  ['error',  'foo'],
+			'second-rule': ['off',    'foo'],
+			'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
+		}))
+		.toEqual(new Map([
+			['.', new Map([
+				['', [
+					{
+						name:      'first-rule',
+						status:    'error',
+						target:    [['.'], []],
+						parameter: 'foo',
+					},
+					{
+						name:      'third-rule',
+						status:    'warn',
+						target:    [['.'], []],
+						parameter: ['foo', { foo: 'bar' }],
+					},
+				]],
+			])],
+		]));
+
+	}); // }}}
+
 });

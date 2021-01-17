@@ -39,8 +39,8 @@ export type RuleTarget = [FsPath, PropertiesPath];
 export enum RuleTargetType {
 	DirectoryListing,
 	FileContents,
-	JsonObject,
 	JsonValue,
+	JsonObject,
 	JsonString,
 }
 

@@ -20,8 +20,6 @@ module.exports = {
 	failing: {
 		defaultErrorMessage: 'failed to match property `.foo`',
 		snippets: [
-			[['true',              {}],                  1],
-			[['[0, 1, 2]',         {}],                  1],
 			[['{}',                null],                2],
 			[['{}',                [true]],              2],
 			[['{}',                { foo: true }],      ''],
