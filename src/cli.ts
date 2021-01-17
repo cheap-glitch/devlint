@@ -47,10 +47,12 @@ export async function cli(): Promise<void> {
 		}
 	}
 
-	const lintedDirectories = (options._ ?? ['.']).map(arg => normalizePath(arg.toString())).map(arg => isAbsolutePath(arg) ? arg : joinPathSegments([process.cwd(), arg]));
-	for (const directory of lintedDirectories) {
+	const lintedDirectories = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
+		const directory = normalizePath(arg.toString());
 		await testDirectoryAccess(directory, fsConstants.R_OK);
-	}
+
+		return isAbsolutePath(directory) ? directory : joinPathSegments([process.cwd(), directory]);
+	}));
 
 	const results = await lint(lintedDirectories, (options.rules === '*') ? undefined : options.rules.split(','));
 
