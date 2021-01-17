@@ -40,7 +40,7 @@ export async function lint(directories: Array<string>, rulesNames?: Array<string
 					 * Directory target
 					 */
 					if (targetType === RuleTargetType.DirectoryListing) {
-						if (targetPropertiesPath.length === 0) {
+						if (targetPropertiesPath.length > 0) {
 							return new RuleError(RuleErrorType.InvalidTargetType);
 						}
 
@@ -52,7 +52,7 @@ export async function lint(directories: Array<string>, rulesNames?: Array<string
 					 * File target
 					 */
 					if (targetType === RuleTargetType.FileContents) {
-						if (targetPropertiesPath.length === 0) {
+						if (targetPropertiesPath.length > 0) {
 							return new RuleError(RuleErrorType.InvalidTargetType);
 						}
 
