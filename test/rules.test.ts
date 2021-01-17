@@ -73,16 +73,16 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 	const jsonAst   = tryParsingJsonAst(contents);
 
 	switch (targetType) {
+		// TODO
 		case RuleTargetType.DirectoryListing:
-			// TODO
-			throw new Error();
+			throw new TypeError();
 
 		case RuleTargetType.FileContents:
 			return buildRuleContext({ contents, lines, parameter });
 
 		default:
 			if (jsonValue === undefined || jsonAst === undefined) {
-				throw new Error();
+				throw new TypeError();
 			}
 
 			switch(targetType) {
@@ -91,13 +91,13 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 
 				case RuleTargetType.JsonObject:
 					if (!isJsonValueObject(jsonValue) || !isJsonAstObject(jsonAst)) {
-						throw new Error();
+						throw new TypeError();
 					}
 					return buildRuleContext({ contents, lines, jsonObject: jsonValue, jsonObjectAst: jsonAst, parameter });
 
 				case RuleTargetType.JsonString:
 					if (typeof jsonValue !== 'string') {
-						throw new Error();
+						throw new TypeError();
 					}
 					return buildRuleContext({ contents, lines, jsonString: jsonValue, jsonAst: jsonAst, parameter });
 			}
