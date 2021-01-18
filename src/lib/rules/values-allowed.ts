@@ -8,10 +8,8 @@ export function validator({ lines, jsonValue, jsonAst, parameter: allowedValues 
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const value of allowedValues) {
-		if (matchJsonPrimitives(value, jsonValue)) {
-			return true;
-		}
+	if (allowedValues.some(value => matchJsonPrimitives(value, jsonValue))) {
+		return true;
 	}
 
 	return new RuleError("value doesn't match any of the allowed values", jsonAst.pos, lines);

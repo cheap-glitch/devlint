@@ -8,10 +8,8 @@ export function validator({ lines, jsonValue, jsonAst, parameter: forbiddenValue
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const value of forbiddenValues) {
-		if (matchJsonPrimitives(value, jsonValue)) {
-			return new RuleError('value is forbidden', jsonAst.pos, lines);
-		}
+	if (forbiddenValues.some(value => matchJsonPrimitives(value, jsonValue))) {
+		return new RuleError('value is forbidden', jsonAst.pos, lines);
 	}
 
 	return true;
