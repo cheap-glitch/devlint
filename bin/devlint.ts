@@ -3,7 +3,6 @@
 import 'v8-compile-cache';
 
 import chalk from 'chalk';
-// import { release } from 'os';
 import { formatWithOptions } from 'util';
 
 import { cli } from '../src/cli';

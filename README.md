@@ -1,4 +1,4 @@
-# 🤖 DevLint
+# DevLint
 
 ![License](https://badgen.net/github/license/cheap-glitch/devlint?color=green)
 ![Latest release](https://badgen.net/github/release/cheap-glitch/devlint?color=green)
