@@ -105,8 +105,7 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 	const rules: Array<RuleObject> = [];
 	for (const [key, value] of Object.entries(ruleObject)) {
 		if (value === null) {
-			// TODO: throw an error here?
-			continue;
+			throw Error(`invalid rules config: "${key}" has a value of \`null\``);
 		}
 
 		// Rule state
@@ -122,14 +121,12 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 		// Rule state and parameter
 		if (Array.isArray(value)) {
 			if (value.length !== 2) {
-				// TODO: throw an error here?
-				continue;
+				throw new Error(`invalid rules config: the value of "${key}" must be an array of two elements`);
 			}
 
 			const [rawStatus, parameter] = value;
 			if (typeof rawStatus !== 'string') {
-				// TODO: throw an error here?
-				continue;
+				throw new Error(`invalid rules config: the status of "${key}" must be a string`);
 			}
 
 			const status = parseRuleStatus(rawStatus);
@@ -149,8 +146,7 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 			// The hashtag indicates the start of the properties path
 			if (key.startsWith(PROPERTIES_PATH_STARTING_CHARACTER)) {
 				if (parentPropertiesPath.length > 0) {
-					// TODO: throw an error here?
-					continue;
+					throw new Error(`invalid rules config: "${key}" starts a property path inside another property path`);
 				}
 
 				childPropertiesPath.push(...parsePropertiesPath(key.slice(1)));
