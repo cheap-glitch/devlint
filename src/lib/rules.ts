@@ -118,12 +118,18 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 			const childPropertiesPath = [...parentPropertiesPath];
 
 			// The hashtag indicates the start of the properties path
-			if (key.startsWith(PROPERTIES_PATH_STARTING_CHARACTER)) {
+			if (key.includes(PROPERTIES_PATH_STARTING_CHARACTER)) {
 				if (parentPropertiesPath.length > 0) {
 					throw new Error(`invalid rules config: "${key}" starts a property path inside another property path`);
 				}
 
-				childPropertiesPath.push(...parsePropertiesPath(key.slice(1)));
+				const [fsPath, propertyPath] = key.split('#', 2);
+				if (fsPath !== undefined && fsPath.length > 0) {
+					childFsPath.push(fsPath);
+				}
+				if (propertyPath !== undefined && propertyPath.length > 0) {
+					childPropertiesPath.push(...parsePropertiesPath(propertyPath));
+				}
 			} else if (parentPropertiesPath.length > 0) {
 				childPropertiesPath.push(...parsePropertiesPath(key));
 			} else {
