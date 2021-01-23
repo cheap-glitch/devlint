@@ -4,22 +4,22 @@ describe('parseRules', () => {
 
 	test('invalid rule object', () => { // {{{
 
-		expect(parseRules('')).toEqual(new Map());
-		expect(parseRules([])).toEqual(new Map());
+		expect(parseRules('')).toEqual([]);
+		expect(parseRules([])).toEqual([]);
 		// eslint-disable-next-line unicorn/no-null
-		expect(parseRules(null)).toEqual(new Map());
+		expect(parseRules(null)).toEqual([]);
 
 	}); // }}}
 
 	test('invalid rules', () => { // {{{
 
 		// eslint-disable-next-line unicorn/no-null
-		expect(parseRules({ 'filename.ext': { 'rule-name': null            } })).toEqual(new Map());
-		expect(parseRules({ 'filename.ext': { 'rule-name': true            } })).toEqual(new Map());
-		expect(parseRules({ 'filename.ext': { 'rule-name': false           } })).toEqual(new Map());
+		expect(() => parseRules({ 'filename.ext': { 'rule-name': null            } })).toThrow('invalid rules config: ');
+		expect(() => parseRules({ 'filename.ext': { 'rule-name': true            } })).toThrow('invalid rules config: ');
+		expect(() => parseRules({ 'filename.ext': { 'rule-name': false           } })).toThrow('invalid rules config: ');
 		// eslint-disable-next-line unicorn/no-null
-		expect(parseRules({ 'filename.ext': { 'rule-name': [null,  'foo']  } })).toEqual(new Map());
-		expect(parseRules({ 'filename.ext': { 'rule-name': [true, ['foo']] } })).toEqual(new Map());
+		expect(() => parseRules({ 'filename.ext': { 'rule-name': [null,  'foo']  } })).toThrow('invalid rules config: ');
+		expect(() => parseRules({ 'filename.ext': { 'rule-name': [true, ['foo']] } })).toThrow('invalid rules config: ');
 
 	}); // }}}
 
@@ -32,24 +32,18 @@ describe('parseRules', () => {
 				'third-rule':  'warn',
 			},
 		}))
-		.toEqual(new Map([
-			['filename.ext', new Map([
-				['', [
-					{
-						name:      'first-rule',
-						status:    'error',
-						target:    [['.', 'filename.ext'], []],
-						parameter: undefined,
-					},
-					{
-						name:      'third-rule',
-						status:    'warn',
-						target:    [['.', 'filename.ext'], []],
-						parameter: undefined,
-					},
-				]],
-			])],
-		]));
+		.toEqual([
+			{
+				name:   'first-rule',
+				status: 'error',
+				target: ['filename.ext', []],
+			},
+			{
+				name:   'third-rule',
+				status: 'warn',
+				target: ['filename.ext', []],
+			},
+		]);
 
 	}); // }}}
 
@@ -62,24 +56,20 @@ describe('parseRules', () => {
 				'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
 			},
 		}))
-		.toEqual(new Map([
-			['filename.ext', new Map([
-				['', [
-					{
-						name:      'first-rule',
-						status:    'error',
-						target:    [['.', 'filename.ext'], []],
-						parameter: 'foo',
-					},
-					{
-						name:      'third-rule',
-						status:    'warn',
-						target:    [['.', 'filename.ext'], []],
-						parameter: ['foo', { foo: 'bar' }],
-					},
-				]],
-			])],
-		]));
+		.toEqual([
+			{
+				name:      'first-rule',
+				status:    'error',
+				target:    ['filename.ext', []],
+				parameter: 'foo',
+			},
+			{
+				name:      'third-rule',
+				status:    'warn',
+				target:    ['filename.ext', []],
+				parameter: ['foo', { foo: 'bar' }],
+			},
+		]);
 
 	}); // }}}
 
@@ -102,42 +92,28 @@ describe('parseRules', () => {
 				},
 			},
 		}))
-		.toEqual(new Map([
-			['filename.ext', new Map([
-				['', [
-					{
-						name:      'first-rule',
-						status:    'error',
-						target:    [['.', 'filename.ext'], []],
-						parameter: undefined,
-					},
-				]],
-				['.property', [
-					{
-						name:      'second-rule',
-						status:    'error',
-						target:    [['.', 'filename.ext'], ['property']],
-						parameter: undefined,
-					},
-				]],
-				['.property.foo.bar', [
-					{
-						name:      'third-rule',
-						status:    'error',
-						target:    [['.', 'filename.ext'], ['property', 'foo', 'bar']],
-						parameter: undefined,
-					},
-				]],
-				['.property.foo.bar[2]', [
-					{
-						name:      'fourth-rule',
-						status:    'error',
-						target:    [['.', 'filename.ext'], ['property', 'foo', 'bar', 2]],
-						parameter: undefined,
-					},
-				]],
-			])],
-		]));
+		.toEqual([
+			{
+				name:   'first-rule',
+				status: 'error',
+				target: ['filename.ext', []],
+			},
+			{
+				name:   'second-rule',
+				status: 'error',
+				target: ['filename.ext', ['property']],
+			},
+			{
+				name:   'third-rule',
+				status: 'error',
+				target: ['filename.ext', ['property', 'foo', 'bar']],
+			},
+			{
+				name:   'fourth-rule',
+				status: 'error',
+				target: ['filename.ext', ['property', 'foo', 'bar', 2]],
+			},
+		]);
 
 	}); // }}}
 
@@ -148,24 +124,44 @@ describe('parseRules', () => {
 			'second-rule': ['off',    'foo'],
 			'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
 		}))
-		.toEqual(new Map([
-			['.', new Map([
-				['', [
-					{
-						name:      'first-rule',
-						status:    'error',
-						target:    [['.'], []],
-						parameter: 'foo',
-					},
-					{
-						name:      'third-rule',
-						status:    'warn',
-						target:    [['.'], []],
-						parameter: ['foo', { foo: 'bar' }],
-					},
-				]],
-			])],
-		]));
+		.toEqual([
+			{
+				name:      'first-rule',
+				status:    'error',
+				target:    ['.', []],
+				parameter: 'foo',
+			},
+			{
+				name:      'third-rule',
+				status:    'warn',
+				target:    ['.', []],
+				parameter: ['foo', { foo: 'bar' }],
+			},
+		]);
+
+	}); // }}}
+
+	test('conditional rules', () => { // {{{
+
+		expect(parseRules({
+			'first-rule (condition)':  'error',
+			'second-rule (condition)': 'off',
+			'(condition) third-rule':  'warn',
+		}))
+		.toEqual([
+			{
+				name:      'first-rule',
+				status:    'error',
+				target:    ['.', []],
+				condition: 'condition',
+			},
+			{
+				name:      'third-rule',
+				status:    'warn',
+				target:    ['.', []],
+				condition: 'condition',
+			},
+		]);
 
 	}); // }}}
 
