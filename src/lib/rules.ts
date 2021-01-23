@@ -84,11 +84,22 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 
 		// Rule state
 		if (typeof value === 'string' || typeof value === 'number') {
-			const status = parseRuleStatus(value);
-			if (status !== RuleStatus.Off) {
-				rules.push({ name: parseRuleName(key), status, target: parentTarget, condition: parseRuleCondition(key) });
+			const ruleStatus = parseRuleStatus(value);
+			if (ruleStatus === RuleStatus.Off) {
+				continue;
 			}
 
+			const rule: RuleObject = {
+				name:   parseRuleName(key),
+				status: ruleStatus,
+				target: parentTarget,
+			};
+			const condition = parseRuleCondition(key);
+			if (condition !== undefined) {
+				rule.condition = condition;
+			}
+
+			rules.push(rule);
 			continue;
 		}
 
@@ -98,16 +109,28 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 				throw new Error(`invalid rules config: the value of "${key}" must be an array of two elements`);
 			}
 
-			const [rawStatus, parameter] = value;
+			const [rawStatus, ruleParameter] = value;
 			if (typeof rawStatus !== 'string') {
 				throw new TypeError(`invalid rules config: the status of "${key}" must be a string`);
 			}
 
-			const status = parseRuleStatus(rawStatus);
-			if (status !== RuleStatus.Off) {
-				rules.push({ name: parseRuleName(key), status, parameter, target: parentTarget, condition: parseRuleCondition(key) });
+			const ruleStatus = parseRuleStatus(rawStatus);
+			if (ruleStatus === RuleStatus.Off) {
+				continue;
 			}
 
+			const rule: RuleObject = {
+				name:      parseRuleName(key),
+				status:    ruleStatus,
+				target:    parentTarget,
+				parameter: ruleParameter,
+			};
+			const condition = parseRuleCondition(key);
+			if (condition !== undefined) {
+				rule.condition = condition;
+			}
+
+			rules.push(rule);
 			continue;
 		}
 
@@ -137,7 +160,10 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 			}
 
 			rules.push(...parseRulesObject(value, [joinPathSegments(childFsPath), childPropertiesPath]));
+			continue;
 		}
+
+		throw new Error(`invalid rules config: "${key}"`);
 	}
 
 	return rules;
