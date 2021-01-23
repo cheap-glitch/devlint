@@ -43,7 +43,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 			}
 			if (directories === undefined || filenames === undefined) {
 				// TODO: thow/return error on missing/unaccessible directory?
-				true;
+				return true;
 			}
 
 			return validator(buildRuleContext({ directories, filenames, parameter: rule.parameter }));
@@ -58,7 +58,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 			}
 			if (contents === undefined) {
 				// TODO: thow/return error on missing/unaccessible file?
-				true;
+				return true;
 			}
 
 			return validator(buildRuleContext({ contents, lines, parameter: rule.parameter }));
