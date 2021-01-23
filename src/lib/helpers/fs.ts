@@ -2,9 +2,10 @@ import { posix } from 'path';
 import { Dirent } from 'fs';
 import { readFile, readdir } from 'fs/promises';
 
-export type FsPath = Array<string>;
+export type FsPath         = string;
+export type FsPathSegments = Array<string>;
 
-export async function tryGettingDirectoryListing(path: FsPath): Promise<{ filenames: Array<string>, directories: Array<string> } | undefined> {
+export async function tryGettingDirectoryListing(path: FsPathSegments): Promise<{ filenames: Array<string>, directories: Array<string> } | undefined> {
 	let entries;
 	try {
 		entries = await readdir(getAbsolutePath(path), { encoding: 'utf8', withFileTypes: true });
@@ -25,7 +26,7 @@ export async function tryGettingDirectoryListing(path: FsPath): Promise<{ filena
 	return { filenames, directories };
 }
 
-export async function tryReadingFileContents(path: FsPath): Promise<string | undefined> {
+export async function tryReadingFileContents(path: FsPathSegments): Promise<string | undefined> {
 	let contents;
 	try {
 		contents = await readFileContents(path);
@@ -36,13 +37,13 @@ export async function tryReadingFileContents(path: FsPath): Promise<string | und
 	return contents;
 }
 
-export async function getFilenamesInDirectory(path: FsPath, filter?: (file: Dirent) => boolean): Promise<Array<string>> {
+export async function getFilenamesInDirectory(path: FsPathSegments, filter?: (file: Dirent) => boolean): Promise<Array<string>> {
 	return (await readdir(getAbsolutePath(path), { encoding: 'utf8', withFileTypes: true }))
 		.filter(directoryEntry => directoryEntry.isFile() && (filter === undefined || filter(directoryEntry)))
 		.map(directoryEntry => directoryEntry.name);
 }
 
-export async function readFileContents(path: FsPath): Promise<string> {
+export async function readFileContents(path: FsPathSegments): Promise<string> {
 	return readFile(getAbsolutePath(path), { encoding: 'utf8' });
 }
 

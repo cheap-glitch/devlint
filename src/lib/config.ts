@@ -1,8 +1,8 @@
 import { homedir } from 'os';
 import { JsonValue, JsonObject } from 'type-fest';
 
+import { isJsonObject } from './helpers/json';
 import { readFileContents } from './helpers/fs';
-import { isJsonValueObject } from './helpers/json';
 
 export async function loadConfig(): Promise<JsonObject> {
 	let config: JsonValue;
@@ -14,7 +14,7 @@ export async function loadConfig(): Promise<JsonObject> {
 		throw error;
 	}
 
-	if (!isJsonValueObject(config)) {
+	if (!isJsonObject(config)) {
 		throw new Error('Invalid config object');
 	}
 

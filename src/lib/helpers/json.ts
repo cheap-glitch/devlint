@@ -1,11 +1,11 @@
 import { JsonValue, JsonObject } from 'type-fest';
 import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst } from 'jsonast';
 
-import { PropertiesPath } from './properties';
+import { PropertiesPathSegments } from './properties';
 
-export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPath: PropertiesPath): JsonAst | undefined {
+export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPathSegments: PropertiesPathSegments): JsonAst | undefined {
 	let currentPropertyAst = jsonAst;
-	for (const propertyKey of propertiesPath) {
+	for (const propertyKey of propertiesPathSegments) {
 		let subPropertyAst: JsonAst | undefined;
 
 		if (currentPropertyAst.type === 'array' && currentPropertyAst.elements !== undefined && typeof propertyKey === 'number') {
@@ -24,9 +24,9 @@ export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPath: Prop
 	return currentPropertyAst;
 }
 
-export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertiesPath: PropertiesPath): JsonValue | undefined {
+export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertiesPathSegments: PropertiesPathSegments): JsonValue | undefined {
 	let currentPropertyValue = jsonValue;
-	for (const propertyKey of propertiesPath) {
+	for (const propertyKey of propertiesPathSegments) {
 		let subPropertyValue: JsonValue | undefined;
 
 		if (Array.isArray(currentPropertyValue) && typeof propertyKey === 'number') {
