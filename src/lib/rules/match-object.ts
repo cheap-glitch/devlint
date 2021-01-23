@@ -1,13 +1,13 @@
 import { matchJsonValues } from './helpers';
 import { formatPropertiesPath } from '../helpers/properties';
-import { isJsonValueObject, tryGettingJsonAstProperty } from '../helpers/json';
+import { isJsonObject, tryGettingJsonAstProperty } from '../helpers/json';
 
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
 export function validator({ lines, jsonObject, jsonObjectAst, parameter: model }: RuleContext): RuleResult {
-	if (!isJsonValueObject(model)) {
+	if (!isJsonObject(model)) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 

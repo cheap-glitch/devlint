@@ -11,7 +11,7 @@ export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPath: Prop
 		if (currentPropertyAst.type === 'array' && currentPropertyAst.elements !== undefined && typeof propertyKey === 'number') {
 			subPropertyAst = currentPropertyAst.elements[propertyKey];
 		}
-		if (isJsonAstObject(currentPropertyAst) && currentPropertyAst.members !== undefined && typeof propertyKey === 'string') {
+		if (isJsonObjectAst(currentPropertyAst) && currentPropertyAst.members !== undefined && typeof propertyKey === 'string') {
 			subPropertyAst = currentPropertyAst.members.find(({ key }) => key.value === propertyKey)?.value;
 		}
 
@@ -32,7 +32,7 @@ export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertiesPat
 		if (Array.isArray(currentPropertyValue) && typeof propertyKey === 'number') {
 			subPropertyValue = currentPropertyValue[propertyKey];
 		}
-		if (isJsonValueObject(currentPropertyValue) && typeof propertyKey === 'string') {
+		if (isJsonObject(currentPropertyValue) && typeof propertyKey === 'string') {
 			subPropertyValue = currentPropertyValue[propertyKey];
 		}
 
@@ -67,10 +67,10 @@ export function tryParsingJsonValue(json: string): JsonValue | undefined {
 	return jsonValue;
 }
 
-export function isJsonAstObject(jsonAst: JsonAst | undefined): jsonAst is JsonObjectAst {
+export function isJsonObjectAst(jsonAst: JsonAst | undefined): jsonAst is JsonObjectAst {
 	return jsonAst !== undefined && jsonAst.type === 'object';
 }
 
-export function isJsonValueObject(jsonValue: JsonValue | undefined): jsonValue is JsonObject {
+export function isJsonObject(jsonValue: JsonValue | undefined): jsonValue is JsonObject {
 	return typeof jsonValue === 'object' && jsonValue !== null && !Array.isArray(jsonValue);
 }

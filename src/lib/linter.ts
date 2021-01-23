@@ -1,6 +1,6 @@
 import { getLines } from './helpers/text';
 import { joinPathSegments, tryGettingDirectoryListing, tryReadingFileContents } from './helpers/fs';
-import { isJsonValueObject, isJsonAstObject, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
+import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { loadConfig } from './config';
 import { loadBuiltinPlugins } from './plugins';
@@ -97,7 +97,7 @@ export async function lint(directories: Array<string>, rulesNames?: Array<string
 							break;
 
 						case RuleTargetType.JsonObject:
-							if (!isJsonValueObject(propertyValue) || !isJsonAstObject(propertyAst)) {
+							if (!isJsonObject(propertyValue) || !isJsonObjectAst(propertyAst)) {
 								return new RuleError(RuleErrorType.InvalidTargetType);
 							}
 							context.jsonObject    = propertyValue;

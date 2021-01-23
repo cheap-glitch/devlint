@@ -2,7 +2,7 @@ import { JsonValue, JsonObject } from 'type-fest';
 import { JsonValue as JsonAst, JsonObject as JsonObjectAst } from 'jsonast';
 
 import { Line } from './helpers/text';
-import { isJsonValueObject } from './helpers/json';
+import { isJsonObject } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
 import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
 
@@ -98,7 +98,7 @@ export function parseRules(ruleObject: JsonValue, selectedRules?: Array<string>)
 }
 
 function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array<RuleObject> {
-	if (!isJsonValueObject(ruleObject)) {
+	if (!isJsonObject(rulesObject)) {
 		return [];
 	}
 
