@@ -2,11 +2,16 @@ import yargs from 'yargs';
 import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import { access as testDirectoryAccess } from 'fs/promises';
+import { formatWithOptions } from 'util';
 
-import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
+import { insertValueInNestedMap } from './lib/helpers/map';
+import { isJsonObject } from './lib/helpers/json';
+import { FsPath, joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
+import { PropertiesPath, joinPropertiesPathSegments } from './lib/helpers/properties';
 
-import { lint } from './lib/linter';
-import { RuleStatus, RuleErrorType } from './lib/rules';
+import { loadConfig } from './lib/config';
+import { lintDirectory } from './lib/linter';
+import { RuleStatus, RuleErrorType, RuleObject, parseRules } from './lib/rules';
 import { formatTargetPath, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
@@ -18,10 +23,10 @@ export async function cli(): Promise<void> {
 		.usage('Usage:\n  $0 [OPTION]... [DIR]...\n')
 		.usage(`Arguments:\n  <DIR>  Path to a project directory (if no paths are specified,\n${' '.repeat(9)}defaults to the current working directory)`)
 		.example([
-			['$0',                   'Lint in the current directory'],
-			['$0 /a/b/c ../d/e',     'Lint in the specified directories'],
-			['$0 --rules a,b,c',     'Lint using only the listed rules'],
-			['$0 -vv',               'Set the verbosity level to 2'],
+			['$0',               'Lint in the current directory'],
+			['$0 /a/b/c ../d/e', 'Lint in the specified directories'],
+			['$0 --rules a,b,c', 'Lint using only the listed rules'],
+			['$0 -vv',           'Set the verbosity level to 2'],
 		])
 		.options({
 			// eslint fix: { type: 'boolean', default: false, description: 'Automatically fix problems' },
@@ -54,52 +59,95 @@ export async function cli(): Promise<void> {
 		return isAbsolutePath(directory) ? directory : joinPathSegments([process.cwd(), directory]);
 	}));
 
-	const results = await lint(lintedDirectories, (options.rules === '*') ? undefined : options.rules.split(','));
+	const selectedRules = (options.rules === '*') ? undefined : options.rules.split(',');
 
 	const totals = {
 		errors:   0,
 		warnings: 0,
 		skipped:  0,
 	};
-	for (const [[targetFullFsPath, targetPropertiesPath], targetResults] of results) {
-		const reports = targetResults.map(([rule, result]) => {
+	for (const directory of lintedDirectories) {
+		// TODO: avoid loading the config for every directory
+		const config = await loadConfig();
+
+		const rules = parseRules(config?.rules ?? {}).filter(rule => selectedRules === undefined || selectedRules.includes(rule.name));
+		if (rules.length === 0) {
+			continue;
+		}
+
+		// TODO: process conditions in a separate module
+		const conditionsRules: Record<string, Array<RuleObject>> = {};
+		for (const [condition, conditionRules] of Object.entries(config?.conditions ?? {})) {
+			if (Array.isArray(conditionRules)) {
+				conditionsRules[condition] = conditionRules.flatMap(rulesObject => parseRules(rulesObject));
+			} else if (isJsonObject(conditionRules)) {
+				conditionsRules[condition] = parseRules(conditionRules);
+			}
+		}
+		console.info(formatWithOptions({ colors: true }, '%o', conditionsRules));
+
+		const results = await lintDirectory(directory, rules);
+
+		const reports: Map<FsPath, Map<PropertiesPath, Array<string>>> = new Map();
+		for (const [index, result] of results.entries()) {
 			if (result === true) {
-				return '';
+				continue;
 			}
 
+			const rule = rules[index];
+			let report = '';
 			switch (result.type) {
 				case RuleErrorType.UnknownRule:
 					totals.skipped++;
-					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'unknown rule') : '';
+					if (options.skipped) {
+						report = skippedRuleReport(verbosityLevel, rule, 'unknown rule');
+					}
+					break;
 
 				case RuleErrorType.InvalidTargetType:
-					// TODO: return an error report here
+					// TODO: return an error report here?
 					totals.skipped++;
-					return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target') : '';
+					if (options.skipped) {
+						report = skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target');
+					}
+					break;
 
 				case RuleErrorType.InvalidParameter:
 					totals.skipped++;
-					return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameter (cf. https://devlint.org/rules/${rule.name})`) : '';
+					if (options.skipped) {
+						report = skippedRuleReport(verbosityLevel, rule, `invalid parameter (cf. https://devlint.org/rules/${rule.name})`);
+					}
+					break;
 
 				case RuleErrorType.Failed:
 					switch (rule.status) {
 						case RuleStatus.Error:   totals.errors++;   break;
 						case RuleStatus.Warning: totals.warnings++; break;
 					}
-					return ruleErrorReport(verbosityLevel, rule, result);
+					report = ruleErrorReport(verbosityLevel, rule, result);
+					break;
+			}
+			if (report.length === 0) {
+				continue;
 			}
 
-			return undefined;
-		})
-		.filter(Boolean);
+			const [targetFsPath, targetPropertiesPathSegments] = rule.target;
+			insertValueInNestedMap(reports, targetFsPath, joinPropertiesPathSegments(targetPropertiesPathSegments), [report]);
+		}
 
-		if (!options.quiet && reports.length > 0) {
-			console.log(
-				'\n' +
-				formatTargetPath(getAbsolutePath([targetFullFsPath]), targetPropertiesPath) +
-				'\n' +
-				reports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
-			);
+		if (options.quiet) {
+			continue;
+		}
+
+		for (const [targetFsPath, targetFsReports] of reports.entries()) {
+			for (const [targetPropertiesPath, targetPropertiesReports] of targetFsReports.entries()) {
+				console.log(
+					'\n' +
+					formatTargetPath(getAbsolutePath([directory, targetFsPath]), targetPropertiesPath) +
+					'\n' +
+					targetPropertiesReports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
+				);
+			}
 		}
 	}
 

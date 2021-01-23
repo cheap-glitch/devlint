@@ -4,7 +4,7 @@ import { JsonValue as JsonAst, JsonObject as JsonObjectAst } from 'jsonast';
 import { Line } from './helpers/text';
 import { isJsonObject } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
-import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPath, parsePropertiesPath, formatPropertiesPath } from './helpers/properties';
+import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPathSegments, parsePropertiesPath } from './helpers/properties';
 
 import { RuleError, RuleErrorType } from './errors';
 
@@ -13,8 +13,8 @@ export type RuleResult = true | RuleError;
 export { RuleError, RuleErrorType };
 
 export interface RuleContext {
-	filenames:     Array<string>,
 	directories:   Array<string>,
+	filenames:     Array<string>,
 	contents:      string,
 	lines:         Array<Line>,
 	jsonValue:     JsonValue,
@@ -25,16 +25,15 @@ export interface RuleContext {
 	parameter:     JsonValue,
 }
 
-export type RulesMap = Map<string, Map<string, Array<RuleObject>>>;
-
 export interface RuleObject {
 	name:       string
 	status:     RuleStatus,
 	target:     RuleTarget,
 	parameter?: JsonValue,
+	condition?: string,
 }
 
-export type RuleTarget = [FsPath, PropertiesPath];
+export type RuleTarget = [FsPath, PropertiesPathSegments];
 
 export enum RuleTargetType {
 	DirectoryListing,
@@ -67,52 +66,27 @@ export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
 	};
 }
 
-export function parseRules(ruleObject: JsonValue, selectedRules?: Array<string>): RulesMap {
-	const rules = parseRuleObject(ruleObject, [['.'], []]);
-
-	const rulesMap = new Map();
-	for (const rule of rules) {
-		if (selectedRules !== undefined && !selectedRules.includes(rule.name)) {
-			continue;
-		}
-
-		const [targetFsPath, targetPropertiesPath] = rule.target;
-		const targetFsPathString         = joinPathSegments(targetFsPath);
-		const targetPropertiesPathString = formatPropertiesPath(targetPropertiesPath);
-
-		// Group rules by file targets and then by property paths
-		const targetFileRules = rulesMap.get(targetFsPathString);
-		if (targetFileRules !== undefined) {
-			const targetRules = targetFileRules.get(targetPropertiesPathString);
-			if (targetRules !== undefined) {
-				targetRules.push(rule);
-			} else {
-				targetFileRules.set(targetPropertiesPathString, [rule]);
-			}
-		} else {
-			rulesMap.set(targetFsPathString, new Map([[targetPropertiesPathString, [rule]]]));
-		}
-	}
-
-	return rulesMap;
-}
-
-function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array<RuleObject> {
+export function parseRules(rulesObject: JsonValue): Array<RuleObject> {
 	if (!isJsonObject(rulesObject)) {
 		return [];
 	}
 
+	return parseRulesObject(rulesObject, ['.', []]);
+}
+
+function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Array<RuleObject> {
 	const rules: Array<RuleObject> = [];
-	for (const [key, value] of Object.entries(ruleObject)) {
+
+	for (const [key, value] of Object.entries(rulesObject)) {
 		if (value === null) {
-			throw Error(`invalid rules config: "${key}" has a value of \`null\``);
+			throw new Error(`invalid rules config: "${key}" has a value of \`null\``);
 		}
 
 		// Rule state
 		if (typeof value === 'string' || typeof value === 'number') {
 			const status = parseRuleStatus(value);
 			if (status !== RuleStatus.Off) {
-				rules.push({ name: key, status, parameter: undefined, target: parentTarget });
+				rules.push({ name: parseRuleName(key), status, target: parentTarget, condition: parseRuleCondition(key) });
 			}
 
 			continue;
@@ -126,12 +100,12 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 
 			const [rawStatus, parameter] = value;
 			if (typeof rawStatus !== 'string') {
-				throw new Error(`invalid rules config: the status of "${key}" must be a string`);
+				throw new TypeError(`invalid rules config: the status of "${key}" must be a string`);
 			}
 
 			const status = parseRuleStatus(rawStatus);
 			if (status !== RuleStatus.Off) {
-				rules.push({ name: key, status, parameter, target: parentTarget });
+				rules.push({ name: parseRuleName(key), status, parameter, target: parentTarget, condition: parseRuleCondition(key) });
 			}
 
 			continue;
@@ -140,7 +114,7 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 		// Sub-target
 		if (typeof value === 'object') {
 			const [parentFsPath, parentPropertiesPath] = parentTarget;
-			const childFsPath         = [...parentFsPath];
+			const childFsPath         = [parentFsPath];
 			const childPropertiesPath = [...parentPropertiesPath];
 
 			// The hashtag indicates the start of the properties path
@@ -156,11 +130,19 @@ function parseRuleObject(ruleObject: JsonValue, parentTarget: RuleTarget): Array
 				childFsPath.push(key);
 			}
 
-			rules.push(...parseRuleObject(value, [childFsPath, childPropertiesPath]));
+			rules.push(...parseRulesObject(value, [joinPathSegments(childFsPath), childPropertiesPath]));
 		}
 	}
 
 	return rules;
+}
+
+function parseRuleName(name: string): string {
+	return name.replace(/\(\w+\)/, '').trim();
+}
+
+function parseRuleCondition(name: string): string | undefined {
+	return name.match(/\((?<condition>\w+)\)/)?.groups?.condition;
 }
 
 function parseRuleStatus(status: number | string): RuleStatus {

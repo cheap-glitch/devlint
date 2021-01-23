@@ -23,4 +23,4 @@
  */
 
 export * from './lib/rules';
-export { lint } from './lib/linter';
+export { lintDirectory } from './lib/linter';
