@@ -3,7 +3,7 @@ import { JsonValue } from 'type-fest';
 
 import { getLines } from '../src/lib/helpers/text';
 import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
-import { isJsonValueObject, isJsonAstObject, tryParsingJsonValue, tryParsingJsonAst } from '../src/lib/helpers/json';
+import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst } from '../src/lib/helpers/json';
 
 import { RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/errors';
 import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
@@ -90,7 +90,7 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 					return buildRuleContext({ contents, lines, jsonValue, jsonAst, parameter });
 
 				case RuleTargetType.JsonObject:
-					if (!isJsonValueObject(jsonValue) || !isJsonAstObject(jsonAst)) {
+					if (!isJsonObject(jsonValue) || !isJsonObjectAst(jsonAst)) {
 						throw new TypeError();
 					}
 					return buildRuleContext({ contents, lines, jsonObject: jsonValue, jsonObjectAst: jsonAst, parameter });
