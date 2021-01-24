@@ -11,7 +11,7 @@ import { loadConfig } from './lib/config';
 import { lintDirectory } from './lib/linter';
 import { testConditions } from './lib/conditions';
 import { RuleStatus, RuleErrorType, parseRules } from './lib/rules';
-import { formatTargetPath, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
+import { formatTargetPath, conditionStatusReport, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
 
@@ -129,7 +129,10 @@ export async function cli(): Promise<void> {
 		}
 
 		if (verbosityLevel >= 1) {
-			console.log(conditions);
+			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => conditionStatusReport(name, status)).join('\n\n');
+			if (conditionsStatusReport.length > 0) {
+				console.log(`\nConditions status in ${getAbsolutePath([directory])}:\n\n` + conditionsStatusReport + '\n');
+			}
 		}
 
 		for (const [targetFsPath, targetFsReports] of reports.entries()) {
