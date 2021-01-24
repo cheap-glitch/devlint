@@ -23,16 +23,17 @@
   },
   "scripts": {
     "build": "tsc",
-    "clean-build": "rm -r build &> /dev/null && npm run build && npm run test:install",
-    "coverage:collect": "jest --collectCoverage",
+    "build:clean": "rimraf build",
+    "build:watch": "tsc --watch",
+    "coverage": "jest --collectCoverage",
     "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
-    "docs:dev": "vitepress dev docs",
     "docs:serve": "vitepress serve docs",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "prepublishOnly": "npm run build",
     "test": "jest",
-    "test:install": "sudo npm uninstall -g devlint && sudo npm link"
+    "test:install": "npm run build:clean && npm run build && sudo npm uninstall -g devlint && sudo npm link",
+    "test:watch": "jest --watch"
   },
   "eslintConfig": {
     "root": true,
@@ -48,7 +49,7 @@
     "overrides": [
       {
         "files": [
-          "./test/helpers.test.ts"
+          "test/helpers.test.ts"
         ],
         "rules": {
           "space-in-parens": "off"
@@ -61,9 +62,9 @@
     "testEnvironment": "node",
     "coverageDirectory": ".coverage",
     "collectCoverageFrom": [
-      "./src/lib/**/*.ts",
-      "!./src/lib/rules/*.ts",
-      "./build/src/lib/rules/*.js"
+      "src/lib/**/*.ts",
+      "!src/lib/rules/*.ts",
+      "build/src/lib/rules/*.js"
     ]
   },
   "dependencies": {
@@ -81,6 +82,7 @@
     "eslint": "^7.18.0",
     "eslint-plugin-tsdoc": "^0.2.11",
     "jest": "^26.6.3",
+    "rimraf": "^3.0.2",
     "ts-jest": "^26.4.4",
     "ts-node": "^9.1.1",
     "type-fest": "^0.20.2",
