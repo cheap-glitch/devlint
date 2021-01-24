@@ -15,8 +15,9 @@
   "main": "build/index.js",
   "bin": "build/bin/devlint.js",
   "files": [
+    "src/**/*.ts",
     "build/src/**/*.js",
-    "src/**/*.ts"
+    "configs/*"
   ],
   "directories": {
     "test": "test"
