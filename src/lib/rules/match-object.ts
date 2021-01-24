@@ -1,5 +1,5 @@
 import { matchJsonValues } from './helpers';
-import { formatPropertiesPath } from '../helpers/properties';
+import { joinPropertiesPathSegments } from '../helpers/properties';
 import { isJsonObject, tryGettingJsonAstProperty } from '../helpers/json';
 
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
@@ -16,7 +16,7 @@ export function validator({ lines, jsonObject, jsonObjectAst, parameter: model }
 		const jsonValueAst = tryGettingJsonAstProperty(jsonObjectAst, result);
 
 		return new RuleError(
-			`failed to match property "${formatPropertiesPath(result)}"`,
+			`failed to match property "${joinPropertiesPathSegments(result)}"`,
 			jsonValueAst ? { ...jsonValueAst.pos.start } : undefined,
 			jsonValueAst ? { ...jsonValueAst.pos.end   } : undefined,
 			lines

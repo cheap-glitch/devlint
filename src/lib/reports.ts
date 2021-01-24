@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 
 import { formatSnippet } from './helpers/snippets';
-import { joinPathSegments } from './helpers/fs';
 import { capitalize, countWord } from './helpers/text';
 import { PROPERTIES_PATH_STARTING_CHARACTER } from './helpers/properties';
 
@@ -43,7 +42,7 @@ function report(verbosityLevel: number, rule: RuleObject, error: RuleError): str
 	if (verbosityLevel >= 1) {
 		return `  ${informations}\n\n` + (error.snippet && error.start && error.end
 			? formatSnippet(error.snippet, error.start, error.end, rule.status)
-			: chalk.magenta(`  at ${joinPathSegments(rule.target[0])}${error.start ? ':' + location : ''}`)
+			: chalk.magenta(`  at ${rule.target[0]}${error.start ? ':' + location : ''}`)
 		);
 	}
 
