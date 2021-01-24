@@ -2,16 +2,15 @@ import yargs from 'yargs';
 import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import { access as testDirectoryAccess } from 'fs/promises';
-import { formatWithOptions } from 'util';
 
-import { insertValueInNestedMap } from './lib/helpers/map';
-import { isJsonObject } from './lib/helpers/json';
+import { insertValueInNestedMap } from './lib/helpers/utilities';
 import { FsPath, joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
 import { PropertiesPath, joinPropertiesPathSegments } from './lib/helpers/properties';
 
 import { loadConfig } from './lib/config';
 import { lintDirectory } from './lib/linter';
-import { RuleStatus, RuleErrorType, RuleObject, parseRules } from './lib/rules';
+import { testConditions } from './lib/conditions';
+import { RuleStatus, RuleErrorType, parseRules } from './lib/rules';
 import { formatTargetPath, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
@@ -75,18 +74,8 @@ export async function cli(): Promise<void> {
 			continue;
 		}
 
-		// TODO: process conditions in a separate module
-		const conditionsRules: Record<string, Array<RuleObject>> = {};
-		for (const [condition, conditionRules] of Object.entries(config?.conditions ?? {})) {
-			if (Array.isArray(conditionRules)) {
-				conditionsRules[condition] = conditionRules.flatMap(rulesObject => parseRules(rulesObject));
-			} else if (isJsonObject(conditionRules)) {
-				conditionsRules[condition] = parseRules(conditionRules);
-			}
-		}
-		console.info(formatWithOptions({ colors: true }, '%o', conditionsRules));
-
-		const results = await lintDirectory(directory, rules);
+		const conditions = await testConditions(directory, config?.conditions ?? {});
+		const results    = await lintDirectory(directory, rules, conditions);
 
 		const reports: Map<FsPath, Map<PropertiesPath, Array<string>>> = new Map();
 		for (const [index, result] of results.entries()) {
@@ -137,6 +126,10 @@ export async function cli(): Promise<void> {
 
 		if (options.quiet) {
 			continue;
+		}
+
+		if (verbosityLevel >= 1) {
+			console.log(conditions);
 		}
 
 		for (const [targetFsPath, targetFsReports] of reports.entries()) {

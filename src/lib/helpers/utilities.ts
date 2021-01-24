@@ -17,3 +17,7 @@ export function insertValueInNestedMap<Key, Value>(map: Map<Key, Map<Key, Value>
 		firstValue.set(secondKey, value);
 	}
 }
+
+export function wrapInArray<T>(value: T): [T] extends Array<infer U> ? Array<U> : Array<T> {
+	return Array.isArray(value) ? value : [value];
+}

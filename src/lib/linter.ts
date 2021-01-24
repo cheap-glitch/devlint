@@ -5,7 +5,7 @@ import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, 
 import { loadBuiltinPlugins } from './plugins';
 import { RuleTargetType, RuleObject, RuleResult, RuleError, RuleErrorType, RuleContext, buildRuleContext } from './rules';
 
-export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>): Promise<Array<RuleResult>> {
+export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Array<RuleResult>> {
 	const plugins = await loadBuiltinPlugins(new Set(rules.map(rule => rule.name + '.js')));
 
 	// Load all the required file system resources
@@ -26,6 +26,11 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 	);
 
 	return rules.map(rule => {
+		if (rule.condition !== undefined && conditions[rule.condition] !== true) {
+			// TODO: emit a skipped warning?
+			return true;
+		}
+
 		if (plugins[rule.name] === undefined) {
 			return new RuleError(RuleErrorType.UnknownRule);
 		}
