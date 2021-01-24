@@ -4,7 +4,7 @@ import { wrapInArray } from './helpers/utilities';
 import { isJsonObject } from './helpers/json';
 
 import { parseRules } from './rules';
-import { lintDirectory} from './linter';
+import { lintDirectory } from './linter';
 
 export async function testConditions(workingDirectory: string, conditionsObject: JsonValue): Promise<Record<string, boolean>> {
 	if (!isJsonObject(conditionsObject)) {
