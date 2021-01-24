@@ -13,6 +13,7 @@
   "author": "cheap glitch <cheap.glitch@gmail.com> (https://github.com/cheap-glitch)",
   "homepage": "https://github.com/cheap-glitch/devlint#readme",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "bin": {
     "devlint": "build/bin/devlint.js"
   },
@@ -27,13 +28,14 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf build",
+    "build:prod": "npm run build",
     "build:watch": "tsc --watch",
     "coverage": "jest --collectCoverage",
     "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run test && npm run build:clean && npm run build:prod",
     "test": "jest",
     "test:install": "npm run build:clean && npm run build && sudo npm uninstall -g devlint && sudo npm link",
     "test:watch": "jest --watch"
@@ -73,6 +75,7 @@
   "dependencies": {
     "chalk": "^4.1.0",
     "jsonast": "^0.2.1",
+    "mazeru": "^1.0.2",
     "v8-compile-cache": "^2.2.0",
     "yargs": "^16.2.0"
   },
