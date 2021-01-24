@@ -1,7 +1,7 @@
 {
   "name": "devlint",
   "description": "A meta-linter to verify configuration files, projects structure and git repositories.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "ISC",
   "repository": {
     "type": "git",
@@ -13,7 +13,9 @@
   "author": "cheap glitch <cheap.glitch@gmail.com> (https://github.com/cheap-glitch)",
   "homepage": "https://github.com/cheap-glitch/devlint#readme",
   "main": "build/index.js",
-  "bin": "build/bin/devlint.js",
+  "bin": {
+    "devlint": "build/bin/devlint.js"
+  },
   "files": [
     "src/**/*.ts",
     "build/src/**/*.js",
