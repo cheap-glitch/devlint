@@ -18,10 +18,10 @@ export async function loadBuiltinPlugins(requiredRules: Set<string>): Promise<Re
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const { targetType, validator } = require(getAbsolutePath([...builtInPluginsDirectory, filename]));
 		if (targetType === undefined) {
-			throw new Error(`Missing target type for rule "${ruleName}"`);
+			throw new Error(`missing target type for rule "${ruleName}"`);
 		}
 		if (validator === undefined) {
-			throw new Error(`Missing validator function for rule "${ruleName}"`);
+			throw new Error(`missing validator function for rule "${ruleName}"`);
 		}
 
 		rules[ruleName] = { targetType, validator };

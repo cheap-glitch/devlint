@@ -2,10 +2,26 @@ import { posix } from 'path';
 import { Dirent } from 'fs';
 import { readFile, readdir } from 'fs/promises';
 
-export type FsPath         = string;
-export type FsPathSegments = Array<string>;
+export type FsPath           = string;
+export type FsPathSegments   = Array<string>;
+export type DirectoryEntries = { filenames: Array<string>, directories: Array<string> };
 
-export async function tryGettingDirectoryListing(path: FsPathSegments): Promise<{ filenames: Array<string>, directories: Array<string> } | undefined> {
+export async function findInParentDirectoryTree(startingPath: FsPathSegments, sieve: (entries: DirectoryEntries) => boolean): Promise<FsPath | undefined> {
+	const pathSegments = ['/', ...getAbsolutePath(startingPath).split('/')];
+
+	for (let i = pathSegments.length; i >= 1; i--) {
+		const currentPath = pathSegments.slice(0, i);
+
+		const directoryEntries = await tryGettingDirectoryListing(currentPath);
+		if (directoryEntries !== undefined && sieve(directoryEntries)) {
+			return joinPathSegments(currentPath);
+		}
+	}
+
+	return undefined;
+}
+
+export async function tryGettingDirectoryListing(path: FsPathSegments): Promise<DirectoryEntries | undefined> {
 	let entries;
 	try {
 		entries = await readdir(getAbsolutePath(path), { encoding: 'utf8', withFileTypes: true });
