@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "package.json": {
+
+      "name": {
+        "max-length": 214
+      }
+
+    }
+  }
+}
