@@ -24,9 +24,10 @@ export async function loadConfig(): Promise<JsonObject> {
 	return await extendConfig(config);
 }
 
-function extendConfig(config: JsonObject): JsonObject {
-	while (config.extends !== undefined) {
-		for (const extendPath of [...wrapInArray(config.extends)]) {
+export function extendConfig(config: JsonObject): JsonObject {
+	do {
+		const baseConfigsPaths = [];
+		for (const extendPath of [...wrapInArray(config?.extends ?? [])]) {
 			if (typeof extendPath !== 'string') {
 				continue;
 			}
@@ -36,16 +37,25 @@ function extendConfig(config: JsonObject): JsonObject {
 				continue;
 			}
 
+			baseConfigsPaths.push(...wrapInArray(baseConfig?.extends ?? []));
+
 			const mergeResult = merge(baseConfig, config, {
 				arrays:      MergingStrategy.MergeItems,
 				excludeKeys: ['extends'],
 			});
 
 			// TODO: remove when `ignoreBaseKeys` is implemented in `mazeru`
-			mergeResult.root = config.root;
+			if (config.root !== undefined) {
+				mergeResult.root = config.root;
+			}
+
 			config = mergeResult;
 		}
-	}
+
+		if (baseConfigsPaths.length > 0) {
+			config.extends = baseConfigsPaths;
+		}
+	} while (wrapInArray(config?.extends ?? []).length > 0);
 
 	return config;
 }
@@ -55,7 +65,7 @@ function resolveExtendPath(path: string): JsonValue | undefined {
 		return require(joinPathSegments([__dirname, '..', '..', '..', 'configs', path.replace('devlint:', '') + '.json']));
 	}
 
-	return undefined;
+	return require(joinPathSegments([__dirname, path]));
 
 	// TODO:
 	//   - config module
