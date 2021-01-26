@@ -18,8 +18,10 @@ interface TestSnippetsCollection {
 
 type TestSnippet = string | [string, JsonValue];
 
-const pathToRulePlugins = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
-const rulesToTest = readdirSync(getAbsolutePath([__dirname, 'snippets']), { withFileTypes: true })
+const pathToRulePlugins  = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
+const pathToTestSnippets = [__dirname, 'assets', 'snippets'];
+
+const rulesToTest = readdirSync(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
 	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
 	            .map(file => file.name);
 
@@ -27,7 +29,7 @@ for (const filename of rulesToTest) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { targetType, validator } = require(getAbsolutePath([pathToRulePlugins, filename]));
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([__dirname, 'snippets', filename]));
+	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([...pathToTestSnippets, filename]));
 
 	// eslint-disable-next-line jest/valid-title
 	describe(filename.replace(/\.js$/, ''), () => {

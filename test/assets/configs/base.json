@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "rule-a": "error",
+
+    "filename.ext": {
+      "rule-b": ["warn", true],
+
+      "#property": {
+        "rule-c": ["error", "foo"]
+      }
+    }
+  }
+}
