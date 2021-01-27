@@ -10,10 +10,7 @@ import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules'
 
 interface TestSnippetsCollection {
 	passing: Array<TestSnippet>,
-	failing: {
-		defaultErrorMessage?: string,
-		snippets: Array<[TestSnippet, RuleErrorType | string | undefined, RuleErrorLocation | undefined, RuleErrorLocation | undefined]>,
-	}
+	failing: Array<[TestSnippet, RuleErrorType | string, RuleErrorLocation | undefined, RuleErrorLocation | undefined]>,
 }
 
 type TestSnippet = string | [string, JsonValue];
@@ -46,11 +43,11 @@ for (const filename of rulesToTest) {
 				expect(result).toBe(true);
 			});
 		}
-		for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets.snippets) {
+		for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets) {
 			const context = buildSnippetContext(targetType, snippet);
 			const error = typeof errorTypeOrMessage === 'number'
 				? new RuleError(errorTypeOrMessage)
-				: new RuleError(errorTypeOrMessage || failingSnippets.defaultErrorMessage || '', errorStart, errorEnd);
+				: new RuleError(errorTypeOrMessage, errorStart, errorEnd);
 
 			// eslint-disable-next-line jest/valid-title
 			test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
@@ -66,10 +63,7 @@ for (const filename of rulesToTest) {
 function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
-	// Remove the superfluous indentation
-	const minIndentationLevel = Math.min(...rawContents.split('\n').filter(line => line.length > 0).map(line => (line.match(/^\t*/) ?? [''])[0].length));
-	const contents = rawContents.split('\n').map(line => line.slice(minIndentationLevel)).join('\n');
-
+	const contents  = (/^\s*\{/.test(rawContents) && /\}\s*$/.test(rawContents)) ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
 	const jsonAst   = tryParsingJsonAst(contents);
