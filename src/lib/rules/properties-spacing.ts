@@ -2,42 +2,41 @@ import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } fro
 
 export const targetType = RuleTargetType.JsonObject;
 
-export function validator({ lines, jsonObjectAst, parameter: position }: RuleContext): RuleResult {
-	if (typeof position !== 'string') {
+export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleContext): RuleResult {
+	if (spacing !== 'around' && spacing !== 'between') {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 	if (jsonObjectAst.members === undefined) {
 		return true;
 	}
 
-	let checkLineAbove, checkLineBelow;
-	switch (position) {
-		case 'around':
-			checkLineAbove = (lineIndex: number) => lines[lineIndex - 1].text === '';
-			checkLineBelow = (lineIndex: number) => lines[lineIndex + 1].text === '';
-			break;
+	for (const [propertyIndex, { key, value }] of jsonObjectAst.members.entries()) {
+		let errorMessage: string | undefined = undefined;
 
-		case 'between':
-			checkLineAbove = (lineIndex: number, keyIndex: number) => {
-				const line = lines[lineIndex - 1].text;
+		const lineAbove = lines[key.pos.start.line - 2].text;
+		if (spacing === 'between' && propertyIndex === 0) {
+			if (lineAbove === '') {
+				errorMessage = 'extra empty line above property key';
+			}
+		} else if (lineAbove !== '') {
+			errorMessage = 'missing empty line above property key';
+		}
 
-				return keyIndex === 0 ? (line !== '') : (line === '');
-			};
-			checkLineBelow = (lineIndex: number, keyIndex: number, maxKeyIndex: number) => {
-				const line = lines[lineIndex + 1].text;
+		if (errorMessage !== undefined) {
+			return new RuleError(errorMessage, key.pos.start, key.pos.start, lines);
+		}
 
-				return keyIndex === maxKeyIndex ? (line !== '') : (line === '');
-			};
-			break;
+		const lineBelow = lines[value.pos.end.line].text;
+		if (spacing === 'between' && propertyIndex === jsonObjectAst.members.length - 1) {
+			if (lineBelow === '') {
+				errorMessage = 'extra empty line below property value';
+			}
+		} else if (lineBelow !== '') {
+			errorMessage = 'missing empty line below property value';
+		}
 
-		default: return new RuleError(RuleErrorType.InvalidParameter);
-	}
-
-	for (const [index, { key, value }] of jsonObjectAst.members.entries()) {
-		if (!checkLineAbove(key.pos.start.line - 1, index)) {
-			return new RuleError('missing empty line above', key.pos.start, key.pos.start, lines);
-		} else if (!checkLineBelow(value.pos.end.line - 1, index, jsonObjectAst.members.length - 1)) {
-			return new RuleError('missing empty line below', value.pos.end, value.pos.end, lines);
+		if (errorMessage !== undefined) {
+			return new RuleError(errorMessage, value.pos.end, value.pos.end, lines);
 		}
 	}
 
