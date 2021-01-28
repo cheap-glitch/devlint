@@ -35,9 +35,9 @@ export function validator({ lines, jsonObjectAst, parameter: position }: RuleCon
 
 	for (const [index, { key, value }] of jsonObjectAst.members.entries()) {
 		if (!checkLineAbove(key.pos.start.line - 1, index)) {
-			return new RuleError('missing empty line above', key.pos, lines);
+			return new RuleError('missing empty line above', key.pos.start, key.pos.start, lines);
 		} else if (!checkLineBelow(value.pos.end.line - 1, index, jsonObjectAst.members.length - 1)) {
-			return new RuleError('missing empty line below', value.pos, lines);
+			return new RuleError('missing empty line below', value.pos.end, value.pos.end, lines);
 		}
 	}
 
