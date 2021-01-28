@@ -30,34 +30,33 @@ for (const filename of rulesToTest) {
 
 	// eslint-disable-next-line jest/valid-title
 	describe(filename.replace(/\.js$/, ''), () => {
-		for (const snippet of passingSnippets) {
-			const context = buildSnippetContext(targetType, snippet);
+		describe("passing", () => {
+			for (const snippet of passingSnippets) {
+				const context = buildSnippetContext(targetType, snippet);
 
-			// eslint-disable-next-line jest/valid-title
-			test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
-				const result = validator(context);
-				if (result instanceof Error) {
-					console.error(result);
-				}
+				// eslint-disable-next-line jest/valid-title
+				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
+					expect(validator(context)).toBe(true);
+				});
+			}
+		});
+		describe("failing", () => {
+			for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets) {
+				const context = buildSnippetContext(targetType, snippet);
+				const error = typeof errorTypeOrMessage === 'number'
+					? new RuleError(errorTypeOrMessage)
+					: new RuleError(errorTypeOrMessage, errorStart, errorEnd);
 
-				expect(result).toBe(true);
-			});
-		}
-		for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets) {
-			const context = buildSnippetContext(targetType, snippet);
-			const error = typeof errorTypeOrMessage === 'number'
-				? new RuleError(errorTypeOrMessage)
-				: new RuleError(errorTypeOrMessage, errorStart, errorEnd);
+				// eslint-disable-next-line jest/valid-title
+				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
+					const result = validator(context);
 
-			// eslint-disable-next-line jest/valid-title
-			test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
-				const result = validator(context);
-
-				expect(result).toBeInstanceOf(Error);
-				expect(result).toMatchObject({ ...error });
-				expect(result.message).toBe(error.message);
-			});
-		}
+					expect(result).toBeInstanceOf(Error);
+					expect(result).toMatchObject({ ...error });
+					expect(result.message).toBe(error.message);
+				});
+			}
+		});
 	});
 }
 
