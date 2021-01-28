@@ -55,6 +55,7 @@ for (const filename of rulesToTest) {
 
 				expect(result).toBeInstanceOf(Error);
 				expect(result).toMatchObject({ ...error });
+				expect(result.message).toBe(error.message);
 			});
 		}
 	});
