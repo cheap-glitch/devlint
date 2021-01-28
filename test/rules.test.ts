@@ -30,7 +30,7 @@ for (const filename of rulesToTest) {
 
 	// eslint-disable-next-line jest/valid-title
 	describe(filename.replace(/\.js$/, ''), () => {
-		describe("passing", () => {
+		describe('passing', () => {
 			for (const snippet of passingSnippets) {
 				const context = buildSnippetContext(targetType, snippet);
 
@@ -40,7 +40,8 @@ for (const filename of rulesToTest) {
 				});
 			}
 		});
-		describe("failing", () => {
+
+		describe('failing', () => {
 			for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets) {
 				const context = buildSnippetContext(targetType, snippet);
 				const error = typeof errorTypeOrMessage === 'number'
@@ -63,7 +64,7 @@ for (const filename of rulesToTest) {
 function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
-	const contents  = (/^\s*\{/.test(rawContents) && /\}\s*$/.test(rawContents)) ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
+	const contents  = (/^\s*{/.test(rawContents) && /}\s*$/.test(rawContents)) ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
 	const jsonAst   = tryParsingJsonAst(contents);
