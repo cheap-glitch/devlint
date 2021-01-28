@@ -20,14 +20,14 @@ module.exports = {
 	failing: [
 		[['{}',                null],                2],
 		[['{}',                [true]],              2],
-		[['{}',                { foo: true }],      'failed to match property `.foo`'],
-		[['{ "foo": false }',  { foo: true }],      'failed to match property `.foo`', { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
-		[['{ "foo": false }',  { 'foo?': true }],   'failed to match property `.foo`', { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
-		[['{ "foo": [1, 2] }', { foo: [1, 2, 3] }], 'failed to match property `.foo`', { line: 1, column: 10, char:  9 }, { line: 1, column: 16, char: 15 }],
-		[['{ "foo": [1, 2] }', { foo: [1] }],       'failed to match property `.foo`', { line: 1, column: 10, char:  9 }, { line: 1, column: 16, char: 15 }],
-		[['{ "foo": [1, 2] }', { foo: [1, 0] }],    'failed to match property `.foo`', { line: 1, column: 14, char: 13 }, { line: 1, column: 15, char: 14 }],
-		[['{ "foo": "bar" }',  { foo: '/^foo$/' }], 'failed to match property `.foo`', { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
-		[['{ "foo": "bar" }',  { foo: '/^foo$/' }], 'failed to match property `.foo`', { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
+		[['{}',                { foo: true }],      'failed to match property ".foo"'],
+		[['{ "foo": false }',  { foo: true }],      'failed to match property ".foo"',    { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
+		[['{ "foo": false }',  { 'foo?': true }],   'failed to match property ".foo"',    { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
+		[['{ "foo": [1, 2] }', { foo: [1, 2, 3] }], 'failed to match property ".foo"',    { line: 1, column: 10, char:  9 }, { line: 1, column: 16, char: 15 }],
+		[['{ "foo": [1, 2] }', { foo: [1] }],       'failed to match property ".foo"',    { line: 1, column: 10, char:  9 }, { line: 1, column: 16, char: 15 }],
+		[['{ "foo": [1, 2] }', { foo: [1, 0] }],    'failed to match property ".foo[1]"', { line: 1, column: 14, char: 13 }, { line: 1, column: 15, char: 14 }],
+		[['{ "foo": "bar" }',  { foo: '/^foo$/' }], 'failed to match property ".foo"',    { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
+		[['{ "foo": "bar" }',  { foo: '/^foo$/' }], 'failed to match property ".foo"',    { line: 1, column: 10, char:  9 }, { line: 1, column: 15, char: 14 }],
 		[[`
 			{
 			  "foo": {
@@ -37,9 +37,9 @@ module.exports = {
 			  }
 			}
 		`,
-			{ foo: { bar: [{ baz: false }] } }
+			{ foo: { bar: [{ baz: false }] } },
 		],
-			'failed to match property`.foo.bar[0].baz', { line: 4, column: 14, char: 40 }, { line: 4, column: 18, char: 44 }
+			'failed to match property ".foo.bar[0].baz"', { line: 4, column: 14, char: 40 }, { line: 4, column: 18, char: 44 },
 		],
 	],
 };
