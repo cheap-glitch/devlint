@@ -18,6 +18,7 @@ module.exports = {
 	],
 
 	failing: [
+		// eslint-disable-next-line unicorn/no-null
 		[['{}',                null],                2],
 		[['{}',                [true]],              2],
 		[['{}',                { foo: true }],      'failed to match property ".foo"'],

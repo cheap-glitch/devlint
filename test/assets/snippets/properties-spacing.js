@@ -4,8 +4,9 @@ module.exports = {
 			{
 			}
 		`,
-			'around'
+			'around',
 		],
+		/* eslint-disable smarter-tabs/smarter-tabs */
 		[`
 			{
 
@@ -13,8 +14,9 @@ module.exports = {
 
 			}
 		`,
-			'around'
+			'around',
 		],
+		/* eslint-enable smarter-tabs/smarter-tabs */
 		[`
 			{
 
@@ -26,8 +28,9 @@ module.exports = {
 
 			}
 		`,
-			'around'
+			'around',
 		],
+		/* eslint-disable smarter-tabs/smarter-tabs */
 		[`
 			{
 
@@ -39,21 +42,22 @@ module.exports = {
 
 			}
 		`,
-			'around'
+			'around',
 		],
+		/* eslint-enable smarter-tabs/smarter-tabs */
 
 		[`
 			{
 			}
 		`,
-			'between'
+			'between',
 		],
 		[`
 			{
 			  "foo": true
 			}
 		`,
-			'between'
+			'between',
 		],
 		[`
 			{
@@ -64,7 +68,7 @@ module.exports = {
 			  ]
 			}
 		`,
-			'between'
+			'between',
 		],
 		[`
 			{
@@ -73,7 +77,7 @@ module.exports = {
 			  "bar": false
 			}
 		`,
-			'between'
+			'between',
 		],
 		[`
 			{
@@ -86,7 +90,7 @@ module.exports = {
 			  }
 			}
 		`,
-			'between'
+			'between',
 		],
 	],
 
@@ -102,7 +106,7 @@ module.exports = {
 
 			}
 		`,
-			'around'
+			'around',
 		],
 			'missing empty line above property key', { line: 2, column: 3, char: 4 }, { line: 2, column: 3, char: 4 },
 		],
@@ -112,7 +116,7 @@ module.exports = {
 			  "foo": true
 			}
 		`,
-			'around'
+			'around',
 		],
 			'missing empty line below property value', { line: 3, column: 14, char: 16 }, { line: 3, column: 14, char: 16 },
 		],
@@ -126,7 +130,7 @@ module.exports = {
 			  ]
 			}
 		`,
-			'around'
+			'around',
 		],
 			'missing empty line below property value', { line: 7, column: 4, char: 38 }, { line: 7, column: 4, char: 38 },
 		],
@@ -140,7 +144,7 @@ module.exports = {
 
 			}
 		`,
-			'around'
+			'around',
 		],
 			'missing empty line below property value', { line: 3, column: 14, char: 16 }, { line: 3, column: 14, char: 16 },
 		],
@@ -151,7 +155,7 @@ module.exports = {
 			  "foo": true
 			}
 		`,
-			'between'
+			'between',
 		],
 			'extra empty line above property key', { line: 3, column: 3, char: 5 }, { line: 3, column: 3, char: 5 },
 		],
@@ -165,7 +169,7 @@ module.exports = {
 
 			}
 		`,
-			'between'
+			'between',
 		],
 			'extra empty line below property value', { line: 6, column: 4, char: 37 }, { line: 6, column: 4, char: 37 },
 		],
@@ -175,7 +179,7 @@ module.exports = {
 			  "bar": false
 			}
 		`,
-			'between'
+			'between',
 		],
 			'missing empty line below property value', { line: 2, column: 14, char: 15 }, { line: 2, column: 14, char: 15 },
 		],
@@ -189,9 +193,9 @@ module.exports = {
 			  }
 			}
 		`,
-			'between'
+			'between',
 		],
 			'missing empty line below property value', { line: 4, column: 4, char: 32 }, { line: 4, column: 4, char: 32 },
 		],
 	],
-}
+};
