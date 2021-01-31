@@ -31,7 +31,7 @@
     "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
     "docs:serve": "vitepress serve docs",
-    "lint": "eslint . --ext .ts --ignore-path .gitignore",
+    "lint": "eslint . --ext .js,.ts --ignore-path .gitignore",
     "prepublishOnly": "npm run test && npm run build:clean",
     "test": "jest",
     "test:install": "npm run build:clean && sudo npm uninstall -g devlint && sudo npm link",
@@ -57,6 +57,9 @@
           "space-in-parens": "off"
         }
       }
+    ],
+    "ignorePatterns": [
+      "build"
     ]
   },
   "jest": {
