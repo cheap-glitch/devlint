@@ -69,7 +69,7 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 			break;
 
 		case 'kebab-extended':
-			if (/^[\da-z@](?:[\/-]?[\da-z]+)*$/.test(testedString)) {
+			if (/^[\d@a-z](?:[/-]?[\da-z]+)*$/.test(testedString)) {
 				return true;
 			}
 			break;
