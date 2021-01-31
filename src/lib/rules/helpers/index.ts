@@ -51,44 +51,52 @@ export function matchStrings(model: string, value: string): boolean {
 }
 
 export function checkStringCase(testedString: string, caseStyle: string): boolean | RuleError {
+	if (typeof caseStyle !== 'string') {
+		return new RuleError(RuleErrorType.InvalidParameter);
+	}
+
 	switch (caseStyle) {
 		case 'sentence':
-			if (testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0]) {
+			if (testedString === '' || testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0]) {
 				return true;
 			}
 			break;
 
 		case 'kebab':
-			if (/^[\da-z-]*$/.test(testedString)) {
+			if (/^[\da-z](?:-?[\da-z]+)*$/.test(testedString)) {
 				return true;
 			}
 			break;
 
-		case 'kebab-lax':
-			if (!/[A-Z_]/.test(testedString)) {
+		case 'kebab-extended':
+			if (/^[\da-z@](?:[\/-]?[\da-z]+)*$/.test(testedString)) {
 				return true;
 			}
 			break;
 
 		case 'snake':
-			if (/^[\d_a-z]*$/.test(testedString)) {
+			if (/^[\da-z](?:_?[\da-z]+)*$/.test(testedString)) {
 				return true;
 			}
 			break;
 
 		case 'camel':
-			if (/^(|[a-z]+([\da-z]|[A-Z][a-z]])*)$/.test(testedString)) {
+			if (/^[\da-z]+(?:[A-Z][\da-z]+)*$/.test(testedString)) {
 				return true;
 			}
 			break;
 
 		case 'pascal':
-			if (/^(|[A-Z][a-z]+([\da-z]|[A-Z][a-z]])*)$/.test(testedString)) {
+			if (/^(?:[A-Z][\da-z]+)+$/.test(testedString)) {
 				return true;
 			}
 			break;
 
 		default: return new RuleError(RuleErrorType.InvalidParameter);
+	}
+
+	if (testedString === '') {
+		return true;
 	}
 
 	return false;
