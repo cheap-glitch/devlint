@@ -1,4 +1,99 @@
+import { checkStringCase } from '../src/lib/rules/helpers';
 import { parsePropertiesPath } from '../src/lib/helpers/properties';
+
+describe('checkStringCase', () => {
+
+	test('sentence', () => { // {{{
+
+		expect(checkStringCase('',                   'sentence')).toBe(true);
+		expect(checkStringCase('This is a sentence', 'sentence')).toBe(true);
+		expect(checkStringCase('Word',               'sentence')).toBe(true);
+		expect(checkStringCase('ALL CAPS',           'sentence')).toBe(true);
+
+		expect(checkStringCase('this is a sentence', 'sentence')).toBe(false);
+		expect(checkStringCase('wORD',               'sentence')).toBe(false);
+		expect(checkStringCase('nEvErMiNd',          'sentence')).toBe(false);
+
+	}); // }}}
+
+	test('kebab', () => { // {{{
+
+		expect(checkStringCase('',            'kebab')).toBe(true);
+		expect(checkStringCase('word',        'kebab')).toBe(true);
+		expect(checkStringCase('foo-bar',     'kebab')).toBe(true);
+		expect(checkStringCase('foo-bar-baz', 'kebab')).toBe(true);
+		expect(checkStringCase('foobar-28',   'kebab')).toBe(true);
+
+		expect(checkStringCase('not kebab',   'kebab')).toBe(false);
+		expect(checkStringCase('Not-Kebab',   'kebab')).toBe(false);
+		expect(checkStringCase('not--kebab',  'kebab')).toBe(false);
+		expect(checkStringCase('-not-kebab',  'kebab')).toBe(false);
+
+	}); // }}}
+
+	test('kebab-extended', () => { // {{{
+
+		expect(checkStringCase('',                    'kebab-extended')).toBe(true);
+		expect(checkStringCase('word',                'kebab-extended')).toBe(true);
+		expect(checkStringCase('foo-bar',             'kebab-extended')).toBe(true);
+		expect(checkStringCase('foo-bar-baz',         'kebab-extended')).toBe(true);
+		expect(checkStringCase('@scope/package-name', 'kebab-extended')).toBe(true);
+		expect(checkStringCase('@scope/my-package',   'kebab-extended')).toBe(true);
+
+		expect(checkStringCase('not kebab',           'kebab-extended')).toBe(false);
+		expect(checkStringCase('Not-Kebab',           'kebab-extended')).toBe(false);
+		expect(checkStringCase('not--kebab',          'kebab-extended')).toBe(false);
+		expect(checkStringCase('-not-kebab',          'kebab-extended')).toBe(false);
+		expect(checkStringCase('/not-kebab',          'kebab-extended')).toBe(false);
+		expect(checkStringCase('not-@kebab',          'kebab-extended')).toBe(false);
+
+	}); // }}}
+
+	test('snake', () => { // {{{
+
+		expect(checkStringCase('',                      'snake')).toBe(true);
+		expect(checkStringCase('im_a_snake',            'snake')).toBe(true);
+		expect(checkStringCase('snakey',                'snake')).toBe(true);
+		expect(checkStringCase('99_snakes_on_the_wall', 'snake')).toBe(true);
+
+		expect(checkStringCase('not a snake',           'snake')).toBe(false);
+		expect(checkStringCase('not_a_snake!',          'snake')).toBe(false);
+		expect(checkStringCase('not__a___snake',        'snake')).toBe(false);
+		expect(checkStringCase('not_A_snake',           'snake')).toBe(false);
+		expect(checkStringCase('not_a_snake_',          'snake')).toBe(false);
+
+	}); // }}}
+
+	test('camel', () => { // {{{
+
+		expect(checkStringCase('',                 'camel')).toBe(true);
+		expect(checkStringCase('camel',            'camel')).toBe(true);
+		expect(checkStringCase('camelCase',        'camel')).toBe(true);
+		expect(checkStringCase('foo123Bar',        'camel')).toBe(true);
+		expect(checkStringCase('camelCaseForever', 'camel')).toBe(true);
+
+		expect(checkStringCase('FakeCamel',        'camel')).toBe(false);
+		expect(checkStringCase('fakeCameL',        'camel')).toBe(false);
+		expect(checkStringCase('fake_camel',       'camel')).toBe(false);
+		expect(checkStringCase('fake camel',       'camel')).toBe(false);
+
+	}); // }}}
+
+	test('pascal', () => { // {{{
+
+		expect(checkStringCase('',                      'pascal')).toBe(true);
+		expect(checkStringCase('Pascal',                'pascal')).toBe(true);
+		expect(checkStringCase('PascalCase',            'pascal')).toBe(true);
+		expect(checkStringCase('Foo123Bar',             'pascal')).toBe(true);
+		expect(checkStringCase('PascalCaseForever',     'pascal')).toBe(true);
+
+		expect(checkStringCase('notPascal',             'pascal')).toBe(false);
+		expect(checkStringCase('NotPascaL',             'pascal')).toBe(false);
+		expect(checkStringCase('definitely_not-pascal', 'pascal')).toBe(false);
+
+	}); // }}}
+
+});
 
 describe('parsePropertiesPath', () => {
 
