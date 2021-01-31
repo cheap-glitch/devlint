@@ -3,7 +3,7 @@ import { JsonValue } from 'type-fest';
 
 import { getLines } from '../src/lib/helpers/text';
 import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
-import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst } from '../src/lib/helpers/json';
+import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonAstProperty } from '../src/lib/helpers/json';
 
 import { RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/errors';
 import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
@@ -46,7 +46,15 @@ for (const filename of rulesToTest) {
 				const context = buildSnippetContext(targetType, snippet);
 				const error = typeof errorTypeOrMessage === 'number'
 					? new RuleError(errorTypeOrMessage)
-					: new RuleError(errorTypeOrMessage, errorStart, errorEnd);
+					: new RuleError(
+						errorTypeOrMessage,
+						errorStart === undefined && typeof tryParsingJsonValue(context.contents) !== 'object'
+							? { line: 1, column: 9, char: 8 }
+							: errorStart,
+						errorEnd === undefined   && typeof tryParsingJsonValue(context.contents) !== 'object'
+							? { line: 1, column: 9 + context.contents.length, char: 8 + context.contents.length }
+							: errorEnd,
+					);
 
 				// eslint-disable-next-line jest/valid-title
 				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
@@ -64,10 +72,10 @@ for (const filename of rulesToTest) {
 function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
-	const contents  = (/^\s*{/.test(rawContents) && /}\s*$/.test(rawContents)) ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
+	const contents  = rawContents.trim().startsWith('{') && rawContents.trim().endsWith('}') ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
-	const jsonAst   = tryParsingJsonAst(contents);
+	let jsonAst     = tryParsingJsonAst(contents);
 
 	switch (targetType) {
 		// TODO
@@ -78,6 +86,13 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 			return buildRuleContext({ contents, lines, parameter });
 
 		default:
+			if (jsonAst === undefined && typeof jsonValue !== 'object') {
+				// FIXME: fork jsonast ?
+				jsonAst = tryParsingJsonAst(`{"prop":${contents}}`);
+				if (jsonAst !== undefined) {
+					jsonAst = tryGettingJsonAstProperty(jsonAst, ['prop']);
+				}
+			}
 			if (jsonValue === undefined || jsonAst === undefined) {
 				throw new TypeError();
 			}
