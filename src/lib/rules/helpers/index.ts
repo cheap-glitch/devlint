@@ -51,10 +51,6 @@ export function matchStrings(model: string, value: string): boolean {
 }
 
 export function checkStringCase(testedString: string, caseStyle: string): boolean | RuleError {
-	if (typeof caseStyle !== 'string') {
-		return new RuleError(RuleErrorType.InvalidParameter);
-	}
-
 	switch (caseStyle) {
 		case 'sentence':
 			if (testedString === '' || testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0]) {
