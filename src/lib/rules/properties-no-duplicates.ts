@@ -12,6 +12,8 @@ export function validator({ lines, jsonObjectAst }: RuleContext): RuleResult {
 		if (properties.indexOf(property) !== index) {
 			return new RuleError(`duplicated property "${property}"`, jsonObjectAst.members[index].key.pos, lines);
 		}
+
+		// TODO: make recursive
 	}
 
 	return true;

@@ -1,4 +1,4 @@
-import { isJsonObject } from '../helpers/json';
+import { checkValueType } from './helpers';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;
@@ -13,34 +13,9 @@ export function validator({ lines, jsonValue, jsonAst, parameter: allowedTypes }
 			return new RuleError(RuleErrorType.InvalidParameter);
 		}
 
-		switch (type) {
-			case 'null':
-				if (typeof jsonValue === null) {
-					return true;
-				}
-				break;
-
-			case 'boolean':
-			case 'number':
-			case 'string':
-				if (typeof jsonValue === type) {
-					return true;
-				}
-				break;
-
-			case 'object':
-				if (isJsonObject(jsonValue)) {
-					return true;
-				}
-				break;
-
-			case 'array':
-				if (Array.isArray(jsonValue)) {
-					return true;
-				}
-				break;
-
-			default: return new RuleError(RuleErrorType.InvalidParameter);
+		const result = checkValueType(jsonValue, type);
+		if (result !== false) {
+			return result;
 		}
 	}
 

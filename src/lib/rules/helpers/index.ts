@@ -1,5 +1,6 @@
 import { JsonValue } from 'type-fest';
 
+import { isJsonObject } from '../../helpers/json';
 import { PropertiesPathSegments } from '../../helpers/properties';
 import { RuleError, RuleErrorType } from '../../rules';
 
@@ -93,6 +94,40 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 
 	if (testedString === '') {
 		return true;
+	}
+
+	return false;
+}
+
+export function checkValueType(testedValue: JsonValue, type: string): boolean | RuleError {
+	switch (type) {
+		case 'null':
+			if (typeof testedValue === null) {
+				return true;
+			}
+			break;
+
+		case 'boolean':
+		case 'number':
+		case 'string':
+			if (typeof testedValue === type) {
+				return true;
+			}
+			break;
+
+		case 'object':
+			if (isJsonObject(testedValue)) {
+				return true;
+			}
+			break;
+
+		case 'array':
+			if (Array.isArray(testedValue)) {
+				return true;
+			}
+			break;
+
+		default: return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
 	return false;
