@@ -8,19 +8,21 @@ import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, 
 import { RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/errors';
 import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
 
+const pathToRulePlugins  = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
+const pathToTestSnippets = [__dirname, 'assets', 'snippets'];
+
+type TestSnippet = string | [string, JsonValue];
+
 interface TestSnippetsCollection {
 	passing: Array<TestSnippet>,
 	failing: Array<[TestSnippet, RuleErrorType | string, RuleErrorLocation | undefined, RuleErrorLocation | undefined]>,
 }
 
-type TestSnippet = string | [string, JsonValue];
-
-const pathToRulePlugins  = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
-const pathToTestSnippets = [__dirname, 'assets', 'snippets'];
-
+const ruleNames   = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
 const rulesToTest = readdirSync(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
 	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
-	            .map(file => file.name);
+	            .map(file => file.name)
+		    .filter(rule => ruleNames.length === 0 || ruleNames.includes(rule.replace('.js', '')));
 
 for (const filename of rulesToTest) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
