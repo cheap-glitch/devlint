@@ -19,5 +19,5 @@ export function validator({ lines, jsonString: testedString, jsonAst, parameter:
 		}
 	}
 
-	return new RuleError("case style doesn't match any of the allowed styles", jsonAst?.pos, lines);
+	return new RuleError("case style doesn't match any of the allowed styles", jsonAst.pos, lines);
 }

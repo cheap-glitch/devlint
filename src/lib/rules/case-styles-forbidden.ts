@@ -18,7 +18,7 @@ export function validator({ lines, jsonString: testedString, jsonAst, parameter:
 			return result;
 		}
 		if (result === true) {
-			return new RuleError('case style is forbidden', jsonAst?.pos, lines);
+			return new RuleError('case style is forbidden', jsonAst.pos, lines);
 		}
 	}
 
