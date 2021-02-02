@@ -35,14 +35,16 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:   'first-rule',
-				status: 'error',
-				target: ['filename.ext', []],
+				name:       'first-rule',
+				status:     'error',
+				target:     ['filename.ext', []],
+				permissive: false,
 			},
 			{
-				name:   'third-rule',
-				status: 'warn',
-				target: ['filename.ext', []],
+				name:       'third-rule',
+				status:     'warn',
+				target:     ['filename.ext', []],
+				permissive: false,
 			},
 		]);
 
@@ -59,16 +61,18 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:      'first-rule',
-				status:    'error',
-				target:    ['filename.ext', []],
-				parameter: 'foo',
+				name:       'first-rule',
+				status:     'error',
+				target:     ['filename.ext', []],
+				parameter:  'foo',
+				permissive: false,
 			},
 			{
-				name:      'third-rule',
-				status:    'warn',
-				target:    ['filename.ext', []],
-				parameter: ['foo', { foo: 'bar' }],
+				name:       'third-rule',
+				status:     'warn',
+				target:     ['filename.ext', []],
+				parameter:  ['foo', { foo: 'bar' }],
+				permissive: false,
 			},
 		]);
 
@@ -95,24 +99,28 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:   'first-rule',
-				status: 'error',
-				target: ['filename.ext', []],
+				name:       'first-rule',
+				status:     'error',
+				target:     ['filename.ext', []],
+				permissive: false,
 			},
 			{
-				name:   'second-rule',
-				status: 'error',
-				target: ['filename.ext', ['property']],
+				name:       'second-rule',
+				status:     'error',
+				target:     ['filename.ext', ['property']],
+				permissive: false,
 			},
 			{
-				name:   'third-rule',
-				status: 'error',
-				target: ['filename.ext', ['property', 'foo', 'bar']],
+				name:       'third-rule',
+				status:     'error',
+				target:     ['filename.ext', ['property', 'foo', 'bar']],
+				permissive: false,
 			},
 			{
-				name:   'fourth-rule',
-				status: 'error',
-				target: ['filename.ext', ['property', 'foo', 'bar', 2]],
+				name:       'fourth-rule',
+				status:     'error',
+				target:     ['filename.ext', ['property', 'foo', 'bar', 2]],
+				permissive: false,
 			},
 		]);
 
@@ -127,16 +135,18 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:      'first-rule',
-				status:    'error',
-				target:    ['.', []],
-				parameter: 'foo',
+				name:       'first-rule',
+				status:     'error',
+				target:     ['.', []],
+				parameter:  'foo',
+				permissive: false,
 			},
 			{
-				name:      'third-rule',
-				status:    'warn',
-				target:    ['.', []],
-				parameter: ['foo', { foo: 'bar' }],
+				name:       'third-rule',
+				status:     'warn',
+				target:     ['.', []],
+				parameter:  ['foo', { foo: 'bar' }],
+				permissive: false,
 			},
 		]);
 
@@ -151,16 +161,18 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:      'first-rule',
-				status:    'error',
-				target:    ['.', []],
-				condition: 'condition',
+				name:       'first-rule',
+				status:     'error',
+				target:     ['.', []],
+				condition:  'condition',
+				permissive: false,
 			},
 			{
-				name:      'third-rule',
-				status:    'warn',
-				target:    ['.', []],
-				condition: 'condition',
+				name:       'third-rule',
+				status:     'warn',
+				target:     ['.', []],
+				condition:  'condition',
+				permissive: false,
 			},
 		]);
 
