@@ -7,10 +7,10 @@ import { PROPERTIES_PATH_STARTING_CHARACTER } from './helpers/properties';
 import { RuleStatus, RuleObject, RuleError } from './rules';
 
 const labels: Record<RuleStatus, string> = {
-	[RuleStatus.Off]:      chalk.black('off    '),
-	[RuleStatus.Error]:      chalk.red('error  '),
-	[RuleStatus.Warning]: chalk.yellow('warning'),
-	[RuleStatus.Skipped]:   chalk.gray('skipped'),
+	[RuleStatus.Off]:      chalk.black('disabled'),
+	[RuleStatus.Error]:      chalk.red('error   '),
+	[RuleStatus.Warning]: chalk.yellow('warning '),
+	[RuleStatus.Skipped]:   chalk.gray('skipped '),
 };
 
 export function totalsReport(errors: number, warnings: number, skipped: number): string {
@@ -21,14 +21,20 @@ export function totalsReport(errors: number, warnings: number, skipped: number):
 	return chalk.bold(errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message);
 }
 
+export function ruleErrorReport(verbosityLevel: number, rule: RuleObject, error: RuleError): string {
+	return report(verbosityLevel, rule, error);
+}
+
 export function skippedRuleReport(verbosityLevel: number, rule: RuleObject, reason: string): string {
 	rule.status = RuleStatus.Skipped;
 
 	return report(verbosityLevel, rule, new RuleError(reason));
 }
 
-export function ruleErrorReport(verbosityLevel: number, rule: RuleObject, error: RuleError): string {
-	return report(verbosityLevel, rule, error);
+export function disabledRuleReport(verbosityLevel: number, rule: RuleObject, reason: string): string {
+	rule.status = RuleStatus.Off;
+
+	return report(verbosityLevel, rule, new RuleError(reason));
 }
 
 function report(verbosityLevel: number, rule: RuleObject, error: RuleError): string {

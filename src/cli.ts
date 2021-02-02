@@ -8,10 +8,10 @@ import { PropertiesPath, joinPropertiesPathSegments } from './lib/helpers/proper
 import { FsPath, DirectoryEntries, joinPathSegments, getAbsolutePath, findInParentDirectoryTree } from './lib/helpers/fs';
 
 import { loadConfig } from './lib/config';
-import { lintDirectory } from './lib/linter';
 import { testConditions } from './lib/conditions';
+import { SkippedRuleReason, lintDirectory } from './lib/linter';
 import { RuleStatus, RuleErrorType, parseRules } from './lib/rules';
-import { formatTargetPath, conditionStatusReport, ruleErrorReport, skippedRuleReport, totalsReport } from './lib/reports';
+import { formatTargetPath, conditionStatusReport, ruleErrorReport, disabledRuleReport, skippedRuleReport, totalsReport } from './lib/reports';
 
 const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
 
@@ -88,43 +88,46 @@ export async function cli(): Promise<void> {
 
 		const reports: Map<FsPath, Map<PropertiesPath, Array<string>>> = new Map();
 		for (const [index, result] of results.entries()) {
-			if (result === true) {
-				continue;
-			}
-
 			const rule = rules[index];
-			let report = '';
-			switch (result.type) {
-				case RuleErrorType.UnknownRule:
-					totals.skipped++;
-					if (options.skipped) {
-						report = skippedRuleReport(verbosityLevel, rule, 'unknown rule');
-					}
-					break;
 
-				case RuleErrorType.InvalidTargetType:
-					// TODO: return an error report here?
-					totals.skipped++;
-					if (options.skipped) {
-						report = skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target');
-					}
-					break;
+			const report = (() => {
+				if (result === true) {
+					return '';
+				}
 
-				case RuleErrorType.InvalidParameter:
-					totals.skipped++;
-					if (options.skipped) {
-						report = skippedRuleReport(verbosityLevel, rule, `invalid parameter (cf. https://devlint.org/rules/${rule.name})`);
-					}
-					break;
+				if (typeof result === 'number') {
+					switch (result) {
+						case SkippedRuleReason.ConditionIsFalse:
+							return verbosityLevel >= 2 ? disabledRuleReport(verbosityLevel, rule, `condition "${rule.condition}" is false`) : '';
 
-				case RuleErrorType.Failed:
-					switch (rule.status) {
-						case RuleStatus.Error:   totals.errors++;   break;
-						case RuleStatus.Warning: totals.warnings++; break;
+						case SkippedRuleReason.WrongTargetType:
+							return verbosityLevel >= 1 ? disabledRuleReport(verbosityLevel, rule, "rule doesn't apply to target type") : '';
 					}
-					report = ruleErrorReport(verbosityLevel, rule, result);
-					break;
-			}
+				}
+
+				switch (result.type) {
+					case RuleErrorType.UnknownRule:
+						totals.skipped++;
+						return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'unknown rule') : '';
+
+					case RuleErrorType.InvalidTargetType:
+						// TODO: return an error report here?
+						totals.skipped++;
+						return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'invalid data or rule does not apply to target') : '';
+
+					case RuleErrorType.InvalidParameter:
+						totals.skipped++;
+						return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameter (cf. https://devlint.org/rules/${rule.name})`) : '';
+
+					case RuleErrorType.Failed:
+						switch (rule.status) {
+							case RuleStatus.Error:   totals.errors++;   break;
+							case RuleStatus.Warning: totals.warnings++; break;
+						}
+						return ruleErrorReport(verbosityLevel, rule, result);
+				}
+			})();
+
 			if (report.length === 0) {
 				continue;
 			}

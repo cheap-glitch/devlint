@@ -5,7 +5,12 @@ import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, 
 import { loadBuiltinPlugins } from './plugins';
 import { RuleTargetType, RuleObject, RuleResult, RuleError, RuleErrorType, RuleContext, buildRuleContext } from './rules';
 
-export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Array<RuleResult>> {
+export enum SkippedRuleReason {
+	ConditionIsFalse,
+	WrongTargetType,
+}
+
+export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Array<RuleResult | SkippedRuleReason>> {
 	const plugins = await loadBuiltinPlugins(new Set(rules.map(rule => rule.name + '.js')));
 
 	// Load all the required file system resources
@@ -27,8 +32,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 	return rules.map(rule => {
 		if (rule.condition !== undefined && conditions[rule.condition] !== true) {
-			// TODO: emit a skipped warning?
-			return true;
+			return SkippedRuleReason.ConditionIsFalse;
 		}
 
 		if (plugins[rule.name] === undefined) {
@@ -44,7 +48,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		 */
 		if (targetType === RuleTargetType.DirectoryListing) {
 			if (targetPropertiesPathSegments.length > 0) {
-				return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
+				return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			if (directories === undefined || filenames === undefined) {
 				// TODO: thow/return error on missing/unaccessible directory?
@@ -59,7 +63,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		 */
 		if (targetType === RuleTargetType.FileContents) {
 			if (targetPropertiesPathSegments.length > 0) {
-				return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
+				return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			if (contents === undefined) {
 				// TODO: thow/return error on missing/unaccessible file?
@@ -105,7 +109,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 			case RuleTargetType.JsonObject:
 				if (!isJsonObject(propertyValue) || !isJsonObjectAst(propertyAst)) {
-					return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
+					return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 				}
 				context.jsonObject    = propertyValue;
 				context.jsonObjectAst = propertyAst;
@@ -113,7 +117,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 			case RuleTargetType.JsonString:
 				if (typeof propertyValue !== 'string' || propertyAst.type !== 'string') {
-					return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
+					return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 				}
 				context.jsonString = propertyValue;
 				context.jsonAst    = propertyAst;
