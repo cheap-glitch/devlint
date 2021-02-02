@@ -93,7 +93,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 		const context = buildRuleContext({
 			contents:  contents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char + 1),
-			lines:     (lines ?? []).slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line),
+			lines:     (lines ?? []).slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line - 1),
 			parameter: rule.parameter,
 		});
 
