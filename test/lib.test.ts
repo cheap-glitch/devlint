@@ -178,6 +178,30 @@ describe('parseRules', () => {
 
 	}); // }}}
 
+	test('permissive rules', () => { // {{{
+
+		expect(parseRules({
+			'first-rule':  'error',
+			'second-rule': 'off',
+			'third-rule?': 'warn',
+		}))
+		.toEqual([
+			{
+				name:       'first-rule',
+				status:     'error',
+				target:     ['.', []],
+				permissive: false,
+			},
+			{
+				name:       'third-rule',
+				status:     'warn',
+				target:     ['.', []],
+				permissive: true,
+			},
+		]);
+
+	}); // }}}
+
 });
 
 describe('extendConfig', () => {
