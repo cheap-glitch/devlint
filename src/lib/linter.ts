@@ -44,7 +44,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		 */
 		if (targetType === RuleTargetType.DirectoryListing) {
 			if (targetPropertiesPathSegments.length > 0) {
-				return new RuleError(RuleErrorType.InvalidTargetType);
+				return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			if (directories === undefined || filenames === undefined) {
 				// TODO: thow/return error on missing/unaccessible directory?
@@ -59,7 +59,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		 */
 		if (targetType === RuleTargetType.FileContents) {
 			if (targetPropertiesPathSegments.length > 0) {
-				return new RuleError(RuleErrorType.InvalidTargetType);
+				return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			if (contents === undefined) {
 				// TODO: thow/return error on missing/unaccessible file?
@@ -105,7 +105,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 			case RuleTargetType.JsonObject:
 				if (!isJsonObject(propertyValue) || !isJsonObjectAst(propertyAst)) {
-					return new RuleError(RuleErrorType.InvalidTargetType);
+					return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
 				}
 				context.jsonObject    = propertyValue;
 				context.jsonObjectAst = propertyAst;
@@ -113,7 +113,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 			case RuleTargetType.JsonString:
 				if (typeof propertyValue !== 'string' || propertyAst.type !== 'string') {
-					return new RuleError(RuleErrorType.InvalidTargetType);
+					return rule.permissive ? true : new RuleError(RuleErrorType.InvalidTargetType);
 				}
 				context.jsonString = propertyValue;
 				context.jsonAst    = propertyAst;

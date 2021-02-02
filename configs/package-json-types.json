@@ -13,7 +13,7 @@
       "#keywords": {
         "types-allowed": ["error", ["array"]],
 
-        "*": {
+        ".*": {
           "types-allowed": ["error", ["string"]]
         }
       },
@@ -24,12 +24,12 @@
 
       "#bugs": {
         "types-allowed": ["error", ["string", "object"]],
-        "properties-allowed": ["error", [
+        "properties-allowed?": ["error", [
           "url",
           "email"
         ]],
 
-        "*": {
+        ".*": {
           "types-allowed": ["error", ["string"]]
         }
       },
@@ -40,13 +40,13 @@
 
       "#author": {
         "types-allowed": ["error", ["string", "object"]],
-        "properties-allowed": ["error", [
+        "properties-allowed?": ["error", [
           "name",
           "email",
           "url"
         ]],
 
-        "*": {
+        ".*": {
           "types-allowed": ["error", ["string"]]
         }
       },
@@ -54,15 +54,15 @@
       "#contributors": {
         "types-allowed": ["error", ["array"]],
 
-        "*": {
+        ".*": {
           "types-allowed": ["error", ["string", "object"]],
-          "properties-allowed": ["error", [
+          "properties-allowed?": ["error", [
             "name",
             "email",
             "url"
           ]],
 
-          "*": {
+          ".*": {
             "types-allowed": ["error", ["string"]]
           }
         }
@@ -70,14 +70,14 @@
 
       "#funding": {
         "types-allowed": ["error", ["string", "object", "array"]],
-        "properties-allowed": ["error", [
+        "properties-allowed?": ["error", [
           "type",
           "url"
         ]],
 
-        "\\d+": {
+        ".\\d+": {
           "types-allowed": ["error", ["string", "object"]],
-          "properties-allowed": ["error", [
+          "properties-allowed?": ["error", [
             "type",
             "url"
           ]]

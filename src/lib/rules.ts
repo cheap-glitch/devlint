@@ -31,6 +31,7 @@ export interface RuleObject {
 	target:     RuleTarget,
 	parameter?: JsonValue,
 	condition?: string,
+	permissive: boolean,
 }
 
 export type RuleTarget = [FsPath, PropertiesPathSegments];
@@ -90,9 +91,10 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 			}
 
 			const rule: RuleObject = {
-				name:   parseRuleName(key),
-				status: ruleStatus,
-				target: parentTarget,
+				name:       parseRuleName(key),
+				status:     ruleStatus,
+				target:     parentTarget,
+				permissive: key.includes('?'),
 			};
 			const condition = parseRuleCondition(key);
 			if (condition !== undefined) {
@@ -120,10 +122,11 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 			}
 
 			const rule: RuleObject = {
-				name:      parseRuleName(key),
-				status:    ruleStatus,
-				target:    parentTarget,
-				parameter: ruleParameter,
+				name:       parseRuleName(key),
+				status:     ruleStatus,
+				target:     parentTarget,
+				parameter:  ruleParameter,
+				permissive: key.includes('?'),
 			};
 			const condition = parseRuleCondition(key);
 			if (condition !== undefined) {
@@ -170,7 +173,7 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 }
 
 function parseRuleName(name: string): string {
-	return name.replace(/\(\w+\)/, '').trim();
+	return name.replace(/\(\w+\)/, '').replace('?', '').trim();
 }
 
 function parseRuleCondition(name: string): string | undefined {
