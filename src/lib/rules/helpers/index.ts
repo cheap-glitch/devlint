@@ -7,6 +7,12 @@ import { RuleError, RuleErrorType } from '../../rules';
 export function checkStringCase(testedString: string, caseStyle: string): boolean | RuleError {
 	return (() => {
 		switch (caseStyle) {
+			case 'uppercase':
+				return !/[a-z]/.test(testedString);
+
+			case 'lowercase':
+				return !/[A-Z]/.test(testedString);
+
 			case 'kebab':
 				return /^[\da-z](?:-?[\da-z]+)*$/.test(testedString);
 
@@ -24,6 +30,9 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 
 			case 'sentence':
 				return testedString.length >= 1 && testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0];
+
+			case 'title':
+				return !/\b[a-z]/.test(testedString);
 
 			default: return new RuleError(RuleErrorType.InvalidParameter);
 		}

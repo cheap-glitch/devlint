@@ -3,16 +3,26 @@ import { parsePropertiesPath } from '../src/lib/helpers/properties';
 
 describe('checkStringCase', () => {
 
-	test('sentence', () => { // {{{
+	test('uppercase', () => { // {{{
 
-		expect(checkStringCase('',                   'sentence')).toBe(true);
-		expect(checkStringCase('This is a sentence', 'sentence')).toBe(true);
-		expect(checkStringCase('Word',               'sentence')).toBe(true);
-		expect(checkStringCase('ALL CAPS',           'sentence')).toBe(true);
+		expect(checkStringCase('',                 'uppercase')).toBe(true);
+		expect(checkStringCase('WORD',             'uppercase')).toBe(true);
+		expect(checkStringCase("I'M SHOUTING!",    'uppercase')).toBe(true);
 
-		expect(checkStringCase('this is a sentence', 'sentence')).toBe(false);
-		expect(checkStringCase('wORD',               'sentence')).toBe(false);
-		expect(checkStringCase('nEvErMiNd',          'sentence')).toBe(false);
+		expect(checkStringCase('not uppercase',    'uppercase')).toBe(false);
+		expect(checkStringCase('ALMOST UPPERCASe', 'uppercase')).toBe(false);
+
+	}); // }}}
+
+	test('lowercase', () => { // {{{
+
+		expect(checkStringCase('',                  'lowercase')).toBe(true);
+		expect(checkStringCase('word',              'lowercase')).toBe(true);
+		expect(checkStringCase('lowerc4s3 for3v4r', 'lowercase')).toBe(true);
+
+		expect(checkStringCase('WORD',              'lowercase')).toBe(false);
+		expect(checkStringCase("I'M SHOUTING!",     'lowercase')).toBe(false);
+		expect(checkStringCase('almost lowercasE',  'lowercase')).toBe(false);
 
 	}); // }}}
 
@@ -90,6 +100,32 @@ describe('checkStringCase', () => {
 		expect(checkStringCase('notPascal',             'pascal')).toBe(false);
 		expect(checkStringCase('NotPascaL',             'pascal')).toBe(false);
 		expect(checkStringCase('definitely_not-pascal', 'pascal')).toBe(false);
+
+	}); // }}}
+
+	test('sentence', () => { // {{{
+
+		expect(checkStringCase('',                   'sentence')).toBe(true);
+		expect(checkStringCase('This is a sentence', 'sentence')).toBe(true);
+		expect(checkStringCase('Word',               'sentence')).toBe(true);
+		expect(checkStringCase('ALL CAPS',           'sentence')).toBe(true);
+
+		expect(checkStringCase('this is a sentence', 'sentence')).toBe(false);
+		expect(checkStringCase('wORD',               'sentence')).toBe(false);
+		expect(checkStringCase('nEvErMiNd',          'sentence')).toBe(false);
+
+	}); // }}}
+
+	test('title', () => { // {{{
+
+		expect(checkStringCase('',                'title')).toBe(true);
+		expect(checkStringCase('Title',           'title')).toBe(true);
+		expect(checkStringCase('This Is A Title', 'title')).toBe(true);
+		expect(checkStringCase('This Is A TITLE', 'title')).toBe(true);
+
+		expect(checkStringCase('notatitle',       'title')).toBe(false);
+		expect(checkStringCase('Not a title',     'title')).toBe(false);
+		expect(checkStringCase('Not a Title',     'title')).toBe(false);
 
 	}); // }}}
 
