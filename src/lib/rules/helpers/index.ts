@@ -29,7 +29,7 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 				return /^(?:[A-Z][\da-z]+)+$/.test(testedString);
 
 			case 'sentence':
-				return testedString.length >= 1 && testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0];
+				return testedString.length > 0 && testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0];
 
 			case 'title':
 				return !/\b[a-z]/.test(testedString);

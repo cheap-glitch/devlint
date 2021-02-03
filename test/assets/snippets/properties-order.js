@@ -32,17 +32,13 @@ module.exports = {
 			  "a": {
 			    "a": "a"
 			  },
-
 			  "foo": true,
-
 			  "b": [
 			    1,
 			    2,
 			    3
 			  ],
-
 			  "bar": true,
-
 			  "c": "c"
 			}
 		`,
@@ -71,7 +67,7 @@ module.exports = {
 		`,
 			['bar', 'foo'],
 		],
-			`property "bar" should be placed before "foo"`, { line: 3, column: 3, char: 19 }, { line: 3, column: 8, char: 24 },
+			'property "bar" should be placed before "foo"', { line: 3, column: 3, char: 19 }, { line: 3, column: 8, char: 24 },
 		],
 		[[`
 			{
@@ -81,28 +77,24 @@ module.exports = {
 		`,
 			['foo', 'bar'],
 		],
-			`property "foo" should be placed before "bar"`, { line: 3, column: 3, char: 19 }, { line: 3, column: 8, char: 24 },
+			'property "foo" should be placed before "bar"', { line: 3, column: 3, char: 19 }, { line: 3, column: 8, char: 24 },
 		],
 		[[`
 			{
 			  "a": {
 			    "a": false
 			  },
-
 			  "bar": [
 			    "bar"
 			  ],
-
 			  "b": null,
-
 			  "foo": true,
-
 			  "c": "c"
 			}
 		`,
 			['foo', 'bar'],
 		],
-			`property "foo" should be placed before "bar"`, { line: 12, column: 3, char: 75 }, { line: 12, column: 8, char: 80 },
+			'property "foo" should be placed before "bar"', { line: 12, column: 3, char: 75 }, { line: 12, column: 8, char: 80 },
 		],
 		[[`
 			{
@@ -113,7 +105,7 @@ module.exports = {
 		`,
 			['foo', 'bar', 'baz'],
 		],
-			`property "bar" should be placed between "foo" and "baz"`, { line: 4, column: 3, char: 34 }, { line: 4, column: 8, char: 39 },
+			'property "bar" should be placed between "foo" and "baz"', { line: 4, column: 3, char: 34 }, { line: 4, column: 8, char: 39 },
 		],
 		[[`
 			{
@@ -124,7 +116,7 @@ module.exports = {
 		`,
 			['foo', 'a', 'bar', 'b', 'c', 'baz'],
 		],
-			`property "bar" should be placed between "foo" and "baz"`, { line: 4, column: 3, char: 34 }, { line: 4, column: 8, char: 39 },
+			'property "bar" should be placed between "foo" and "baz"', { line: 4, column: 3, char: 34 }, { line: 4, column: 8, char: 39 },
 		],
 	],
 };
