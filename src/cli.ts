@@ -8,10 +8,12 @@ import { PropertiesPath, joinPropertiesPathSegments } from './lib/helpers/proper
 import { FsPath, DirectoryEntries, joinPathSegments, getAbsolutePath, findInParentDirectoryTree } from './lib/helpers/fs';
 
 import { loadConfig } from './lib/config';
+import { depreciations } from './lib/depreciations';
 import { testConditions } from './lib/conditions';
 import { SkippedRuleReason, lintDirectory } from './lib/linter';
 import { RuleStatus, RuleErrorType, parseRules } from './lib/rules';
-import { formatTargetPath, conditionStatusReport, ruleErrorReport, disabledRuleReport, skippedRuleReport, totalsReport } from './lib/reports';
+import { getRuleDocumentationUrl, formatTargetPath } from './lib/reports';
+import { conditionStatusReport, ruleErrorReport, disabledRuleReport, skippedRuleReport, totalsReport, depreciatedRulesReport } from './lib/reports';
 
 const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
 
@@ -69,6 +71,9 @@ export async function cli(): Promise<void> {
 		return isAbsolutePath(directory) ? directory : joinPathSegments([currentWorkingDirectory, directory]);
 	}));
 
+	const depreciatedRules = Object.keys(depreciations);
+	const depreciatedRulesUsed: Array<string> = [];
+
 	const totals = {
 		errors:   0,
 		warnings: 0,
@@ -82,6 +87,8 @@ export async function cli(): Promise<void> {
 		if (rules.length === 0) {
 			continue;
 		}
+
+		depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
 
 		const conditions = await testConditions(directory, config?.conditions ?? {});
 		const results    = await lintDirectory(directory, rules, conditions);
@@ -117,7 +124,7 @@ export async function cli(): Promise<void> {
 
 					case RuleErrorType.InvalidParameter:
 						totals.skipped++;
-						return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameter (cf. https://devlint.org/rules/${rule.name})`) : '';
+						return options.skipped ? skippedRuleReport(verbosityLevel, rule, `invalid parameter (see ${getRuleDocumentationUrl(rule.name)})`) : '';
 
 					case RuleErrorType.Failed:
 						switch (rule.status) {
@@ -141,9 +148,9 @@ export async function cli(): Promise<void> {
 		}
 
 		if (verbosityLevel >= 1) {
-			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => conditionStatusReport(name, status)).join('\n\n');
+			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => conditionStatusReport(name, status)).join('\n');
 			if (conditionsStatusReport.length > 0) {
-				console.log(`\nConditions status in ${getAbsolutePath([directory])}:\n\n` + conditionsStatusReport + '\n');
+				console.log(`\nConditions status in ${getAbsolutePath([directory])}:\n` + conditionsStatusReport);
 			}
 		}
 
@@ -164,5 +171,9 @@ export async function cli(): Promise<void> {
 	}
 	if (totals.errors > 0) {
 		process.exitCode = 1;
+	}
+
+	if (depreciatedRulesUsed.length > 0) {
+		console.log('\n' + depreciatedRulesReport([...new Set(depreciatedRulesUsed)]) + '\n');
 	}
 }

@@ -1,9 +1,10 @@
 import chalk from 'chalk';
 
 import { formatSnippet } from './helpers/snippets';
-import { capitalize, countWord } from './helpers/text';
+import { capitalize, pluralize, countWord } from './helpers/text';
 import { PROPERTIES_PATH_STARTING_CHARACTER } from './helpers/properties';
 
+import { depreciations } from './depreciations';
 import { RuleStatus, RuleObject, RuleError } from './rules';
 
 const labels: Record<RuleStatus, string> = {
@@ -12,6 +13,27 @@ const labels: Record<RuleStatus, string> = {
 	[RuleStatus.Warning]: chalk.yellow('warning '),
 	[RuleStatus.Skipped]:   chalk.gray('skipped '),
 };
+
+export function depreciatedRulesReport(depreciatedRules: Array<string>): string {
+	return chalk.yellow(chalk.bold(pluralize('depreciation warning', depreciatedRules.length).toUpperCase()) + '\n' + depreciatedRules.map(ruleName => {
+		let message = `  • "${ruleName}" is depreciated`;
+
+		const infos = depreciations[ruleName];
+		if (infos === undefined) {
+			return message;
+		}
+		if (infos === true) {
+			return message + ' and will be removed in a future release';
+		}
+
+		message += ' and will be removed in ' + (infos.version !== undefined ? 'v' + infos.version : 'a future release');
+		if (infos.replacement !== undefined) {
+			message += `, you should start using "${infos.replacement}" instead (see ${getRuleDocumentationUrl(infos.replacement)})`;
+		}
+
+		return message;
+	}).join('\n'));
+}
 
 export function totalsReport(errors: number, warnings: number, skipped: number): string {
 	const message = (errors === 0 && warnings === 0)
@@ -57,4 +79,8 @@ export function conditionStatusReport(name: string, status: boolean): string {
 
 export function formatTargetPath(fsPath: string, propertiesPath?: string): string {
 	return chalk.underline(fsPath + (propertiesPath ? propertiesPath.replace('.', chalk.bold(PROPERTIES_PATH_STARTING_CHARACTER)) : ''));
+}
+
+export function getRuleDocumentationUrl(ruleName: string): string {
+	return `https://devlint.org/rules/${ruleName}`;
 }
