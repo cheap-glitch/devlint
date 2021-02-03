@@ -8,22 +8,22 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 	return (() => {
 		switch (caseStyle) {
 			case 'uppercase':
-				return !/[a-z]/.test(testedString);
+				return !/\p{Lowercase_Letter}/u.test(testedString);
 
 			case 'lowercase':
-				return !/[A-Z]/.test(testedString);
+				return !/\p{Uppercase_Letter}/u.test(testedString);
 
 			case 'kebab':
-				return /^[\da-z](?:-?[\da-z]+)*$/.test(testedString);
+				return /^[a-z](?:-?[a-z\d]+)*$/u.test(testedString);
 
 			case 'kebab-extended':
-				return /^[\d@a-z](?:[/-]?[\da-z]+)*$/.test(testedString);
+				return /^@?[\da-z](?:[/-]?[\da-z]+)*$/.test(testedString);
 
 			case 'snake':
-				return /^[\da-z](?:_?[\da-z]+)*$/.test(testedString);
+				return /^[a-z](?:_?[\da-z]+)*$/.test(testedString);
 
 			case 'camel':
-				return /^[\da-z]+(?:[A-Z][\da-z]+)*$/.test(testedString);
+				return /^[a-z][\da-z]+(?:[A-Z][\da-z]+)*$/.test(testedString);
 
 			case 'pascal':
 				return /^(?:[A-Z][\da-z]+)+$/.test(testedString);
@@ -32,7 +32,7 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 				return testedString.length > 0 && testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0];
 
 			case 'title':
-				return !/\b[a-z]/.test(testedString);
+				return !/(^|\P{Letter})\p{Lowercase_Letter}/u.test(testedString);
 
 			default: return new RuleError(RuleErrorType.InvalidParameter);
 		}

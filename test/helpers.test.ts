@@ -8,9 +8,11 @@ describe('checkStringCase', () => {
 		expect(checkStringCase('',                 'uppercase')).toBe(true);
 		expect(checkStringCase('WORD',             'uppercase')).toBe(true);
 		expect(checkStringCase("I'M SHOUTING!",    'uppercase')).toBe(true);
+		expect(checkStringCase('ŮNÏCØDE FTW',      'uppercase')).toBe(true);
 
 		expect(checkStringCase('not uppercase',    'uppercase')).toBe(false);
 		expect(checkStringCase('ALMOST UPPERCASe', 'uppercase')).toBe(false);
+		expect(checkStringCase('ůNïCøDE FTW',      'uppercase')).toBe(false);
 
 	}); // }}}
 
@@ -19,10 +21,12 @@ describe('checkStringCase', () => {
 		expect(checkStringCase('',                  'lowercase')).toBe(true);
 		expect(checkStringCase('word',              'lowercase')).toBe(true);
 		expect(checkStringCase('lowerc4s3 for3v4r', 'lowercase')).toBe(true);
+		expect(checkStringCase('ůniçøde lówercäsê', 'lowercase')).toBe(true);
 
 		expect(checkStringCase('WORD',              'lowercase')).toBe(false);
 		expect(checkStringCase("I'M SHOUTING!",     'lowercase')).toBe(false);
 		expect(checkStringCase('almost lowercasE',  'lowercase')).toBe(false);
+		expect(checkStringCase('ŮniÇøde lówercÄsÊ', 'lowercase')).toBe(false);
 
 	}); // }}}
 
@@ -61,16 +65,16 @@ describe('checkStringCase', () => {
 
 	test('snake', () => { // {{{
 
-		expect(checkStringCase('',                      'snake')).toBe(true);
-		expect(checkStringCase('im_a_snake',            'snake')).toBe(true);
-		expect(checkStringCase('snakey',                'snake')).toBe(true);
-		expect(checkStringCase('99_snakes_on_the_wall', 'snake')).toBe(true);
+		expect(checkStringCase('',                   'snake')).toBe(true);
+		expect(checkStringCase('im_a_snake',         'snake')).toBe(true);
+		expect(checkStringCase('snakey',             'snake')).toBe(true);
+		expect(checkStringCase('there_is_99_snakes', 'snake')).toBe(true);
 
-		expect(checkStringCase('not a snake',           'snake')).toBe(false);
-		expect(checkStringCase('not_a_snake!',          'snake')).toBe(false);
-		expect(checkStringCase('not__a___snake',        'snake')).toBe(false);
-		expect(checkStringCase('not_A_snake',           'snake')).toBe(false);
-		expect(checkStringCase('not_a_snake_',          'snake')).toBe(false);
+		expect(checkStringCase('not a snake',        'snake')).toBe(false);
+		expect(checkStringCase('not_a_snake!',       'snake')).toBe(false);
+		expect(checkStringCase('not__a___snake',     'snake')).toBe(false);
+		expect(checkStringCase('not_A_snake',        'snake')).toBe(false);
+		expect(checkStringCase('not_a_snake_',       'snake')).toBe(false);
 
 	}); // }}}
 
@@ -118,14 +122,16 @@ describe('checkStringCase', () => {
 
 	test('title', () => { // {{{
 
-		expect(checkStringCase('',                'title')).toBe(true);
-		expect(checkStringCase('Title',           'title')).toBe(true);
-		expect(checkStringCase('This Is A Title', 'title')).toBe(true);
-		expect(checkStringCase('This Is A TITLE', 'title')).toBe(true);
+		expect(checkStringCase('',                        'title')).toBe(true);
+		expect(checkStringCase('Title',                   'title')).toBe(true);
+		expect(checkStringCase('This Is A Title',         'title')).toBe(true);
+		expect(checkStringCase('This Is A TITLE',         'title')).toBe(true);
+		expect(checkStringCase('Thiß Tîtle Ůses Ünicóðe', 'title')).toBe(true);
 
-		expect(checkStringCase('notatitle',       'title')).toBe(false);
-		expect(checkStringCase('Not a title',     'title')).toBe(false);
-		expect(checkStringCase('Not a Title',     'title')).toBe(false);
+		expect(checkStringCase('notatitle',               'title')).toBe(false);
+		expect(checkStringCase('Not a title',             'title')).toBe(false);
+		expect(checkStringCase('Not a Title',             'title')).toBe(false);
+		expect(checkStringCase('Nöt À ŧitle',             'title')).toBe(false);
 
 	}); // }}}
 
