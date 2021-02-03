@@ -5,85 +5,49 @@ import { PropertiesPathSegments } from '../../helpers/properties';
 import { RuleError, RuleErrorType } from '../../rules';
 
 export function checkStringCase(testedString: string, caseStyle: string): boolean | RuleError {
-	switch (caseStyle) {
-		case 'sentence':
-			if (testedString === '' || testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0]) {
-				return true;
-			}
-			break;
+	return (() => {
+		switch (caseStyle) {
+			case 'kebab':
+				return /^[\da-z](?:-?[\da-z]+)*$/.test(testedString);
 
-		case 'kebab':
-			if (/^[\da-z](?:-?[\da-z]+)*$/.test(testedString)) {
-				return true;
-			}
-			break;
+			case 'kebab-extended':
+				return /^[\d@a-z](?:[/-]?[\da-z]+)*$/.test(testedString);
 
-		case 'kebab-extended':
-			if (/^[\d@a-z](?:[/-]?[\da-z]+)*$/.test(testedString)) {
-				return true;
-			}
-			break;
+			case 'snake':
+				return /^[\da-z](?:_?[\da-z]+)*$/.test(testedString);
 
-		case 'snake':
-			if (/^[\da-z](?:_?[\da-z]+)*$/.test(testedString)) {
-				return true;
-			}
-			break;
+			case 'camel':
+				return /^[\da-z]+(?:[A-Z][\da-z]+)*$/.test(testedString);
 
-		case 'camel':
-			if (/^[\da-z]+(?:[A-Z][\da-z]+)*$/.test(testedString)) {
-				return true;
-			}
-			break;
+			case 'pascal':
+				return /^(?:[A-Z][\da-z]+)+$/.test(testedString);
 
-		case 'pascal':
-			if (/^(?:[A-Z][\da-z]+)+$/.test(testedString)) {
-				return true;
-			}
-			break;
+			case 'sentence':
+				return testedString.length >= 1 && testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0];
 
-		default: return new RuleError(RuleErrorType.InvalidParameter);
-	}
-
-	if (testedString === '') {
-		return true;
-	}
-
-	return false;
+			default: return new RuleError(RuleErrorType.InvalidParameter);
+		}
+	})() || testedString === '';
 }
 
 export function checkValueType(testedValue: JsonValue, type: string): boolean | RuleError {
 	switch (type) {
 		case 'null':
-			if (typeof testedValue === null) {
-				return true;
-			}
-			break;
+			return typeof testedValue === null;
 
 		case 'boolean':
 		case 'number':
 		case 'string':
-			if (typeof testedValue === type) {
-				return true;
-			}
-			break;
+			return typeof testedValue === type;
 
 		case 'object':
-			if (isJsonObject(testedValue)) {
-				return true;
-			}
-			break;
+			return isJsonObject(testedValue);
 
 		case 'array':
-			if (Array.isArray(testedValue)) {
-				return true;
-			}
-			break;
-
-		default: return new RuleError(RuleErrorType.InvalidParameter);
+			return Array.isArray(testedValue);
 	}
 
-	return false;
+	return new RuleError(RuleErrorType.InvalidParameter);
 }
 
 export function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefined, propertiesPath: PropertiesPathSegments = []): true | PropertiesPathSegments {
