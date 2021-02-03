@@ -3,7 +3,7 @@ import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } fro
 export const targetType = RuleTargetType.JsonObject;
 
 export function validator({ lines, jsonObjectAst, parameter: properties }: RuleContext): RuleResult {
-	if (properties === undefined || !Array.isArray(properties) || properties.some(property => typeof property !== 'string')) {
+	if (!Array.isArray(properties) || properties.some(property => typeof property !== 'string')) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 	if (jsonObjectAst.members === undefined) {
@@ -12,26 +12,29 @@ export function validator({ lines, jsonObjectAst, parameter: properties }: RuleC
 
 	let lastIndex = -1;
 	for (const { key } of jsonObjectAst.members) {
-		const index = properties.findIndex(property => property === key.value);
-		if (index !== -1 && index < lastIndex) {
-			const propertyBefore = properties[index - 1];
-			const propertyAfter  = properties[index + 1];
-
-			if (propertyBefore !== undefined && propertyAfter !== undefined) {
-				return new RuleError(`property "${key.value}" is not between "${propertyBefore}" and "${propertyAfter}"`, key.pos, lines);
-			}
-
-			if (propertyBefore !== undefined) {
-				return new RuleError(`property "${key.value}" is not after "${propertyBefore}"`, key.pos, lines);
-			}
-
-			if (propertyAfter !== undefined) {
-				return new RuleError(`property "${key.value}" is not before "${propertyAfter}"`, key.pos, lines);
-			}
-
-			return new RuleError(`property "${key.value}" is not in the right place`, key.pos, lines);
+		const index = properties.indexOf(key.value);
+		if (index === -1) {
+			continue;
 		}
-		lastIndex = index;
+		if (index >= lastIndex) {
+			lastIndex = index;
+			continue;
+		}
+
+		const jsonObjectProperties = jsonObjectAst.members.map(({ key }) => key.value);
+		const propertyBefore       = properties.slice(0, index).reverse().find(property => jsonObjectProperties.includes(String(property)));
+		const propertyAfter        = properties.slice(index + 1).find(property => jsonObjectProperties.includes(String(property)));
+
+		if (propertyBefore !== undefined && propertyAfter !== undefined) {
+			return new RuleError(`property "${key.value}" should be placed between "${propertyBefore}" and "${propertyAfter}"`, key.pos, lines);
+		}
+
+		if (propertyAfter !== undefined) {
+			return new RuleError(`property "${key.value}" should be placed before "${propertyAfter}"`, key.pos, lines);
+		}
+
+		/* istanbul ignore next */
+		return new RuleError(`property "${key.value}" isn't placed in the right order`, key.pos, lines);
 	}
 
 	return true;
