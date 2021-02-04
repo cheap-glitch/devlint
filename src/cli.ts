@@ -3,9 +3,10 @@ import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import { access as testDirectoryAccess } from 'fs/promises';
 
+import { findGitRepoRoot } from './lib/helpers/git';
 import { insertValueInNestedMap } from './lib/helpers/utilities';
+import { FsPath, joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
 import { PropertiesPath, joinPropertiesPathSegments } from './lib/helpers/properties';
-import { FsPath, DirectoryEntries, joinPathSegments, getAbsolutePath, findInParentDirectoryTree } from './lib/helpers/fs';
 
 import { loadConfig } from './lib/config';
 import { depreciations } from './lib/depreciations';
@@ -58,7 +59,7 @@ export async function cli(): Promise<void> {
 
 	let currentWorkingDirectory = process.cwd();
 	if (options.gitRoot) {
-		const gitRepoRoot = await findInParentDirectoryTree([process.cwd()], ({ directories }: DirectoryEntries) => directories.includes('.git'));
+		const gitRepoRoot = await findGitRepoRoot([currentWorkingDirectory]);
 		if (gitRepoRoot !== undefined) {
 			currentWorkingDirectory = gitRepoRoot;
 		}
