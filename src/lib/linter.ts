@@ -1,5 +1,5 @@
 import { getLines } from './helpers/text';
-import { FsPath, tryReadingFileContents } from './helpers/fs';
+import { FsPath, joinPathSegments, tryReadingFileContents } from './helpers/fs';
 import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { loadBuiltinPlugins } from './plugins';
@@ -46,8 +46,9 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 			if (targetPropertiesPathSegments.length > 0) {
 				return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
+			// TODO: test that the path is an accessible directory
 
-			return validator(buildRuleContext({ workingDirectory, parameter: rule.parameter }));
+			return validator(buildRuleContext({ workingDirectory: joinPathSegments([workingDirectory, targetFsPath]), parameter: rule.parameter }));
 		}
 
 		/**

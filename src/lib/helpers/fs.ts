@@ -43,6 +43,17 @@ async function tryGettingDirectoryListing(path: FsPathSegments): Promise<Directo
 	return { filenames, directories };
 }
 
+export async function tryGettingPathStats(path: FsPathSegments): Promise<FsStats | undefined> {
+	let stats;
+	try {
+		stats = await fsGetStats(getAbsolutePath(path));
+	} catch {
+		return undefined;
+	}
+
+	return stats;
+}
+
 export async function tryReadingFileContents(path: FsPathSegments): Promise<string | undefined> {
 	let contents;
 	try {
