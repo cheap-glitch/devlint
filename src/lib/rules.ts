@@ -13,16 +13,15 @@ export type RuleResult = true | RuleError;
 export { RuleError, RuleErrorType };
 
 export interface RuleContext {
-	directories:   Array<string>,
-	filenames:     Array<string>,
-	contents:      string,
-	lines:         Array<Line>,
-	jsonValue:     JsonValue,
-	jsonObject:    JsonObject,
-	jsonString:    string,
-	jsonAst:       JsonAst,
-	jsonObjectAst: JsonObjectAst,
-	parameter:     JsonValue,
+	workingDirectory: string,
+	contents:         string,
+	lines:            Array<Line>,
+	jsonValue:        JsonValue,
+	jsonObject:       JsonObject,
+	jsonString:       string,
+	jsonAst:          JsonAst,
+	jsonObjectAst:    JsonObjectAst,
+	parameter:        JsonValue,
 }
 
 export interface RuleObject {
@@ -53,16 +52,15 @@ export enum RuleStatus {
 
 export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
 	return {
-		filenames:     [],
-		directories:   [],
-		contents:      '',
-		lines:         [],
-		jsonValue:     {},
-		jsonObject:    {},
-		jsonString:    '',
-		jsonAst:       { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		jsonObjectAst: { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		parameter:     '',
+		workingDirectory: '.',
+		contents:         '',
+		lines:            [],
+		jsonValue:        {},
+		jsonObject:       {},
+		jsonString:       '',
+		jsonAst:          { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
+		jsonObjectAst:    { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
+		parameter:        '',
 		...data,
 	};
 }

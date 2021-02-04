@@ -1,5 +1,5 @@
 import { getLines } from './helpers/text';
-import { FsPath, tryGettingDirectoryListing, tryReadingFileContents } from './helpers/fs';
+import { FsPath, tryReadingFileContents } from './helpers/fs';
 import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { loadBuiltinPlugins } from './plugins';
@@ -13,15 +13,12 @@ export enum SkippedRuleReason {
 export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Array<RuleResult | SkippedRuleReason>> {
 	const plugins = await loadBuiltinPlugins(new Set(rules.map(rule => rule.name + '.js')));
 
-	// Load all the required file system resources
+	// Load and parse all the targeted files only once
 	const targetsFsResources: Record<FsPath, Partial<RuleContext>> = Object.fromEntries(
 		await Promise.all([...new Set(rules.map(rule => rule.target[0]))].map(async (targetFsPath) => {
-			const directoryListing = await tryGettingDirectoryListing([workingDirectory, targetFsPath]);
-			const fileContents     = await tryReadingFileContents([workingDirectory, targetFsPath]);
+			const fileContents = await tryReadingFileContents([workingDirectory, targetFsPath]);
 
 			return [targetFsPath, {
-				filenames:   directoryListing?.filenames,
-				directories: directoryListing?.directories,
 				contents:    fileContents,
 				lines:       fileContents !== undefined ? getLines(fileContents)            : [],
 				jsonValue:   fileContents !== undefined ? tryParsingJsonValue(fileContents) : undefined,
@@ -34,14 +31,13 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		if (rule.condition !== undefined && conditions[rule.condition] !== true) {
 			return SkippedRuleReason.ConditionIsFalse;
 		}
-
 		if (plugins[rule.name] === undefined) {
 			return new RuleError(RuleErrorType.UnknownRule);
 		}
-		const { targetType, validator } = plugins[rule.name];
 
+		const { targetType, validator }                    = plugins[rule.name];
 		const [targetFsPath, targetPropertiesPathSegments] = rule.target;
-		const { directories, filenames, contents, lines, jsonValue, jsonAst } = targetsFsResources[targetFsPath];
+		const { contents, lines, jsonValue, jsonAst }      = targetsFsResources[targetFsPath];
 
 		/**
 		 * Directory target
@@ -50,12 +46,8 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 			if (targetPropertiesPathSegments.length > 0) {
 				return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
-			if (directories === undefined || filenames === undefined) {
-				// TODO: thow/return error on missing/unaccessible directory?
-				return true;
-			}
 
-			return validator(buildRuleContext({ directories, filenames, parameter: rule.parameter }));
+			return validator(buildRuleContext({ workingDirectory, parameter: rule.parameter }));
 		}
 
 		/**
