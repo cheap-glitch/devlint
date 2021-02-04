@@ -27,7 +27,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		}))
 	);
 
-	return rules.map(rule => {
+	return await Promise.all(rules.map(async (rule) => {
 		if (rule.condition !== undefined && conditions[rule.condition] !== true) {
 			return SkippedRuleReason.ConditionIsFalse;
 		}
@@ -48,7 +48,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 			}
 			// TODO: test that the path is an accessible directory
 
-			return validator(buildRuleContext({ workingDirectory: joinPathSegments([workingDirectory, targetFsPath]), parameter: rule.parameter }));
+			return await validator(buildRuleContext({ workingDirectory: joinPathSegments([workingDirectory, targetFsPath]), parameter: rule.parameter }));
 		}
 
 		/**
@@ -63,7 +63,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 				return true;
 			}
 
-			return validator(buildRuleContext({ contents, lines, parameter: rule.parameter }));
+			return await validator(buildRuleContext({ contents, lines, parameter: rule.parameter }));
 		}
 
 		/**
@@ -117,6 +117,6 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 				break;
 		}
 
-		return validator(context);
-	});
+		return await validator(context);
+	}));
 }

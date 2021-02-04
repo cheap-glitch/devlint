@@ -37,8 +37,8 @@ for (const filename of rulesToTest) {
 				const context = buildSnippetContext(targetType, snippet);
 
 				// eslint-disable-next-line jest/valid-title
-				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
-					expect(validator(context)).toBe(true);
+				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), async () => {
+					expect(await validator(context)).toBe(true);
 				});
 			}
 		});
@@ -59,8 +59,8 @@ for (const filename of rulesToTest) {
 					);
 
 				// eslint-disable-next-line jest/valid-title
-				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), () => {
-					const result = validator(context);
+				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), async () => {
+					const result = await validator(context);
 
 					expect(result).toBeInstanceOf(Error);
 					expect(result).toMatchObject({ ...error });

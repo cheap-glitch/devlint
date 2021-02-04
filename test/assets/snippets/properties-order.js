@@ -94,7 +94,7 @@ module.exports = {
 		`,
 			['foo', 'bar'],
 		],
-			'property "foo" should be placed before "bar"', { line: 12, column: 3, char: 75 }, { line: 12, column: 8, char: 80 },
+			'property "foo" should be placed before "bar"', { line: 9, column: 3, char: 72 }, { line: 9, column: 8, char: 77 },
 		],
 		[[`
 			{
