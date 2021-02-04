@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
 import 'v8-compile-cache';
-
 import chalk from 'chalk';
 import { formatWithOptions } from 'util';
+import { release as osRelease } from 'os';
 
 import { cli } from '../src/cli';
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require('../../package.json');
 
@@ -49,19 +48,23 @@ const faces = [ // {{{
 
 function onFatalError(error: unknown) {
 	console.error([
-		`DevLint v${version}`,
 		'',
 		faces[Math.floor(Math.random() * faces.length)],
-		chalk.bold('An unexpected fatal error has occurred!'),
+		chalk.bold.yellow('An unexpected fatal error has occurred!'),
 		'',
+		'We’re very sorry about that. If you think this is a bug in DevLint, you can report it at:',
+		'https://github.com/cheap-glitch/devlint/issues',
+		'Please also include the informations below to help us fix the problem faster!',
+		'',
+		// TODO: copy infos to clipboard?
 		(error instanceof Error)
 			? colorErrorStack(error.stack ?? `${error.constructor.name}: ${error.message}`)
 			: `Raw error data:\n${formatWithOptions({ colors: true }, '%o', error)}`,
-		// '',
-		// `Node version: ${process.versions.node}`,
-		// `System: ${release()}`,
-		// '',
-		// TODO: add link to GitHub issues
+		'',
+		`System:           ${osRelease()}`,
+		`Node version:     ${process.versions.node}`,
+		`DevLint version:  ${version}`,
+		'',
 	].join('\n'));
 
 	process.exitCode = 2;
