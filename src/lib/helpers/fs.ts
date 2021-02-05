@@ -49,7 +49,7 @@ export async function readFileContents(path: FsPathSegments): Promise<string> {
 }
 
 export function getPathHierarchy(path: FsPathSegments): Array<FsPathSegments> {
-	return ['/', ...getAbsolutePath(path).split('/')].map((_, index, pathSegments) => pathSegments.slice(0, pathSegments.length - index)).filter(Boolean);
+	return ['/', ...getAbsolutePath(path).split('/').filter(Boolean)].map((_, index, pathSegments) => pathSegments.slice(0, pathSegments.length - index));
 }
 
 export function getAbsolutePath(pathSegments: Array<string>): string {

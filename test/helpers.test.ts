@@ -1,4 +1,5 @@
 import { checkStringCase } from '../src/lib/rules/helpers';
+import { getPathHierarchy } from '../src/lib/helpers/fs';
 import { parsePropertiesPath } from '../src/lib/helpers/properties';
 
 describe('checkStringCase', () => {
@@ -180,6 +181,24 @@ describe('parsePropertiesPath', () => {
 
 		expect(parsePropertiesPath('.foo[0].bar.2'      )).toEqual(['foo', 0, 'bar', 2]);
 		expect(parsePropertiesPath('[0].foo..[1].bar[2]')).toEqual([0, 'foo', 1, 'bar', 2]);
+
+	}); // }}}
+
+});
+
+describe('getPathHierarchy', () => {
+
+	test('simple paths', () => { // {{{
+
+		expect(getPathHierarchy(['/foo/bar/baz'   ])).toEqual([['/', 'foo', 'bar', 'baz'], ['/', 'foo', 'bar'], ['/', 'foo'], ['/']]);
+		expect(getPathHierarchy(['/foo//bar///baz'])).toEqual([['/', 'foo', 'bar', 'baz'], ['/', 'foo', 'bar'], ['/', 'foo'], ['/']]);
+
+	}); // }}}
+
+	test('paths with relative segments', () => { // {{{
+
+		expect(getPathHierarchy(['/foo/bar/../baz'      ])).toEqual([['/', 'foo', 'baz'], ['/', 'foo'], ['/']]);
+		expect(getPathHierarchy(['/foo/../bar/../baz/..'])).toEqual([['/']]);
 
 	}); // }}}
 
