@@ -9,7 +9,7 @@ import { RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/errors';
 import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
 
 const pathToRulePlugins  = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
-const pathToTestSnippets = [__dirname, 'assets', 'snippets'];
+const pathToTestSnippets = [__dirname, 'snippets'];
 
 type TestSnippet = string | [string, JsonValue];
 
