@@ -3,7 +3,7 @@ import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } fro
 export const targetType = RuleTargetType.JsonString;
 
 export function validator({ lines, jsonString: version, jsonAst, parameter: flag }: RuleContext): RuleResult {
-	if (flag !== undefined && (typeof flag !== 'string' || !['simple', 'extended'].includes(flag))) {
+	if (flag !== undefined && flag !== 'simple' && flag !== 'extended') {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
