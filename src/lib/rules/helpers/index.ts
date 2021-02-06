@@ -1,7 +1,10 @@
 import { JsonValue } from 'type-fest';
 
+import { Line } from '../../helpers/text';
 import { isJsonObject } from '../../helpers/json';
 import { PropertiesPathSegments } from '../../helpers/properties';
+
+import { RuleErrorLocation } from '../../errors';
 import { RuleError, RuleErrorType } from '../../rules';
 
 export function checkStringCase(testedString: string, caseStyle: string): boolean | RuleError {
@@ -108,4 +111,23 @@ export function matchStrings(model: string, value: string): boolean {
 
 export function isRegex(model: string): boolean {
 	return model.startsWith('/') && model.endsWith('/');
+}
+
+export function findMatchLocation(lines: Array<Line>, matchText: string, matchIndex: number): RuleErrorLocation {
+	const matchLineStart = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex);
+	const matchLineEnd   = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex + matchText.length - 1);
+
+	return {
+		start: matchLineStart !== -1 ? {
+			line:   matchLineStart + 1,
+			column: matchIndex - lines[matchLineStart].char + 1,
+			char:   matchIndex
+		} : undefined,
+
+		end: matchLineEnd !== -1 ? {
+			line:   matchLineEnd + 1,
+			column: matchIndex - lines[matchLineEnd].char + matchText.length,
+			char:   matchIndex + matchText.length - 1
+		} : undefined,
+	};
 }

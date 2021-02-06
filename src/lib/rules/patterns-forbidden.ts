@@ -1,4 +1,4 @@
-import { isRegex } from './helpers';
+import { isRegex, findMatchLocation } from './helpers';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
@@ -26,21 +26,9 @@ export function validator({ contents, lines, parameter: forbiddenPatterns }: Rul
 			matchIndex = contents.indexOf(pattern);
 		}
 
-		if (match === undefined || matchIndex === -1) {
-			continue;
+		if (match !== undefined && matchIndex !== -1) {
+			return new RuleError(`pattern "${match}" is forbidden`, findMatchLocation(lines, match, matchIndex), lines);
 		}
-
-		const matchLineStart = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex);
-		const matchLineEnd   = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex + match.length - 1);
-		if (matchLineStart === -1 || matchLineEnd === -1) {
-			throw new Error();
-		}
-
-		return new RuleError('found forbidden parameter',
-			{ line: matchLineStart + 1, column: matchIndex - lines[matchLineStart].char, char: matchIndex },
-			{ line: matchLineEnd   + 1, column: matchIndex - lines[matchLineEnd  ].char, char: matchIndex + match.length - 1 },
-			lines
-		);
 	}
 
 	return true;
