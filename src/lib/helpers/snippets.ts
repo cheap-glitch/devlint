@@ -3,11 +3,11 @@ import chalk from 'chalk';
 import { Line, capitalize } from './text';
 
 import { RuleStatus } from '../rules';
-import { RuleErrorLocation } from '../errors';
+import { RuleErrorPosition } from '../errors';
 
 export type Snippet = Array<Line>;
 
-export function formatSnippet(snippet: Snippet, start: RuleErrorLocation, end: RuleErrorLocation, ruleStatus: RuleStatus): string {
+export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: RuleErrorPosition, ruleStatus: RuleStatus): string {
 	if (snippet.length === 0) {
 		return '';
 	}
@@ -29,7 +29,7 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorLocation, end: R
 	}).join('\n');
 }
 
-export function cutSnippet(lines: Array<Line>, start: RuleErrorLocation, end: RuleErrorLocation): Snippet {
+export function cutSnippet(lines: Array<Line>, start: RuleErrorPosition, end: RuleErrorPosition): Snippet {
 	const firstLineIndex = Math.max(0, start.line - (lines[0]?.number ?? 0) - 1);
 	const lastLineIndex  = Math.max(firstLineIndex, end.line - (lines[0]?.number ?? 0) + 1);
 

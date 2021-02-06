@@ -15,12 +15,7 @@ export function validator({ lines, jsonObject, jsonObjectAst, parameter: model }
 	if (Array.isArray(result)) {
 		const jsonValueAst = tryGettingJsonAstProperty(jsonObjectAst, result);
 
-		return new RuleError(
-			`failed to match property "${joinPropertiesPathSegments(result)}"`,
-			jsonValueAst ? { ...jsonValueAst.pos.start } : undefined,
-			jsonValueAst ? { ...jsonValueAst.pos.end   } : undefined,
-			lines
-		);
+		return new RuleError(`failed to match property "${joinPropertiesPathSegments(result)}"`, jsonValueAst?.pos, lines);
 	}
 
 	return true;

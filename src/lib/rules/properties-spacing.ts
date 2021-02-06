@@ -23,7 +23,7 @@ export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleCont
 		}
 
 		if (errorMessage !== undefined) {
-			return new RuleError(errorMessage, key.pos.start, key.pos.start, lines);
+			return new RuleError(errorMessage, { start: key.pos.start, end: key.pos.start }, lines);
 		}
 
 		const lineBelow = lines[value.pos.end.line]?.text;
@@ -36,7 +36,7 @@ export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleCont
 		}
 
 		if (errorMessage !== undefined) {
-			return new RuleError(errorMessage, value.pos.end, value.pos.end, lines);
+			return new RuleError(errorMessage, { start: value.pos.end, end: value.pos.end }, lines);
 		}
 	}
 

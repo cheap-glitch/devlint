@@ -5,7 +5,7 @@ import { getLines } from '../src/lib/helpers/text';
 import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
 import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonAstProperty } from '../src/lib/helpers/json';
 
-import { RuleError, RuleErrorType, RuleErrorLocation } from '../src/lib/errors';
+import { RuleError, RuleErrorType, RuleErrorPosition } from '../src/lib/errors';
 import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
 
 const pathToRulePlugins  = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
@@ -15,7 +15,7 @@ type TestSnippet = string | [string, JsonValue];
 
 interface TestSnippetsCollection {
 	passing: Array<TestSnippet>,
-	failing: Array<[TestSnippet, RuleErrorType | string, RuleErrorLocation | undefined, RuleErrorLocation | undefined]>,
+	failing: Array<[TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>,
 }
 
 const ruleNames   = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
@@ -48,15 +48,14 @@ for (const filename of rulesToTest) {
 				const context = buildSnippetContext(targetType, snippet);
 				const error = typeof errorTypeOrMessage === 'number'
 					? new RuleError(errorTypeOrMessage)
-					: new RuleError(
-						errorTypeOrMessage,
-						errorStart === undefined && typeof tryParsingJsonValue(context.contents) !== 'object'
+					: new RuleError(errorTypeOrMessage, {
+						start: errorStart === undefined && typeof tryParsingJsonValue(context.contents) !== 'object'
 							? { line: 1, column: 9, char: 8 }
 							: errorStart,
-						errorEnd === undefined   && typeof tryParsingJsonValue(context.contents) !== 'object'
+						end: errorEnd === undefined   && typeof tryParsingJsonValue(context.contents) !== 'object'
 							? { line: 1, column: 9 + context.contents.length, char: 8 + context.contents.length }
 							: errorEnd,
-					);
+					});
 
 				// eslint-disable-next-line jest/valid-title
 				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), async () => {

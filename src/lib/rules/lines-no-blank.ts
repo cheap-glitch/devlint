@@ -28,7 +28,7 @@ export function validator({ contents, lines }: RuleContext): RuleResult {
 			char:   lines[emptyLineIndex].char + lines[emptyLineIndex].text.length,
 		};
 
-		return new RuleError('line should not be empty', start, end, lines);
+		return new RuleError('line should not be empty', { start, end }, lines);
 	}
 
 	return true;
