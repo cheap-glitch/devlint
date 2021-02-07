@@ -28,23 +28,26 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 	);
 
 	return await Promise.all(rules.map(async (rule) => {
-		if (rule.condition !== undefined && conditions[rule.condition] !== true) {
+		if (rule.condition !== undefined && conditions[rule.condition] !== (rule?.conditionExpectedResult ?? true)) {
 			return SkippedRuleReason.ConditionIsFalse;
 		}
 		if (plugins[rule.name] === undefined) {
 			return new RuleError(RuleErrorType.UnknownRule);
 		}
 
-		const { targetType, validator }                    = plugins[rule.name];
+		const { targetType, validator } = plugins[rule.name];
+
 		const [targetFsPath, targetPropertiesPathSegments] = rule.target;
-		const { contents, lines, jsonValue, jsonAst }      = targetsFsResources[targetFsPath];
+		const { contents, lines, jsonValue, jsonAst } = targetsFsResources[targetFsPath];
+
+		const isRulePermissive = rule.isPermissive ?? false;
 
 		/**
 		 * Directory target
 		 */
 		if (targetType === RuleTargetType.DirectoryListing) {
 			if (targetPropertiesPathSegments.length > 0) {
-				return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
+				return isRulePermissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			// TODO: test that the path is an accessible directory
 
@@ -56,7 +59,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		 */
 		if (targetType === RuleTargetType.FileContents) {
 			if (targetPropertiesPathSegments.length > 0) {
-				return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
+				return isRulePermissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			if (contents === undefined) {
 				// TODO: thow/return error on missing/unaccessible file?
@@ -102,7 +105,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 			case RuleTargetType.JsonObject:
 				if (!isJsonObject(propertyValue) || !isJsonObjectAst(propertyAst)) {
-					return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
+					return isRulePermissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 				}
 				context.jsonObject    = propertyValue;
 				context.jsonObjectAst = propertyAst;
@@ -110,7 +113,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 			case RuleTargetType.JsonString:
 				if (typeof propertyValue !== 'string' || propertyAst.type !== 'string') {
-					return rule.permissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
+					return isRulePermissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 				}
 				context.jsonString = propertyValue;
 				context.jsonAst    = propertyAst;
