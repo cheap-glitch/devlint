@@ -148,7 +148,7 @@ export async function cli(): Promise<void> {
 			continue;
 		}
 
-		if (verbosityLevel >= 1) {
+		if (verbosityLevel >= 2) {
 			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => conditionStatusReport(name, status)).join('\n');
 			if (conditionsStatusReport.length > 0) {
 				console.log(`\nConditions status in ${getAbsolutePath([directory])}:\n` + conditionsStatusReport);

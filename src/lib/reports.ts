@@ -15,8 +15,8 @@ const labels: Record<RuleStatus, string> = {
 };
 
 export function depreciatedRulesReport(depreciatedRules: Array<string>): string {
-	return chalk.yellow(chalk.bold(pluralize('depreciation warning', depreciatedRules.length).toUpperCase()) + '\n' + depreciatedRules.map(ruleName => {
-		let message = `  • "${ruleName}" is depreciated`;
+	return chalk.yellow(chalk.bold(pluralize('⚠️  depreciation warning', depreciatedRules.length).toUpperCase()) + '\n' + depreciatedRules.map(ruleName => {
+		let message = `    • "${ruleName}" is depreciated`;
 
 		const infos = depreciations[ruleName];
 		if (infos === undefined) {
