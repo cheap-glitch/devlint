@@ -25,12 +25,14 @@ export interface RuleContext {
 }
 
 export interface RuleObject {
-	name:       string
-	status:     RuleStatus,
-	target:     RuleTarget,
-	parameter?: JsonValue,
-	condition?: string,
-	permissive: boolean,
+	name:          string
+	status:        RuleStatus,
+	target:        RuleTarget,
+	parameter?:    JsonValue,
+	isPermissive?: boolean,
+
+	condition?:               string,
+	conditionExpectedResult?: boolean,
 }
 
 export type RuleTarget = [FsPath, PropertiesPathSegments];
@@ -50,21 +52,6 @@ export enum RuleStatus {
 	Skipped  = 'skipped',
 }
 
-export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
-	return {
-		workingDirectory: '.',
-		contents:         '',
-		lines:            [],
-		jsonValue:        {},
-		jsonObject:       {},
-		jsonString:       '',
-		jsonAst:          { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		jsonObjectAst:    { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		parameter:        '',
-		...data,
-	};
-}
-
 export function parseRules(rulesObject: JsonValue): Array<RuleObject> {
 	if (!isJsonObject(rulesObject)) {
 		return [];
@@ -78,60 +65,37 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 
 	for (const [key, value] of Object.entries(rulesObject)) {
 		if (value === null) {
-			throw new Error(`invalid rules config: "${key}" has a value of \`null\``);
+			throw new Error(`invalid rule configuration: "${key}" has a value of \`null\``);
 		}
 
 		// Rule state
 		if (typeof value === 'string' || typeof value === 'number') {
-			const ruleStatus = parseRuleStatus(value);
-			if (ruleStatus === RuleStatus.Off) {
+			const status = parseRuleStatus(value);
+			if (status === RuleStatus.Off) {
 				continue;
 			}
 
-			const rule: RuleObject = {
-				name:       parseRuleName(key),
-				status:     ruleStatus,
-				target:     parentTarget,
-				permissive: key.includes('?'),
-			};
-			const condition = parseRuleCondition(key);
-			if (condition !== undefined) {
-				rule.condition = condition;
-			}
-
-			rules.push(rule);
+			rules.push(buildRuleObject(key, status, parentTarget));
 			continue;
 		}
 
 		// Rule state and parameter
 		if (Array.isArray(value)) {
 			if (value.length !== 2) {
-				throw new Error(`invalid rules config: the value of "${key}" must be an array of two elements`);
+				throw new Error(`invalid rule configuration: the value of "${key}" must be an array of two elements`);
 			}
 
-			const [rawStatus, ruleParameter] = value;
-			if (typeof rawStatus !== 'string') {
-				throw new TypeError(`invalid rules config: the status of "${key}" must be a string`);
+			const [rawStatus, parameter] = value;
+			if (typeof rawStatus !== 'string' && typeof rawStatus !== 'number') {
+				throw new TypeError(`invalid rule configuration: the status of "${key}" must be a string`);
 			}
 
-			const ruleStatus = parseRuleStatus(rawStatus);
-			if (ruleStatus === RuleStatus.Off) {
+			const status = parseRuleStatus(rawStatus);
+			if (status === RuleStatus.Off) {
 				continue;
 			}
 
-			const rule: RuleObject = {
-				name:       parseRuleName(key),
-				status:     ruleStatus,
-				target:     parentTarget,
-				parameter:  ruleParameter,
-				permissive: key.includes('?'),
-			};
-			const condition = parseRuleCondition(key);
-			if (condition !== undefined) {
-				rule.condition = condition;
-			}
-
-			rules.push(rule);
+			rules.push(buildRuleObject(key, status, parentTarget, parameter));
 			continue;
 		}
 
@@ -144,7 +108,7 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 			// The hashtag indicates the start of the properties path
 			if (key.includes(PROPERTIES_PATH_STARTING_CHARACTER)) {
 				if (parentPropertiesPath.length > 0) {
-					throw new Error(`invalid rules config: "${key}" starts a property path inside another property path`);
+					throw new Error(`invalid rule configuration: "${key}" starts a property path inside another property path`);
 				}
 
 				const [fsPath, propertyPath] = key.split('#', 2);
@@ -164,18 +128,49 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 			continue;
 		}
 
-		throw new Error(`invalid rules config: "${key}"`);
+		throw new Error(`invalid rule configuration: "${key}"`);
 	}
 
 	return rules;
 }
 
-function parseRuleName(name: string): string {
-	return name.replace(/\(\w+\)/, '').replace('?', '').trim();
+export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
+	return {
+		workingDirectory: '.',
+		contents:         '',
+		lines:            [],
+		jsonValue:        {},
+		jsonObject:       {},
+		jsonString:       '',
+		jsonAst:          { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
+		jsonObjectAst:    { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
+		parameter:        '',
+		...data,
+	};
 }
 
-function parseRuleCondition(name: string): string | undefined {
-	return name.match(/\((?<condition>\w+)\)/)?.groups?.condition;
+function buildRuleObject(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): RuleObject {
+	const match = key.trim().match(/^(?<name>[\w-]+)\??(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
+	if (!match || !match.groups || !match.groups.name) {
+		throw new Error(`invalid rule declaration: "${key}"`);
+	}
+
+	const rule: RuleObject = { name: match.groups.name, status, target };
+
+	if (parameter !== undefined) {
+		rule.parameter = parameter;
+	}
+	if (key.includes('?')) {
+		rule.isPermissive = true;
+	}
+	if (match.groups.condition !== undefined) {
+		rule.condition = match.groups.condition;
+	}
+	if (match.groups.not !== undefined) {
+		rule.conditionExpectedResult = false;
+	}
+
+	return rule;
 }
 
 function parseRuleStatus(status: number | string): RuleStatus {

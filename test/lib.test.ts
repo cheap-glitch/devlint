@@ -12,15 +12,26 @@ describe('parseRules', () => {
 
 	}); // }}}
 
-	test('invalid rules', () => { // {{{
+	test('invalid rule declarations', () => { // {{{
+
+		expect(() => parseRules({ 'rule name':              'warn' })).toThrow('invalid rule declaration: ');
+		expect(() => parseRules({ '?rule-name':             'warn' })).toThrow('invalid rule declaration: ');
+		expect(() => parseRules({ 'rule-name condition':    'warn' })).toThrow('invalid rule declaration: ');
+		expect(() => parseRules({ '(condition) rule-name':  'warn' })).toThrow('invalid rule declaration: ');
+		expect(() => parseRules({ 'rule-name !(condition)': 'warn' })).toThrow('invalid rule declaration: ');
+		expect(() => parseRules({ 'rule-name (condition!)': 'warn' })).toThrow('invalid rule declaration: ');
+
+	}); // }}}
+
+	test('invalid rule configurations', () => { // {{{
 
 		// eslint-disable-next-line unicorn/no-null
-		expect(() => parseRules({ 'filename.ext': { 'rule-name': null            } })).toThrow('invalid rules config: ');
-		expect(() => parseRules({ 'filename.ext': { 'rule-name': true            } })).toThrow('invalid rules config: ');
-		expect(() => parseRules({ 'filename.ext': { 'rule-name': false           } })).toThrow('invalid rules config: ');
+		expect(() => parseRules({ 'rule-name': null            })).toThrow('invalid rule configuration: ');
+		expect(() => parseRules({ 'rule-name': true            })).toThrow('invalid rule configuration: ');
+		expect(() => parseRules({ 'rule-name': false           })).toThrow('invalid rule configuration: ');
 		// eslint-disable-next-line unicorn/no-null
-		expect(() => parseRules({ 'filename.ext': { 'rule-name': [null,  'foo']  } })).toThrow('invalid rules config: ');
-		expect(() => parseRules({ 'filename.ext': { 'rule-name': [true, ['foo']] } })).toThrow('invalid rules config: ');
+		expect(() => parseRules({ 'rule-name': [null,  'foo']  })).toThrow('invalid rule configuration: ');
+		expect(() => parseRules({ 'rule-name': [true, ['foo']] })).toThrow('invalid rule configuration: ');
 
 	}); // }}}
 
@@ -35,16 +46,14 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:       'first-rule',
-				status:     'error',
-				target:     ['filename.ext', []],
-				permissive: false,
+				name:   'first-rule',
+				status: 'error',
+				target: ['filename.ext', []],
 			},
 			{
-				name:       'third-rule',
-				status:     'warn',
-				target:     ['filename.ext', []],
-				permissive: false,
+				name:   'third-rule',
+				status: 'warn',
+				target: ['filename.ext', []],
 			},
 		]);
 
@@ -61,18 +70,16 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:       'first-rule',
-				status:     'error',
-				target:     ['filename.ext', []],
-				parameter:  'foo',
-				permissive: false,
+				name:      'first-rule',
+				status:    'error',
+				target:    ['filename.ext', []],
+				parameter: 'foo',
 			},
 			{
-				name:       'third-rule',
-				status:     'warn',
-				target:     ['filename.ext', []],
-				parameter:  ['foo', { foo: 'bar' }],
-				permissive: false,
+				name:      'third-rule',
+				status:    'warn',
+				target:    ['filename.ext', []],
+				parameter: ['foo', { foo: 'bar' }],
 			},
 		]);
 
@@ -99,28 +106,24 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:       'first-rule',
-				status:     'error',
-				target:     ['filename.ext', []],
-				permissive: false,
+				name:   'first-rule',
+				status: 'error',
+				target: ['filename.ext', []],
 			},
 			{
-				name:       'second-rule',
-				status:     'error',
-				target:     ['filename.ext', ['property']],
-				permissive: false,
+				name:   'second-rule',
+				status: 'error',
+				target: ['filename.ext', ['property']],
 			},
 			{
-				name:       'third-rule',
-				status:     'error',
-				target:     ['filename.ext', ['property', 'foo', 'bar']],
-				permissive: false,
+				name:   'third-rule',
+				status: 'error',
+				target: ['filename.ext', ['property', 'foo', 'bar']],
 			},
 			{
-				name:       'fourth-rule',
-				status:     'error',
-				target:     ['filename.ext', ['property', 'foo', 'bar', 2]],
-				permissive: false,
+				name:   'fourth-rule',
+				status: 'error',
+				target: ['filename.ext', ['property', 'foo', 'bar', 2]],
 			},
 		]);
 
@@ -135,18 +138,16 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:       'first-rule',
-				status:     'error',
-				target:     ['.', []],
-				parameter:  'foo',
-				permissive: false,
+				name:      'first-rule',
+				status:    'error',
+				target:    ['.', []],
+				parameter: 'foo',
 			},
 			{
-				name:       'third-rule',
-				status:     'warn',
-				target:     ['.', []],
-				parameter:  ['foo', { foo: 'bar' }],
-				permissive: false,
+				name:      'third-rule',
+				status:    'warn',
+				target:    ['.', []],
+				parameter: ['foo', { foo: 'bar' }],
 			},
 		]);
 
@@ -155,24 +156,23 @@ describe('parseRules', () => {
 	test('conditional rules', () => { // {{{
 
 		expect(parseRules({
-			'first-rule (condition)':  'error',
+			'first-rule  (condition)': 'error',
 			'second-rule (condition)': 'off',
-			'(condition) third-rule':  'warn',
+			'third-rule (!condition)': 'warn',
 		}))
 		.toEqual([
 			{
-				name:       'first-rule',
-				status:     'error',
-				target:     ['.', []],
-				condition:  'condition',
-				permissive: false,
+				name:      'first-rule',
+				status:    'error',
+				target:    ['.', []],
+				condition: 'condition',
 			},
 			{
-				name:       'third-rule',
-				status:     'warn',
-				target:     ['.', []],
-				condition:  'condition',
-				permissive: false,
+				name:      'third-rule',
+				status:    'warn',
+				target:    ['.', []],
+				condition: 'condition',
+				conditionExpectedResult: false,
 			},
 		]);
 
@@ -187,16 +187,15 @@ describe('parseRules', () => {
 		}))
 		.toEqual([
 			{
-				name:       'first-rule',
-				status:     'error',
-				target:     ['.', []],
-				permissive: false,
+				name:         'first-rule',
+				status:       'error',
+				target:       ['.', []],
 			},
 			{
-				name:       'third-rule',
-				status:     'warn',
-				target:     ['.', []],
-				permissive: true,
+				name:         'third-rule',
+				status:       'warn',
+				target:       ['.', []],
+				isPermissive: true,
 			},
 		]);
 
