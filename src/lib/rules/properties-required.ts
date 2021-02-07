@@ -9,7 +9,7 @@ export function validator({ lines, jsonObject, jsonObjectAst, parameter: require
 
 	const missingProperty = requiredProperties.find(property => typeof property !== 'string' || !Object.keys(jsonObject).includes(property));
 	if (missingProperty !== undefined) {
-		return new RuleError(`missing required property "${missingProperty}"`, jsonObjectAst.pos, lines);
+		return new RuleError(`required property "${missingProperty}" is missing`, jsonObjectAst.pos, lines);
 	}
 
 	return true;
