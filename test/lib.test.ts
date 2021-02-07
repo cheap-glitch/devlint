@@ -201,6 +201,29 @@ describe('parseRules', () => {
 
 	}); // }}}
 
+	test('single declaration with multiple rules', () => { // {{{
+
+		expect(parseRules({
+			'first-rule (condition), third-rule?': 'error',
+			'second-rule, fourth-rule':            'off',
+		}))
+		.toEqual([
+			{
+				name:         'first-rule',
+				status:       'error',
+				target:       ['.', []],
+				condition:    'condition',
+			},
+			{
+				name:         'third-rule',
+				status:       'error',
+				target:       ['.', []],
+				isPermissive: true,
+			},
+		]);
+
+	}); // }}}
+
 });
 
 describe('extendConfig', () => {

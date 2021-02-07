@@ -75,7 +75,7 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 				continue;
 			}
 
-			rules.push(buildRuleObject(key, status, parentTarget));
+			rules.push(...buildRuleObjects(key, status, parentTarget));
 			continue;
 		}
 
@@ -95,7 +95,7 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 				continue;
 			}
 
-			rules.push(buildRuleObject(key, status, parentTarget, parameter));
+			rules.push(...buildRuleObjects(key, status, parentTarget, parameter));
 			continue;
 		}
 
@@ -149,28 +149,30 @@ export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
 	};
 }
 
-function buildRuleObject(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): RuleObject {
-	const match = key.trim().match(/^(?<name>[\w-]+)\??(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
-	if (!match || !match.groups || !match.groups.name) {
-		throw new Error(`invalid rule declaration: "${key}"`);
-	}
+function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): Array<RuleObject> {
+	return key.split(',').map(ruleDeclaration => {
+		const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)\??(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
+		if (!match || !match.groups || !match.groups.name) {
+			throw new Error(`invalid rule declaration: "${ruleDeclaration}"`);
+		}
 
-	const rule: RuleObject = { name: match.groups.name, status, target };
+		const rule: RuleObject = { name: match.groups.name, status, target };
 
-	if (parameter !== undefined) {
-		rule.parameter = parameter;
-	}
-	if (key.includes('?')) {
-		rule.isPermissive = true;
-	}
-	if (match.groups.condition !== undefined) {
-		rule.condition = match.groups.condition;
-	}
-	if (match.groups.not !== undefined) {
-		rule.conditionExpectedResult = false;
-	}
+		if (parameter !== undefined) {
+			rule.parameter = parameter;
+		}
+		if (ruleDeclaration.includes('?')) {
+			rule.isPermissive = true;
+		}
+		if (match.groups.condition !== undefined) {
+			rule.condition = match.groups.condition;
+		}
+		if (match.groups.not !== undefined) {
+			rule.conditionExpectedResult = false;
+		}
 
-	return rule;
+		return rule;
+	});
 }
 
 function parseRuleStatus(status: number | string): RuleStatus {
