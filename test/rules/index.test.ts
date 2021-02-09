@@ -1,14 +1,14 @@
 import { readdirSync } from 'fs';
 import { JsonValue } from 'type-fest';
 
-import { getLines } from '../src/lib/helpers/text';
-import { joinPathSegments, getAbsolutePath } from '../src/lib/helpers/fs';
-import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonAstProperty } from '../src/lib/helpers/json';
+import { getLines } from '../../src/lib/helpers/text';
+import { joinPathSegments, getAbsolutePath } from '../../src/lib/helpers/fs';
+import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonAstProperty } from '../../src/lib/helpers/json';
 
-import { RuleError, RuleErrorType, RuleErrorPosition } from '../src/lib/errors';
-import { RuleTargetType, RuleContext, buildRuleContext } from '../src/lib/rules';
+import { RuleError, RuleErrorType, RuleErrorPosition } from '../../src/lib/errors';
+import { RuleTargetType, RuleContext, buildRuleContext } from '../../src/lib/rules';
 
-const pathToRulePlugins  = joinPathSegments([__dirname, '..', 'build', 'src', 'lib', 'rules']);
+const pathToRulePlugins  = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
 const pathToTestSnippets = [__dirname, 'snippets'];
 
 type TestSnippet = string | [string, JsonValue];
