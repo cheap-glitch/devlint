@@ -1,4 +1,4 @@
-import { checkStringCase } from './helpers';
+import { checkStringCase } from '../helpers/text';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonString;

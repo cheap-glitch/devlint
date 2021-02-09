@@ -1,4 +1,5 @@
-import { findMatchLocation, getMarkdownHeaders } from './helpers';
+import { findMatchLocation } from '../helpers/text';
+import { getMarkdownHeaders } from '../helpers/markdown';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;

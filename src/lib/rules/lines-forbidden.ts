@@ -1,4 +1,4 @@
-import { matchStrings } from './helpers';
+import { matchStrings } from '../helpers/text';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;

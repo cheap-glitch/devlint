@@ -1,4 +1,4 @@
-import { matchJsonPrimitives } from './helpers';
+import { matchJsonPrimitives } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;

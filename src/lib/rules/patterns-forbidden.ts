@@ -1,4 +1,4 @@
-import { isRegex, findMatchLocation } from './helpers';
+import { isRegex, findMatchLocation } from '../helpers/text';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;

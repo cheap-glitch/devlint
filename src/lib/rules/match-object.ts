@@ -1,7 +1,5 @@
-import { matchJsonValues } from './helpers';
 import { joinPropertiesPathSegments } from '../helpers/properties';
-import { isJsonObject, tryGettingJsonAstProperty } from '../helpers/json';
-
+import { isJsonObject, tryGettingJsonAstProperty, matchJsonValues } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;

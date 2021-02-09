@@ -1,4 +1,4 @@
-import { getMarkdownHeaders } from './helpers';
+import { getMarkdownHeaders } from '../helpers/markdown';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;

@@ -1,4 +1,4 @@
-import { checkValueType } from './helpers';
+import { checkValueType } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;
