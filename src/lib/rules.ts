@@ -1,5 +1,5 @@
-import { JsonValue, JsonObject } from 'type-fest';
-import { JsonValue as JsonAst, JsonObject as JsonObjectAst } from 'jsonast';
+import { JsonValue, JsonObject, JsonArray } from 'type-fest';
+import { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
 
 import { Line } from './helpers/text';
 import { isJsonObject } from './helpers/json';
@@ -18,9 +18,11 @@ export interface RuleContext {
 	lines:            Array<Line>,
 	jsonValue:        JsonValue,
 	jsonObject:       JsonObject,
+	jsonArray:        JsonArray,
 	jsonString:       string,
 	jsonAst:          JsonAst,
 	jsonObjectAst:    JsonObjectAst,
+	jsonArrayAst:     JsonArrayAst,
 	parameter:        JsonValue,
 }
 
@@ -42,6 +44,7 @@ export enum RuleTargetType {
 	FileContents,
 	JsonValue,
 	JsonObject,
+	JsonArray,
 	JsonString,
 }
 
@@ -141,9 +144,11 @@ export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
 		lines:            [],
 		jsonValue:        {},
 		jsonObject:       {},
+		jsonArray:        [],
 		jsonString:       '',
 		jsonAst:          { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
 		jsonObjectAst:    { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
+		jsonArrayAst:     { type: 'array',  pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
 		parameter:        '',
 		...data,
 	};

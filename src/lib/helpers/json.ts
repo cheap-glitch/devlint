@@ -1,5 +1,5 @@
-import { JsonValue, JsonObject } from 'type-fest';
-import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst } from 'jsonast';
+import { JsonValue, JsonObject, JsonArray } from 'type-fest';
+import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
 
 import { matchStrings } from './text';
 import { PropertiesPathSegments } from './properties';
@@ -137,6 +137,14 @@ export function isJsonObjectAst(jsonAst: JsonAst | undefined): jsonAst is JsonOb
 	return jsonAst !== undefined && jsonAst.type === 'object';
 }
 
+export function isJsonArrayAst(jsonAst: JsonAst | undefined): jsonAst is JsonArrayAst {
+	return jsonAst !== undefined && jsonAst.type === 'array';
+}
+
 export function isJsonObject(jsonValue: JsonValue | undefined): jsonValue is JsonObject {
 	return typeof jsonValue === 'object' && jsonValue !== null && !Array.isArray(jsonValue);
+}
+
+export function isJsonArray(jsonValue: JsonValue | undefined): jsonValue is JsonArray {
+	return Array.isArray(jsonValue);
 }

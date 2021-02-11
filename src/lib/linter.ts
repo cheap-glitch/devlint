@@ -1,6 +1,7 @@
 import { getLines } from './helpers/text';
 import { FsPath, joinPathSegments, tryReadingFileContents } from './helpers/fs';
-import { isJsonObject, isJsonObjectAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
+import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst } from './helpers/json';
+import { tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { loadBuiltinPlugins } from './plugins';
 import { RuleTargetType, RuleObject, RuleResult, RuleError, RuleErrorType, RuleContext, buildRuleContext } from './rules';
@@ -109,6 +110,14 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 				}
 				context.jsonObject    = propertyValue;
 				context.jsonObjectAst = propertyAst;
+				break;
+
+			case RuleTargetType.JsonArray:
+				if (!isJsonArray(propertyValue) || !isJsonArrayAst(propertyAst)) {
+					return isRulePermissive ? SkippedRuleReason.WrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
+				}
+				context.jsonArray    = propertyValue;
+				context.jsonArrayAst = propertyAst;
 				break;
 
 			case RuleTargetType.JsonString:
