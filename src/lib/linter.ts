@@ -1,10 +1,10 @@
 import { getLines } from './helpers/text';
-import { FsPath, joinPathSegments, tryReadingFileContents } from './helpers/fs';
+import { joinPathSegments, tryReadingFileContents } from './helpers/fs';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst } from './helpers/json';
 import { tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 
 import { loadBuiltinPlugins } from './plugins';
-import { RuleTargetType, RuleObject, RuleResult, RuleError, RuleErrorType, RuleContext, buildRuleContext } from './rules';
+import { RuleTargetType, RuleObject, RuleResult, RuleError, RuleErrorType, buildRuleContext } from './rules';
 
 export enum SkippedRuleReason {
 	ConditionIsFalse,
@@ -12,21 +12,20 @@ export enum SkippedRuleReason {
 }
 
 export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Array<RuleResult | SkippedRuleReason>> {
-	const plugins = await loadBuiltinPlugins(new Set(rules.map(rule => rule.name + '.js')));
+	const plugins       = await loadBuiltinPlugins(new Set(rules.map(rule => rule.name + '.js')));
+	const targetedFiles = [...new Set(rules.map(rule => rule.target[0]))];
 
 	// Load and parse all the targeted files only once
-	const targetsFsResources: Record<FsPath, Partial<RuleContext>> = Object.fromEntries(
-		await Promise.all([...new Set(rules.map(rule => rule.target[0]))].map(async (targetFsPath) => {
-			const fileContents = await tryReadingFileContents([workingDirectory, targetFsPath]);
+	const targetsFsResources = Object.fromEntries(await Promise.all(targetedFiles.map(async (targetFsPath) => {
+		const fileContents = await tryReadingFileContents([workingDirectory, targetFsPath]);
 
-			return [targetFsPath, {
-				contents:    fileContents,
-				lines:       fileContents !== undefined ? getLines(fileContents)            : [],
-				jsonValue:   fileContents !== undefined ? tryParsingJsonValue(fileContents) : undefined,
-				jsonAst:     fileContents !== undefined ? tryParsingJsonAst(fileContents)   : undefined,
-			}];
-		}))
-	);
+		return [targetFsPath, {
+			contents:  fileContents,
+			lines:     fileContents !== undefined ? getLines(fileContents)            : [],
+			jsonValue: fileContents !== undefined ? tryParsingJsonValue(fileContents) : new SyntaxError(),
+			jsonAst:   fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError(),
+		}];
+	})));
 
 	return await Promise.all(rules.map(async (rule) => {
 		if (rule.condition !== undefined && conditions[rule.condition] !== (rule?.conditionExpectedResult ?? true)) {
@@ -44,7 +43,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		const isRulePermissive = rule.isPermissive ?? false;
 
 		/**
-		 * Directory target
+		 * Directory
 		 */
 		if (targetType === RuleTargetType.DirectoryListing) {
 			if (targetPropertiesPathSegments.length > 0) {
@@ -56,7 +55,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		}
 
 		/**
-		 * File target
+		 * File
 		 */
 		if (targetType === RuleTargetType.FileContents) {
 			if (targetPropertiesPathSegments.length > 0) {
@@ -71,14 +70,15 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		}
 
 		/**
-		 * JSON value target
+		 * JSON value
 		 */
 		if (contents === undefined) {
 			// TODO: thow/return error on missing/unaccessible file?
 			return true;
 		}
-		if (jsonValue === undefined || jsonAst === undefined) {
-			return new RuleError(RuleErrorType.InvalidTargetType);
+		if (jsonValue instanceof SyntaxError || jsonAst instanceof SyntaxError) {
+			// TODO [>=0.5.0]: exploit line & column numbers
+			return new RuleError(jsonValue.message ?? jsonAst.message ?? 'invalid JSON encountered');
 		}
 		if ((targetType === RuleTargetType.JsonValue || targetType === RuleTargetType.JsonString) && targetPropertiesPathSegments.length === 0) {
 			return new RuleError(RuleErrorType.InvalidTargetType);

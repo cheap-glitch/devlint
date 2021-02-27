@@ -111,23 +111,24 @@ export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertiesPat
 	return currentPropertyValue;
 }
 
-export function tryParsingJsonAst(json: string): JsonAst | undefined {
+export function tryParsingJsonAst(json: string): JsonAst | SyntaxError {
 	let jsonAst;
 	try {
 		jsonAst = parseJsonAst(json);
-	} catch {
-		return undefined;
+	} catch (error) {
+		// TODO [>=0.5.0]: extract line & column numbers (https://github.com/KnisterPeter/jsonast/blob/61bcf18f39ed1709822f44ab00e09e8a4d832d08/src/character-stream.ts#L51)
+		return new SyntaxError(error.message);
 	}
 
 	return jsonAst;
 }
 
-export function tryParsingJsonValue(json: string): JsonValue | undefined {
+export function tryParsingJsonValue(json: string): JsonValue | SyntaxError {
 	let jsonValue;
 	try {
 		jsonValue = JSON.parse(json);
-	} catch {
-		return undefined;
+	} catch (error) {
+		return error;
 	}
 
 	return jsonValue;

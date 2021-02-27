@@ -118,6 +118,10 @@ export async function cli(): Promise<void> {
 						totals.skipped++;
 						return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'unknown rule') : '';
 
+					case RuleErrorType.InvalidJson:
+						totals.skipped++;
+						return options.skipped ? skippedRuleReport(verbosityLevel, rule, 'invalid JSON encountered') : '';
+
 					case RuleErrorType.InvalidTargetType:
 						// TODO: return an error report here?
 						totals.skipped++;

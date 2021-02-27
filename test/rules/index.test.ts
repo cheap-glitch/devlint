@@ -1,5 +1,6 @@
 import { readdirSync } from 'fs';
 import { JsonValue } from 'type-fest';
+import { JsonValue as JsonAst } from 'jsonast';
 
 import { getLines } from '../../src/lib/helpers/text';
 import { joinPathSegments, getAbsolutePath } from '../../src/lib/helpers/fs';
@@ -37,7 +38,7 @@ for (const filename of rulesToTest) {
 				const context = buildSnippetContext(targetType, snippet);
 
 				// eslint-disable-next-line jest/valid-title
-				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), async () => {
+				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(), async () => {
 					expect(await validator(context)).toBe(true);
 				});
 			}
@@ -45,20 +46,22 @@ for (const filename of rulesToTest) {
 
 		describe('failing', () => {
 			for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets) {
-				const context = buildSnippetContext(targetType, snippet);
+				const context   = buildSnippetContext(targetType, snippet);
+				const jsonValue = tryParsingJsonValue(context.contents);
+
 				const error = typeof errorTypeOrMessage === 'number'
 					? new RuleError(errorTypeOrMessage)
 					: new RuleError(errorTypeOrMessage, {
-						start: errorStart === undefined && typeof tryParsingJsonValue(context.contents) !== 'object'
+						start: errorStart === undefined && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object'
 							? { line: 1, column: 9, char: 8 }
 							: errorStart,
-						end: errorEnd === undefined   && typeof tryParsingJsonValue(context.contents) !== 'object'
+						end: errorEnd === undefined && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object'
 							? { line: 1, column: 9 + context.contents.length, char: 8 + context.contents.length }
 							: errorEnd,
 					});
 
 				// eslint-disable-next-line jest/valid-title
-				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(' '), async () => {
+				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(), async () => {
 					const result = await validator(context);
 
 					expect(result).toBeInstanceOf(Error);
@@ -76,7 +79,7 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 	const contents  = rawContents.trim().startsWith('{') && rawContents.trim().endsWith('}') ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
-	let jsonAst     = tryParsingJsonAst(contents);
+	let jsonAst: JsonAst | SyntaxError | undefined = tryParsingJsonAst(contents);
 
 	switch (targetType) {
 		// TODO
@@ -87,14 +90,14 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 			return buildRuleContext({ contents, lines, parameter });
 
 		default:
-			if (jsonAst === undefined && typeof jsonValue !== 'object') {
-				// FIXME: fork jsonast ?
+			if ((jsonAst instanceof SyntaxError || jsonAst === undefined) && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object') {
+				// FIXME: fork jsonast
 				jsonAst = tryParsingJsonAst(`{"prop":${contents}}`);
-				if (jsonAst !== undefined) {
+				if (!(jsonAst instanceof SyntaxError) && jsonAst !== undefined) {
 					jsonAst = tryGettingJsonAstProperty(jsonAst, ['prop']);
 				}
 			}
-			if (jsonValue === undefined || jsonAst === undefined) {
+			if (jsonValue instanceof SyntaxError || jsonAst instanceof SyntaxError || jsonAst === undefined) {
 				throw new TypeError();
 			}
 
