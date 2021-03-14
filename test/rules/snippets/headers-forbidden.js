@@ -2,6 +2,7 @@ const outdent = require('outdent');
 
 module.exports = {
 	passing: [
+
 		[outdent`
 			# Header
 
@@ -45,9 +46,11 @@ module.exports = {
 			`,
 			['# Foo', '### Foo'],
 		],
+
 	],
 
 	failing: [
+
 		[['', true],                      2],
 		[['', 'Foo'],                     2],
 		[['', '## Foo'],                  2],
@@ -93,5 +96,6 @@ module.exports = {
 			`,
 			['## Foo'],
 		], 'header "Foo" is forbidden', { line: 10, column: 1, char: 54 }, { line: 10, column: 6, char: 59 }],
+
 	],
 };

@@ -1,5 +1,5 @@
 import { findMatchLocation } from '../helpers/text';
-import { parseMarkdownHeaders, getMarkdownHeaders } from '../helpers/markdown';
+import { parseMarkdownHeaders, getMarkdownHeaders, isMatchingHeader } from '../helpers/markdown';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
@@ -14,9 +14,9 @@ export function validator({ contents, lines, parameter: rawHeaders }: RuleContex
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const { text: headerText, level: headerLevel, char, fullMatch } of getMarkdownHeaders(contents)) {
-		if (forbiddenHeaders.some(({ text, level }) => headerText === text && (headerLevel === level || level === 0))) {
-			return new RuleError(`header "${headerText}" is forbidden`, findMatchLocation(lines, fullMatch, char), lines);
+	for (const header of getMarkdownHeaders(contents)) {
+		if (forbiddenHeaders.some(forbiddenHeader => isMatchingHeader(header, forbiddenHeader))) {
+			return new RuleError(`header "${header.text}" is forbidden`, findMatchLocation(lines, header.fullMatch, header.char), lines);
 		}
 	}
 

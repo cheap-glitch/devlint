@@ -14,12 +14,12 @@ export function parseMarkdownHeaders(rawHeaders: Array<unknown>): Array<Markdown
 			return new Error();
 		}
 
-		const match  = rawHeader.match(markdownHeaderRegex);
+		const match = rawHeader.match(markdownHeaderRegex);
 		const header = {
 			text:      match?.groups?.text.trim()  ?? rawHeader.trim(),
 			level:     match?.groups?.level.length ?? 0,
 			char:      match?.index                ?? -1,
-			fullMatch: match?.[0]?.trim()          ?? '',
+			fullMatch: match?.[0]                  ?? '',
 		};
 
 		headers.push(header);
@@ -33,6 +33,10 @@ export function getMarkdownHeaders(text: string): Array<MarkdownHeader> {
 		text:      match.groups?.text.trim()  ?? '',
 		level:     match.groups?.level.length ?? 0,
 		char:      match.index                ?? -1,
-		fullMatch: match[0].trim(),
+		fullMatch: match[0],
 	}));
+}
+
+export function isMatchingHeader({ text, level }: MarkdownHeader, baseHeader: MarkdownHeader): boolean {
+	return text === baseHeader.text && (level === baseHeader.level || baseHeader.level === 0);
 }

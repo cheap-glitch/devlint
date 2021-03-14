@@ -1,4 +1,4 @@
-import { parseMarkdownHeaders, getMarkdownHeaders } from '../helpers/markdown';
+import { parseMarkdownHeaders, getMarkdownHeaders, isMatchingHeader } from '../helpers/markdown';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
@@ -15,9 +15,9 @@ export function validator({ contents, parameter: rawHeaders }: RuleContext): Rul
 
 	const headers = getMarkdownHeaders(contents);
 
-	for (const { text, level } of requiredHeaders) {
-		if (!headers.some(header => header.text === text && (header.level === level || level === 0))) {
-			return new RuleError(`required header "${text}" is missing`);
+	for (const requiredHeader of requiredHeaders) {
+		if (!headers.some(header => isMatchingHeader(header, requiredHeader))) {
+			return new RuleError(`required header "${requiredHeader.text}" is missing`);
 		}
 	}
 
