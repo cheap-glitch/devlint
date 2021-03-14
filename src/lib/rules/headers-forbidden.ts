@@ -9,9 +9,9 @@ export function validator({ contents, lines, parameter: forbiddenHeaders }: Rule
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const { text: headerText, index, fullMatch } of getMarkdownHeaders(contents)) {
+	for (const { text: headerText, char, fullMatch } of getMarkdownHeaders(contents)) {
 		if (forbiddenHeaders.includes(headerText)) {
-			return new RuleError(`header "${headerText}" is forbidden`, findMatchLocation(lines, fullMatch, index), lines);
+			return new RuleError(`header "${headerText}" is forbidden`, findMatchLocation(lines, fullMatch, char), lines);
 		}
 	}
 
