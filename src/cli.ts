@@ -20,6 +20,11 @@ const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
 
 export async function cli(): Promise<void> {
 	const options = yargs(process.argv.slice(2))
+		.parserConfiguration({
+			'duplicate-arguments-array': false,
+			'strip-aliased':             true,
+			'strip-dashed':              true,
+		})
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		.usage(`DevLint v${require(getAbsolutePath([__dirname, '..', '..', 'package.json'])).version}\n`)
 		.usage('Usage:\n  $0 [OPTION]... [DIR]...\n')
@@ -31,19 +36,21 @@ export async function cli(): Promise<void> {
 			['$0 -vv',           'Set the verbosity level to 2'],
 		])
 		.options({
-			quiet:      { type: 'boolean', default: false, alias: 'q', description: 'Do not print anything to stdout'                                                    },
 			// FIXME when https://github.com/yargs/yargs/issues/1679 is done
-			'git-root': { type: 'boolean', default: true,              description: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
-			rules:      { type: 'string',  default: '*',               description: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
-			skipped:    { type: 'boolean', default: true,              description: 'Print a report for skipped rules (disable with --no-skipped)'                       },
-			v:          { type: 'count',   default: 0,                 description: 'Enable verbose output (repeat to increase the verbosity level)'                     },
-			verbose:    { type: 'number',                              description: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
+			'git-root': {             type: 'boolean', default: true, desc: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
+			quiet:      { alias: 'q', type: 'boolean',                desc: 'Do not print anything to stdout'                                                    },
+			rules:      {             type: 'string',  default: '*',  desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
+			skipped:    {             type: 'boolean', default: true, desc: 'Print a report for skipped rules (disable with --no-skipped)'                       },
+			v:          {             type: 'count',                  desc: 'Enable verbose output (repeat to increase the verbosity level)'                     },
+			verbose:    {             type: 'number',                 desc: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
 		})
+		.conflicts('quiet', 'verbose')
 		.completion('completion', 'Generate auto-completion script')
 		.epilogue('Enable auto-completion with one of the following commands:\n  Linux  devlint completion >> ~/.bashrc\n  OSX    devlint completion >> ~/.bash_profile\n')
 		.epilogue('https://devlint.org')
 		.epilogue('Copyright © 2021-present, cheap glitch')
 		.epilogue('This software is distributed under the ISC license')
+		.showHelpOnFail(false, 'Try --help for more information')
 		.argv;
 
 	const selectedRules = (options.rules === '*') ? undefined : options.rules.split(',');
@@ -52,7 +59,7 @@ export async function cli(): Promise<void> {
 	if (!Number.isNaN(options.verbose)) {
 		if (options.verbose !== undefined) {
 			verbosityLevel = Math.max(0, Math.trunc(options.verbose));
-		} else if (process.argv.includes('--verbose')) {
+		} else if ('verbose' in options) {
 			verbosityLevel = 1;
 		}
 	}

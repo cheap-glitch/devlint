@@ -3,7 +3,7 @@
 import 'v8-compile-cache';
 import chalk from 'chalk';
 import { formatWithOptions } from 'util';
-import { release as osRelease } from 'os';
+import { release as getOsInformations } from 'os';
 
 import { cli } from '../src/cli';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -61,9 +61,9 @@ function onFatalError(error: unknown) {
 			? colorErrorStack(error.stack ?? `${error.constructor.name}: ${error.message}`)
 			: `Raw error data:\n${formatWithOptions({ colors: true }, '%o', error)}`,
 		'',
-		`System:           ${osRelease()}`,
-		`Node version:     ${process.versions.node}`,
-		`DevLint version:  ${version}`,
+		`System:          ${getOsInformations()}`,
+		`Node version:    ${process.versions.node}`,
+		`DevLint version: ${version}`,
 		'',
 	].join('\n'));
 
