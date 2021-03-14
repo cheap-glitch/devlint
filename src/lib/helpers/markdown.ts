@@ -5,11 +5,34 @@ interface MarkdownHeader {
 	fullMatch: string,
 }
 
+const markdownHeaderRegex = /^(?<level>#{1,6})\s+(?<text>.+)$/;
+
+export function parseMarkdownHeaders(rawHeaders: Array<unknown>): Array<MarkdownHeader> | Error {
+	const headers = [];
+	for (const rawHeader of rawHeaders) {
+		if (typeof rawHeader !== 'string') {
+			return new Error();
+		}
+
+		const match  = rawHeader.match(markdownHeaderRegex);
+		const header = {
+			text:      match?.groups?.text.trim()  ?? rawHeader.trim(),
+			level:     match?.groups?.level.length ?? 0,
+			char:      match?.index                ?? -1,
+			fullMatch: match?.[0]?.trim()          ?? '',
+		};
+
+		headers.push(header);
+	}
+
+	return headers;
+}
+
 export function getMarkdownHeaders(text: string): Array<MarkdownHeader> {
-	return [...text.matchAll(/^(?<level>#{1,6})\s+(?<text>.+)$/gm)].map(match => ({
-		text:      match?.groups?.text.trim()  ?? '',
-		level:     match?.groups?.level.length ??  0,
-		char:      match.index ?? 0,
-		fullMatch: match[0],
+	return [...text.matchAll(new RegExp(markdownHeaderRegex, 'gm'))].map(match => ({
+		text:      match.groups?.text.trim()  ?? '',
+		level:     match.groups?.level.length ?? 0,
+		char:      match.index                ?? -1,
+		fullMatch: match[0].trim(),
 	}));
 }
