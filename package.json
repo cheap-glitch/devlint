@@ -50,6 +50,14 @@
     "overrides": [
       {
         "files": [
+          "test/rules/snippets/*.js"
+        ],
+        "rules": {
+          "@typescript-eslint/no-var-requires": "off"
+        }
+      },
+      {
+        "files": [
           "test/helpers.test.ts"
         ],
         "rules": {
