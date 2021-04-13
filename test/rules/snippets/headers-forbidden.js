@@ -51,10 +51,11 @@ module.exports = {
 
 	failing: [
 
-		[['', true],                      2],
-		[['', 'Foo'],                     2],
-		[['', '## Foo'],                  2],
-		[['', { text: 'Foo', level: 2 }], 2],
+		[['', true],                        2],
+		[['', 'Foo'],                       2],
+		[['', '## Foo'],                    2],
+		[['', { text: 'Foo', level: 2 }],   2],
+		[['', [{ text: 'Foo', level: 2 }]], 2],
 
 		[[outdent`
 			# Header
