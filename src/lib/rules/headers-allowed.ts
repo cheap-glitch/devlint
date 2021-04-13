@@ -14,7 +14,13 @@ export function validator({ contents, lines, parameter: rawHeaders }: RuleContex
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
+	const checkedLevels = [...new Set(allowedHeaders.map(({ level }) => level))];
+
 	for (const header of getMarkdownHeaders(contents)) {
+		if (!checkedLevels.includes(0) && !checkedLevels.includes(header.level)) {
+			continue;
+		}
+
 		if (!allowedHeaders.some(allowedHeader => isMatchingHeader(header, allowedHeader))) {
 			return new RuleError(`header "${header.text}" is not allowed`, findMatchLocation(lines, header.fullMatch, header.char), lines);
 		}
