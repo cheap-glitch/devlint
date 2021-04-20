@@ -6,22 +6,22 @@ import { PropertiesPathSegments } from './properties';
 
 import { RuleError, RuleErrorType } from '../errors';
 
-export function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefined, propertiesPath: PropertiesPathSegments = []): true | PropertiesPathSegments {
+export function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefined, propertiesPath?: PropertiesPathSegments): boolean | PropertiesPathSegments {
 	if (typeof model === 'string' && typeof value === 'string') {
-		return matchStrings(model, value) || propertiesPath;
+		return matchStrings(model, value) || (propertiesPath ?? false);
 	}
 
 	if (model === null || value === null || typeof model !== 'object' || typeof value !== 'object') {
-		return (model === value) || propertiesPath;
+		return (model === value) || (propertiesPath ?? false);
 	}
 
 	if (Array.isArray(model) || Array.isArray(value)) {
 		if (!Array.isArray(model) || !Array.isArray(value) || model.length !== value.length) {
-			return propertiesPath;
+			return propertiesPath ?? false;
 		}
 
 		for (const [index, item] of model.entries()) {
-			const result = matchJsonValues(item, value[index], [...propertiesPath, index]);
+			const result = matchJsonValues(item, value[index], propertiesPath ? [...propertiesPath, index] : undefined);
 			if (result !== true) {
 				return result;
 			}
@@ -36,7 +36,7 @@ export function matchJsonValues(model: JsonValue | undefined, value: JsonValue |
 			continue;
 		}
 
-		const result = matchJsonValues(model[keySelector], value[key], [...propertiesPath, key]);
+		const result = matchJsonValues(model[keySelector], value[key], propertiesPath ? [...propertiesPath, key] : undefined);
 		if (result !== true) {
 			return result;
 		}

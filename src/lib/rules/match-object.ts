@@ -9,7 +9,7 @@ export function validator({ lines, jsonObject, jsonObjectAst, parameter: model }
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const result = matchJsonValues(model, jsonObject);
+	const result = matchJsonValues(model, jsonObject, []);
 	if (Array.isArray(result)) {
 		const jsonValueAst = tryGettingJsonAstProperty(jsonObjectAst, result);
 
