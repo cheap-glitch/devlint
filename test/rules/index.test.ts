@@ -1,5 +1,5 @@
-import { readdirSync } from 'fs';
 import { JsonValue } from 'type-fest';
+import { readdirSync } from 'fs';
 import { JsonValue as JsonAst } from 'jsonast';
 
 import { getLines } from '../../src/lib/helpers/text';
@@ -76,7 +76,7 @@ for (const filename of rulesToTest) {
 function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
-	const contents  = rawContents.trim().startsWith('{') && rawContents.trim().endsWith('}') ? rawContents.trim().replace(/^\t+/gm, '') : rawContents;
+	const contents  = rawContents.replace(/^\n/g, '').replace(/^\t{3}/gm, '').replace('\\n', '\n');
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
 	let jsonAst: JsonAst | SyntaxError | undefined = tryParsingJsonAst(contents);
@@ -91,7 +91,7 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 
 		default:
 			if ((jsonAst instanceof SyntaxError || jsonAst === undefined) && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object') {
-				// FIXME: fork jsonast
+				// FIXME: primitives & arrays need to be wrapped in an object, otherwise `jsonast` throws an error
 				jsonAst = tryParsingJsonAst(`{"prop":${contents}}`);
 				if (!(jsonAst instanceof SyntaxError) && jsonAst !== undefined) {
 					jsonAst = tryGettingJsonAstProperty(jsonAst, ['prop']);

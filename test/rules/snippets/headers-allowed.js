@@ -1,9 +1,7 @@
-const outdent = require('outdent');
-
 module.exports = {
 	passing: [
 
-		[outdent`
+		[`
 			Paragraph
 
 			> Quote block
@@ -14,7 +12,7 @@ module.exports = {
 			[],
 		],
 
-		[outdent`
+		[`
 			# Header
 
 			Paragraph
@@ -31,7 +29,7 @@ module.exports = {
 			[],
 		],
 
-		[outdent`
+		[`
 			# Foo
 
 			Paragraph
@@ -39,7 +37,7 @@ module.exports = {
 			['Foo'],
 		],
 
-		[outdent`
+		[`
 			# Foo
 
 			Paragraph
@@ -51,21 +49,21 @@ module.exports = {
 			['Foo', 'Bar'],
 		],
 
-		[outdent`
+		[`
 			# Foo
 			## Bar
 			`,
 			['Foo', 'Bar', 'Baz'],
 		],
 
-		[outdent`
+		[`
 			# Foo
 			### Bar
 			`,
 			['# Foo', '### Bar'],
 		],
 
-		[outdent`
+		[`
 			# Foo
 			## Bar
 			### Baz
@@ -83,7 +81,7 @@ module.exports = {
 		[['', { text: 'Foo', level: 2 }],   2],
 		[['', [{ text: 'Foo', level: 2 }]], 2],
 
-		[[outdent`
+		[[`
 			# Foo
 
 			Paragraph
@@ -93,7 +91,7 @@ module.exports = {
 			['Foo'],
 		], 'header "Bar" is not allowed', { line: 5, column: 1, char: 18 }, { line: 5, column: 5, char: 22 }],
 
-		[[outdent`
+		[[`
 			## Foo
 
 			Paragraph
@@ -105,14 +103,14 @@ module.exports = {
 			['Bar'],
 		], 'header "Foo" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 6, char: 5 }],
 
-		[[outdent`
+		[[`
 			### Foo
 			### Bar
 			`,
 			['# Foo', '### Bar'],
 		], 'header "Foo" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 7, char: 6 }],
 
-		[[outdent`
+		[[`
 			# Foo
 			## Bar
 			### Baz

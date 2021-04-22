@@ -1,9 +1,7 @@
-const outdent = require('outdent');
-
 module.exports = {
 	passing: [
 
-		[outdent`
+		[`
 			# Header
 
 			Paragraph
@@ -11,7 +9,7 @@ module.exports = {
 			['Foo'],
 		],
 
-		[outdent`
+		[`
 			# Header
 
 			Paragraph
@@ -23,7 +21,7 @@ module.exports = {
 			[],
 		],
 
-		[outdent`
+		[`
 			# Header
 
 			Paragraph
@@ -35,7 +33,7 @@ module.exports = {
 			['Bar'],
 		],
 
-		[outdent`
+		[`
 			# Header
 
 			Paragraph
@@ -57,7 +55,7 @@ module.exports = {
 		[['', { text: 'Foo', level: 2 }],   2],
 		[['', [{ text: 'Foo', level: 2 }]], 2],
 
-		[[outdent`
+		[[`
 			# Header
 
 			Paragraph
@@ -69,7 +67,7 @@ module.exports = {
 			['Foo'],
 		], 'header "Foo" is forbidden', { line: 5, column: 1, char: 21 }, { line: 5, column: 6, char: 26 }],
 
-		[[outdent`
+		[[`
 			# Header
 
 			Paragraph
@@ -81,7 +79,7 @@ module.exports = {
 			['## Foo'],
 		], 'header "Foo" is forbidden', { line: 5, column: 1, char: 21 }, { line: 5, column: 6, char: 26 }],
 
-		[[outdent`
+		[[`
 			# Foo
 
 			Paragraph
