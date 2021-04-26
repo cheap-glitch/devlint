@@ -1,7 +1,9 @@
 import { homedir } from 'os';
+
 import merge from 'mazeru';
 import { MergingStrategy } from 'mazeru';
 import { JsonValue, JsonObject } from 'type-fest';
+import stripJsonComments from 'strip-json-comments';
 
 import { wrapInArray } from './helpers/utilities';
 import { isJsonObject } from './helpers/json';
@@ -11,7 +13,7 @@ export async function loadConfig(): Promise<JsonObject> {
 	let config: JsonValue;
 
 	try {
-		config = JSON.parse(await readFileContents([homedir(), '.devlintrc.json']));
+		config = JSON.parse(stripJsonComments(await readFileContents([homedir(), '.devlintrc.json'])));
 	} catch (error) {
 		error.message = 'Failed to parse config file: ' + error.message;
 		throw error;
