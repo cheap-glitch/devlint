@@ -1,4 +1,5 @@
 import mem from 'mem';
+import expandGlob from 'tiny-glob';
 import { JsonValue } from 'type-fest';
 import { JsonValue as JsonAst } from 'jsonast';
 
@@ -69,7 +70,12 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 	// TODO: filter some rules with wrong target type here (e.g.: file-based rule targeting a directory)
 	await Promise.all(filteredRules.map(async (rule) => {
 		const [targetFsPath, targetPropertyPathSegments] = rule.target;
-		insertInNestedSetMap(lints, targetFsPath, joinPropertiesPathSegments(targetPropertyPathSegments), { rule, status: LintStatus.Pending });
+
+		// TODO: use `isGlobPattern` when available
+		const fsPaths = /[*[\]{}]/.test(targetFsPath) ? await expandGlob(targetFsPath, { dot: true, cwd: workingDirectory, filesOnly: true }) : [targetFsPath];
+		for (const fsPath of fsPaths) {
+			insertInNestedSetMap(lints, fsPath, joinPropertiesPathSegments(targetPropertyPathSegments), { rule, status: LintStatus.Pending });
+		}
 	}));
 
 	await Promise.all([...lints.entries()].map(async ([targetFsPath, fsTargetLints]) => {
@@ -80,6 +86,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		const jsonValue = fileContents !== undefined ? tryParsingJsonValue(fileContents) : new SyntaxError();
 		const jsonAst   = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError();
 
+		// TODO: expand property-path globs here?
 		await Promise.all([...fsTargetLints.entries()].flatMap(async ([, propertyTargetLints]) => [...propertyTargetLints].map(async (lint) => {
 			if (lint.status !== LintStatus.Pending) {
 				return;
