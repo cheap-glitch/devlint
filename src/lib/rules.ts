@@ -6,35 +6,12 @@ import { isJsonObject } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
 import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPathSegments, parsePropertiesPath } from './helpers/properties';
 
-import { RuleError, RuleErrorType } from './errors';
+export { RuleResult, RuleError, RuleErrorType } from './errors';
 
-export type RuleResult = true | RuleError;
-
-export { RuleError, RuleErrorType };
-
-export interface RuleContext {
-	workingDirectory: string,
-	contents:         string,
-	lines:            Array<Line>,
-	jsonValue:        JsonValue,
-	jsonObject:       JsonObject,
-	jsonArray:        JsonArray,
-	jsonString:       string,
-	jsonAst:          JsonAst,
-	jsonObjectAst:    JsonObjectAst,
-	jsonArrayAst:     JsonArrayAst,
-	parameter:        JsonValue,
-}
-
-export interface RuleObject {
-	name:          string
-	status:        RuleStatus,
-	target:        RuleTarget,
-	parameter?:    JsonValue,
-	isPermissive?: boolean,
-
-	condition?:               string,
-	conditionExpectedResult?: boolean,
+export enum RuleStatus {
+	Off      = 'off',
+	Warning  = 'warn',
+	Error    = 'error',
 }
 
 export type RuleTarget = [FsPath, PropertiesPathSegments];
@@ -48,11 +25,28 @@ export enum RuleTargetType {
 	JsonString,
 }
 
-export enum RuleStatus {
-	Off      = 'off',
-	Warning  = 'warn',
-	Error    = 'error',
-	Skipped  = 'skipped',
+export interface RuleObject {
+	name:                     string
+	status:                   RuleStatus,
+	target:                   RuleTarget,
+	parameter?:               JsonValue,
+	condition?:               string,
+	conditionExpectedResult?: boolean,
+	isPermissive?:            boolean,
+}
+
+export interface RuleContext {
+	workingDirectory: string,
+	contents:         string,
+	lines:            Array<Line>,
+	jsonValue:        JsonValue,
+	jsonObject:       JsonObject,
+	jsonArray:        JsonArray,
+	jsonString:       string,
+	jsonAst:          JsonAst,
+	jsonObjectAst:    JsonObjectAst,
+	jsonArrayAst:     JsonArrayAst,
+	parameter:        JsonValue,
 }
 
 export function parseRules(rulesObject: JsonValue): Array<RuleObject> {
@@ -135,23 +129,6 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 	}
 
 	return rules;
-}
-
-export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
-	return {
-		workingDirectory: '.',
-		contents:         '',
-		lines:            [],
-		jsonValue:        {},
-		jsonObject:       {},
-		jsonArray:        [],
-		jsonString:       '',
-		jsonAst:          { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		jsonObjectAst:    { type: 'object', pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		jsonArrayAst:     { type: 'array',  pos: { start: { line: 1, column: 1, char: 0 }, end: { line: 1, column: 1, char: 1 } } },
-		parameter:        '',
-		...data,
-	};
 }
 
 function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): Array<RuleObject> {

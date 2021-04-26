@@ -1,20 +1,18 @@
-export function insertValueInNestedMap<Key, Value>(map: Map<Key, Map<Key, Value>>, firstKey: Key, secondKey: Key, value: Value): void {
-	const firstValue = map.get(firstKey);
-	if (firstValue === undefined) {
-		map.set(firstKey, new Map([[secondKey, value]]));
-		return;
-	}
-
-	const secondValue = firstValue.get(secondKey);
-	if (secondValue === undefined) {
-		firstValue.set(secondKey, value);
-		return;
-	}
-
-	if (Array.isArray(value) && Array.isArray(secondValue)) {
-		secondValue.push(...value);
+export function insertInNestedSetMap<KeyType, ValueType>(map: Map<KeyType, Map<KeyType, Set<ValueType>>>, firstKey: KeyType, secondKey: KeyType, value: ValueType): void {
+	const subMap = map.get(firstKey);
+	if (subMap !== undefined) {
+		insertInSetMap(subMap, secondKey, value);
 	} else {
-		firstValue.set(secondKey, value);
+		map.set(firstKey, new Map([[secondKey, new Set([value])]]));
+	}
+}
+
+export function insertInSetMap<KeyType, ValueType>(map: Map<KeyType, Set<ValueType>>, key: KeyType, value: ValueType): void {
+	const set = map.get(key);
+	if (set !== undefined) {
+		set.add(value);
+	} else {
+		map.set(key, new Set([value]));
 	}
 }
 

@@ -3,6 +3,8 @@ import { Position as JsonAstLocation } from 'jsonast';
 import { Line } from './helpers/text';
 import { Snippet, cutSnippet } from './helpers/snippets';
 
+export type RuleResult = true | RuleError;
+
 export class RuleError extends Error {
 	readonly type:     RuleErrorType;
 	readonly start?:   RuleErrorPosition;

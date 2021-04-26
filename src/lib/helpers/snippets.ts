@@ -2,12 +2,12 @@ import chalk from 'chalk';
 
 import { Line, capitalize } from './text';
 
-import { RuleStatus } from '../rules';
+import { LintStatus } from '../linter';
 import { RuleErrorPosition } from '../errors';
 
 export type Snippet = Array<Line>;
 
-export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: RuleErrorPosition, ruleStatus: RuleStatus): string {
+export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: RuleErrorPosition, status: LintStatus): string {
 	if (snippet.length === 0) {
 		return '';
 	}
@@ -15,7 +15,7 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: R
 	const minTabIndent           = Math.min(...snippet.map(line => (line.text.match(/^\t+/)     ??     [''])[0].length));
 	const minSpaceIndent         = Math.min(...snippet.map(line => (line.text.match(/^\t*( +)/) ?? ['', ''])[1].length));
 	const lineNumbersColumnWidth = Math.max(2, snippet[snippet.length - 1].number.toString().length) + 1;
-	const highlightColor         = ruleStatus === RuleStatus.Error ? 'red' : 'yellow';
+	const highlightColor         = status === LintStatus.Error ? 'red' : 'yellow';
 
 	return snippet.map(line => {
 		const lineContents      = line.text.slice(minTabIndent + minSpaceIndent);

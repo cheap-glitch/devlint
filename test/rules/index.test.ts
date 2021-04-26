@@ -6,8 +6,9 @@ import { getLines } from '../../src/lib/helpers/text';
 import { joinPathSegments, getAbsolutePath } from '../../src/lib/helpers/fs';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonAstProperty } from '../../src/lib/helpers/json';
 
+import { buildRuleContext } from '../../src/lib/linter';
+import { RuleTargetType, RuleContext } from '../../src/lib/rules';
 import { RuleError, RuleErrorType, RuleErrorPosition } from '../../src/lib/errors';
-import { RuleTargetType, RuleContext, buildRuleContext } from '../../src/lib/rules';
 
 const pathToRulePlugins  = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
 const pathToTestSnippets = [__dirname, 'snippets'];
@@ -21,7 +22,7 @@ interface TestSnippetsCollection {
 
 const ruleNames   = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
 const rulesToTest = readdirSync(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
-	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
+	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js') && !directoryEntry.name.startsWith('_'))
 	            .map(file => file.name)
 		    .filter(rule => ruleNames.length === 0 || ruleNames.includes(rule.replace('.js', '')));
 
@@ -76,7 +77,7 @@ for (const filename of rulesToTest) {
 function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
-	const contents  = rawContents.replace(/^\n/g, '').replace(/^\t{3}/gm, '').replace('\\n', '\n');
+	const contents  = rawContents.replace(/^\n/, '').replace(/^\t{3}/gm, '').replace('\\n', '\n');
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
 	let jsonAst: JsonAst | SyntaxError | undefined = tryParsingJsonAst(contents);
