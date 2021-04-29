@@ -93,10 +93,10 @@
   "devDependencies": {
     "@cheap-glitch/eslint-config-typescript": "^1.3.0",
     "@microsoft/tsdoc": "^0.13.2",
-    "@types/jest": "^26.0.22",
-    "@types/node": "^14.14.41",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.0.1",
     "@types/yargs": "^16.0.1",
-    "eslint": "^7.24.0",
+    "eslint": "^7.25.0",
     "eslint-plugin-tsdoc": "^0.2.14",
     "jest": "^26.6.3",
     "npm-run-all": "^4.1.5",
@@ -107,6 +107,6 @@
     "ts-node-dev": "^1.1.6",
     "type-fest": "^1.0.2",
     "typescript": "^4.2.4",
-    "vitepress": "^0.13.0"
+    "vitepress": "^0.13.2"
   }
 }
