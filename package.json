@@ -81,6 +81,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.1",
+    "cliquish": "^0.8.0",
     "jsonast": "^0.2.1",
     "mazeru": "^2.0.0",
     "mem": "^8.1.1",

@@ -1,7 +1,8 @@
-import yargs from 'yargs';
 import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import { access as testDirectoryAccess } from 'fs/promises';
+
+import cliquish, { getVerbosityLevel } from 'cliquish';
 
 import { findGitRepoRoot } from './lib/helpers/git';
 import { joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
@@ -16,50 +17,34 @@ import { getRuleDocumentationUrl, formatTargetPath, getErrorReport, getDisabledR
 const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
 
 export async function cli(): Promise<void> {
-	const options = yargs(process.argv.slice(2))
-		.parserConfiguration({
-			'duplicate-arguments-array': false,
-			'strip-aliased':             true,
-			'strip-dashed':              true,
+	const options =
+		cliquish({
+			synopsis: '$0 [<option>]... [<dir>]...',
+			arguments: {
+				dir: [
+					'Path to a directory or git repo (if no paths are specified,',
+					'defaults to the current working directory)',
+				],
+			},
+			websiteUrl:           'https://devlint.org',
+			enableCompletion:     true,
+			advancedVerboseFlags: true,
 		})
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		.usage(`DevLint v${require(getAbsolutePath([__dirname, '..', '..', 'package.json'])).version}\n`)
-		.usage('Usage:\n  $0 [OPTION]... [DIR]...\n')
-		.usage(`Arguments:\n  <DIR>  Path to a directory/git repo (if no paths are specified,\n${' '.repeat(9)}defaults to the current working directory)`)
+		.options({
+			// FIXME: https://github.com/yargs/yargs/issues/1679
+			'git-root': { type: 'boolean', default: true, desc: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
+			rules:      { type: 'string',  default: '*',  desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
+			skipped:    { type: 'boolean', default: true, desc: 'Print a report for skipped rules (disable with --no-skipped)'                       },
+		})
 		.example([
 			['$0',               'Lint in the current directory'],
 			['$0 /a/b/c ../d/e', 'Lint in the specified directories'],
 			['$0 --rules a,b,c', 'Lint using only the listed rules'],
 			['$0 -vv',           'Set the verbosity level to 2'],
 		])
-		.options({
-			// FIXME when https://github.com/yargs/yargs/issues/1679 is done
-			'git-root': {             type: 'boolean', default: true, desc: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
-			quiet:      { alias: 'q', type: 'boolean',                desc: 'Do not print anything to stdout'                                                    },
-			rules:      {             type: 'string',  default: '*',  desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
-			skipped:    {             type: 'boolean', default: true, desc: 'Print a report for skipped rules (disable with --no-skipped)'                       },
-			v:          {             type: 'count',                  desc: 'Enable verbose output (repeat to increase the verbosity level)'                     },
-			verbose:    {             type: 'number',                 desc: 'Enable verbose output (pass a number bewteen 1 and 3 to set the verbosity level)'   },
-		})
-		.conflicts('quiet', 'verbose')
-		.completion('completion', 'Generate auto-completion script')
-		.epilogue('Enable auto-completion with one of the following commands:\n  Linux  devlint completion >> ~/.bashrc\n  OSX    devlint completion >> ~/.bash_profile\n')
-		.epilogue('https://devlint.org')
-		.epilogue('Copyright © 2021-present, cheap glitch')
-		.epilogue('This software is distributed under the ISC license')
-		.showHelpOnFail(false, 'Try --help for more information')
-		.argv;
+		.parse();
 
-	const selectedRules = (options.rules === '*') ? undefined : options.rules.split(',');
-
-	let verbosityLevel = options.v;
-	if (!Number.isNaN(options.verbose)) {
-		if (options.verbose !== undefined) {
-			verbosityLevel = Math.max(0, Math.trunc(options.verbose));
-		} else if ('verbose' in options) {
-			verbosityLevel = 1;
-		}
-	}
+	const verbosityLevel = getVerbosityLevel(options);
 
 	let currentWorkingDirectory = process.cwd();
 	if (options.gitRoot) {
