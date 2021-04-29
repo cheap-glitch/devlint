@@ -1,13 +1,13 @@
-export const PROPERTIES_PATH_STARTING_CHARACTER = '#';
+export const PROPERTY_PATH_STARTING_CHARACTER = '#';
 
-export type PropertiesPath         = string;
-export type PropertiesPathSegments = Array<string | number>;
+export type PropertyPath         = string;
+export type PropertyPathSegments = Array<string | number>;
 
-export function joinPropertiesPathSegments(path: PropertiesPathSegments): string {
+export function joinPropertyPathSegments(path: PropertyPathSegments): string {
 	return path.map(pathSegment => (typeof pathSegment === 'number') ? ('[' + pathSegment + ']') : ('.' + pathSegment)).join('');
 }
 
-export function parsePropertiesPath(rawPath: string): PropertiesPathSegments {
+export function parsePropertyPath(rawPath: string): PropertyPathSegments {
 	return rawPath
 		.replace(/\[(?<index>\d+)]/g, '.$<index>')
 		.split('.').filter(Boolean)

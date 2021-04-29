@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import { formatSnippet } from './helpers/snippets';
 import { capitalize, pluralize, countWord } from './helpers/text';
-import { PROPERTIES_PATH_STARTING_CHARACTER } from './helpers/properties';
+import { PROPERTY_PATH_STARTING_CHARACTER } from './helpers/properties';
 
 import { LintResult } from './linter';
 import { depreciations } from './depreciations';
@@ -70,6 +70,6 @@ export function getRuleDocumentationUrl(ruleName: string): string {
 	return `https://devlint.org/rules/${ruleName}`;
 }
 
-export function formatTargetPath(fsPath: string, propertiesPath?: string): string {
-	return chalk.underline(fsPath + (propertiesPath ? propertiesPath.replace('.', chalk.bold(PROPERTIES_PATH_STARTING_CHARACTER)) : ''));
+export function formatTargetPath(fsPath: string, propertyPath?: string): string {
+	return chalk.underline(fsPath + (propertyPath ? propertyPath.replace('.', chalk.bold(PROPERTY_PATH_STARTING_CHARACTER)) : ''));
 }

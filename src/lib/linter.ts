@@ -5,7 +5,7 @@ import { JsonValue as JsonAst } from 'jsonast';
 
 import { Line, getLines } from './helpers/text';
 import { insertInNestedSetMap } from './helpers/utilities';
-import { PropertiesPath, joinPropertiesPathSegments } from './helpers/properties';
+import { PropertyPath, joinPropertyPathSegments } from './helpers/properties';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst } from './helpers/json';
 import { FsPath, joinPathSegments, getAbsolutePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
 import { tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
@@ -35,8 +35,8 @@ export enum LintStatus {
 const BUILTIN_RULE_PLUGINS_DIR_PATH  = [__dirname, 'rules'];
 const BUILTIN_RULE_PLUGINS_FILENAMES = mem(() => getFilenamesInDirectory(BUILTIN_RULE_PLUGINS_DIR_PATH));
 
-export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Map<FsPath, Map<PropertiesPath, Set<LintResult>>>> {
-	const lints: Map<FsPath, Map<PropertiesPath, Set<LintResult>>> = new Map();
+export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Map<FsPath, Map<PropertyPath, Set<LintResult>>>> {
+	const lints: Map<FsPath, Map<PropertyPath, Set<LintResult>>> = new Map();
 
 	const plugins: Map<string, Plugin> = new Map();
 	const pluginsFilenames = await BUILTIN_RULE_PLUGINS_FILENAMES();
@@ -45,11 +45,11 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 	// TODO: only load each plugin once (=> keep a list of loaded plugins in the global scope | actually, is this really needed ? since Node will probably cache them anyway)
 	const filteredRules = rules.filter(rule => {
 		if (rule.condition !== undefined && conditions[rule.condition] !== (rule?.conditionExpectedResult ?? true)) {
-			insertInNestedSetMap(lints, rule.target[0], joinPropertiesPathSegments(rule.target[1]), { rule, status: LintStatus.SkippedForUnfulfilledCondition });
+			insertInNestedSetMap(lints, rule.target[0], joinPropertyPathSegments(rule.target[1]), { rule, status: LintStatus.SkippedForUnfulfilledCondition });
 			return false;
 		}
 		if (!pluginsFilenames.includes(rule.name + '.js')) {
-			insertInNestedSetMap(lints, rule.target[0], joinPropertiesPathSegments(rule.target[1]), { rule, status: LintStatus.Error, error: new RuleError(RuleErrorType.UnknownRule) });
+			insertInNestedSetMap(lints, rule.target[0], joinPropertyPathSegments(rule.target[1]), { rule, status: LintStatus.Error, error: new RuleError(RuleErrorType.UnknownRule) });
 			return false;
 		}
 
@@ -74,7 +74,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		// TODO: use `isGlobPattern` when available
 		const fsPaths = /[*[\]{}]/.test(targetFsPath) ? await expandGlob(targetFsPath, { dot: true, cwd: workingDirectory, filesOnly: true }) : [targetFsPath];
 		for (const fsPath of fsPaths) {
-			insertInNestedSetMap(lints, fsPath, joinPropertiesPathSegments(targetPropertyPathSegments), { rule, status: LintStatus.Pending });
+			insertInNestedSetMap(lints, fsPath, joinPropertyPathSegments(targetPropertyPathSegments), { rule, status: LintStatus.Pending });
 		}
 	}));
 
@@ -126,13 +126,13 @@ async function executeRuleValidator(
 	jsonAst: JsonAst | SyntaxError,
 ): Promise<LintStatus | RuleResult> {
 	const isRulePermissive = rule.isPermissive ?? false;
-	const [targetFsPath, targetPropertiesPathSegments] = rule.target;
+	const [targetFsPath, targetPropertyPathSegments] = rule.target;
 
 	/**
 	 * Directory
 	 */
 	if (targetType === RuleTargetType.DirectoryListing) {
-		if (targetPropertiesPathSegments.length > 0) {
+		if (targetPropertyPathSegments.length > 0) {
 			return isRulePermissive ? LintStatus.SkippedForWrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 		}
 
@@ -145,7 +145,7 @@ async function executeRuleValidator(
 	 * File
 	 */
 	if (targetType === RuleTargetType.FileContents) {
-		if (targetPropertiesPathSegments.length > 0) {
+		if (targetPropertyPathSegments.length > 0) {
 			return isRulePermissive ? LintStatus.SkippedForWrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 		}
 		if (fileContents === undefined) {
@@ -171,12 +171,12 @@ async function executeRuleValidator(
 		// TODO [>=0.5.0]: exploit line & column numbers
 		return new RuleError(jsonAst.message ?? 'invalid JSON encountered');
 	}
-	if ((targetType === RuleTargetType.JsonValue || targetType === RuleTargetType.JsonString) && targetPropertiesPathSegments.length === 0) {
+	if ((targetType === RuleTargetType.JsonValue || targetType === RuleTargetType.JsonString) && targetPropertyPathSegments.length === 0) {
 		return new RuleError(RuleErrorType.InvalidTargetType);
 	}
 
-	const propertyValue = tryGettingJsonObjectProperty(jsonValue, targetPropertiesPathSegments);
-	const propertyAst   = tryGettingJsonAstProperty(jsonAst,      targetPropertiesPathSegments);
+	const propertyValue = tryGettingJsonObjectProperty(jsonValue, targetPropertyPathSegments);
+	const propertyAst   = tryGettingJsonAstProperty(jsonAst,      targetPropertyPathSegments);
 	if (propertyValue === undefined || propertyAst === undefined) {
 		// The property doesn't exist in the object, so the rule is ignored
 		// TODO: throw/return error if the property is required

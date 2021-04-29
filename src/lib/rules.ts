@@ -4,7 +4,7 @@ import { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArr
 import { Line } from './helpers/text';
 import { isJsonObject } from './helpers/json';
 import { FsPath, joinPathSegments } from './helpers/fs';
-import { PROPERTIES_PATH_STARTING_CHARACTER, PropertiesPathSegments, parsePropertiesPath } from './helpers/properties';
+import { PROPERTY_PATH_STARTING_CHARACTER, PropertyPathSegments, parsePropertyPath } from './helpers/properties';
 
 export { RuleResult, RuleError, RuleErrorType } from './errors';
 
@@ -14,7 +14,7 @@ export enum RuleStatus {
 	Error    = 'error',
 }
 
-export type RuleTarget = [FsPath, PropertiesPathSegments];
+export type RuleTarget = [FsPath, PropertyPathSegments];
 
 export enum RuleTargetType {
 	DirectoryListing,
@@ -98,13 +98,13 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 
 		// Sub-target
 		if (typeof value === 'object') {
-			const [parentFsPath, parentPropertiesPath] = parentTarget;
+			const [parentFsPath, parentPropertyPath] = parentTarget;
 			const childFsPath         = [parentFsPath];
-			const childPropertiesPath = [...parentPropertiesPath];
+			const childPropertyPath = [...parentPropertyPath];
 
-			// The hashtag indicates the start of the properties path
-			if (key.includes(PROPERTIES_PATH_STARTING_CHARACTER)) {
-				if (parentPropertiesPath.length > 0) {
+			// The hashtag indicates the start of the property path
+			if (key.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
+				if (parentPropertyPath.length > 0) {
 					throw new Error(`invalid rule configuration: "${key}" starts a property path inside another property path`);
 				}
 
@@ -113,15 +113,15 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 					childFsPath.push(fsPath);
 				}
 				if (propertyPath !== undefined && propertyPath.length > 0) {
-					childPropertiesPath.push(...parsePropertiesPath(propertyPath));
+					childPropertyPath.push(...parsePropertyPath(propertyPath));
 				}
-			} else if (parentPropertiesPath.length > 0) {
-				childPropertiesPath.push(...parsePropertiesPath(key));
+			} else if (parentPropertyPath.length > 0) {
+				childPropertyPath.push(...parsePropertyPath(key));
 			} else {
 				childFsPath.push(key);
 			}
 
-			rules.push(...parseRulesObject(value, [joinPathSegments(childFsPath), childPropertiesPath]));
+			rules.push(...parseRulesObject(value, [joinPathSegments(childFsPath), childPropertyPath]));
 			continue;
 		}
 

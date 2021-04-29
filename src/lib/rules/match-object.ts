@@ -1,4 +1,4 @@
-import { joinPropertiesPathSegments } from '../helpers/properties';
+import { joinPropertyPathSegments } from '../helpers/properties';
 import { isJsonObject, tryGettingJsonAstProperty, matchJsonValues } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
@@ -13,7 +13,7 @@ export function validator({ lines, jsonObject, jsonObjectAst, parameter: model }
 	if (Array.isArray(result)) {
 		const jsonValueAst = tryGettingJsonAstProperty(jsonObjectAst, result);
 
-		return new RuleError(`failed to match property "${joinPropertiesPathSegments(result)}"`, jsonValueAst?.pos, lines);
+		return new RuleError(`failed to match property "${joinPropertyPathSegments(result)}"`, jsonValueAst?.pos, lines);
 	}
 
 	return true;

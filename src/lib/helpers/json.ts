@@ -2,26 +2,26 @@ import { JsonValue, JsonObject, JsonArray } from 'type-fest';
 import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
 
 import { matchStrings } from './text';
-import { PropertiesPathSegments } from './properties';
+import { PropertyPathSegments } from './properties';
 
 import { RuleError, RuleErrorType } from '../errors';
 
-export function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefined, propertiesPath?: PropertiesPathSegments): boolean | PropertiesPathSegments {
+export function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefined, propertyPath?: PropertyPathSegments): boolean | PropertyPathSegments {
 	if (typeof model === 'string' && typeof value === 'string') {
-		return matchStrings(model, value) || (propertiesPath ?? false);
+		return matchStrings(model, value) || (propertyPath ?? false);
 	}
 
 	if (model === null || value === null || typeof model !== 'object' || typeof value !== 'object') {
-		return (model === value) || (propertiesPath ?? false);
+		return (model === value) || (propertyPath ?? false);
 	}
 
 	if (Array.isArray(model) || Array.isArray(value)) {
 		if (!Array.isArray(model) || !Array.isArray(value) || model.length !== value.length) {
-			return propertiesPath ?? false;
+			return propertyPath ?? false;
 		}
 
 		for (const [index, item] of model.entries()) {
-			const result = matchJsonValues(item, value[index], propertiesPath ? [...propertiesPath, index] : undefined);
+			const result = matchJsonValues(item, value[index], propertyPath ? [...propertyPath, index] : undefined);
 			if (result !== true) {
 				return result;
 			}
@@ -36,7 +36,7 @@ export function matchJsonValues(model: JsonValue | undefined, value: JsonValue |
 			continue;
 		}
 
-		const result = matchJsonValues(model[keySelector], value[key], propertiesPath ? [...propertiesPath, key] : undefined);
+		const result = matchJsonValues(model[keySelector], value[key], propertyPath ? [...propertyPath, key] : undefined);
 		if (result !== true) {
 			return result;
 		}
@@ -69,9 +69,9 @@ export function checkValueType(testedValue: JsonValue, type: string): boolean | 
 	return new RuleError(RuleErrorType.InvalidParameter);
 }
 
-export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPathSegments: PropertiesPathSegments): JsonAst | undefined {
+export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertyPathSegments: PropertyPathSegments): JsonAst | undefined {
 	let currentPropertyAst = jsonAst;
-	for (const propertyKey of propertiesPathSegments) {
+	for (const propertyKey of propertyPathSegments) {
 		let subPropertyAst: JsonAst | undefined;
 
 		if (currentPropertyAst.type === 'array' && currentPropertyAst.elements !== undefined && typeof propertyKey === 'number') {
@@ -90,9 +90,9 @@ export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertiesPathSegmen
 	return currentPropertyAst;
 }
 
-export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertiesPathSegments: PropertiesPathSegments): JsonValue | undefined {
+export function tryGettingJsonObjectProperty(jsonValue: JsonValue, propertyPathSegments: PropertyPathSegments): JsonValue | undefined {
 	let currentPropertyValue = jsonValue;
-	for (const propertyKey of propertiesPathSegments) {
+	for (const propertyKey of propertyPathSegments) {
 		let subPropertyValue: JsonValue | undefined;
 
 		if (Array.isArray(currentPropertyValue) && typeof propertyKey === 'number') {
