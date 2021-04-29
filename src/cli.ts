@@ -32,9 +32,10 @@ export async function cli(): Promise<void> {
 		})
 		.options({
 			// FIXME: https://github.com/yargs/yargs/issues/1679
-			'git-root': { type: 'boolean', default: true, desc: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
-			rules:      { type: 'string',  default: '*',  desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
-			skipped:    { type: 'boolean', default: true, desc: 'Print a report for skipped rules (disable with --no-skipped)'                       },
+			'absolute-paths': { type: 'boolean', default: false, desc: 'Use absolute paths in the results summary' },
+			'git-root':       { type: 'boolean', default: true,  desc: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
+			rules:            { type: 'string',  default: '*',   desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
+			skipped:          { type: 'boolean', default: true,  desc: 'Print a report for skipped rules (disable with --no-skipped)'                       },
 		})
 		.example([
 			['$0',               'Lint in the current directory'],
@@ -154,7 +155,7 @@ export async function cli(): Promise<void> {
 
 				console.log(
 					'\n' +
-					formatTargetPath(lintedDirectories.length > 1 ? getAbsolutePath([directory, fsPath]) : fsPath, propertyPath) +
+					formatTargetPath((lintedDirectories.length > 1 || options.absolutePaths) ? getAbsolutePath([directory, fsPath]) : fsPath, propertyPath) +
 					'\n' +
 					reports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
 				);
