@@ -14,7 +14,7 @@ import { LintStatus, lintDirectory } from './lib/linter';
 import { RuleStatus, RuleErrorType, parseRules } from './lib/rules';
 import { getRuleDocumentationUrl, formatTargetPath, getErrorReport, getDisabledRuleReport, getSkippedRuleReport, getTotalsReport, getConditionsStatusReport, getDepreciatedRulesReport } from './lib/reports';
 
-const { isAbsolute: isAbsolutePath, normalize: normalizePath } = posix;
+const { isAbsolute: isAbsolutePath, normalize: normalizePath, relative: getRelativePath } = posix;
 
 export async function cli(): Promise<void> {
 	const options =
@@ -74,6 +74,7 @@ export async function cli(): Promise<void> {
 	const depreciatedRulesUsed: Array<string> = [];
 
 	for (const directory of lintedDirectories) {
+		const relativePath = getRelativePath(currentWorkingDirectory, directory);
 		// TODO: avoid loading the config for every directory
 		const config = await loadConfig();
 
@@ -155,7 +156,7 @@ export async function cli(): Promise<void> {
 
 				console.log(
 					'\n' +
-					formatTargetPath((lintedDirectories.length > 1 || options.absolutePaths) ? getAbsolutePath([directory, fsPath]) : fsPath, propertyPath) +
+					formatTargetPath(options.absolutePaths ? getAbsolutePath([directory, fsPath]) : joinPathSegments([relativePath, fsPath]), propertyPath) +
 					'\n' +
 					reports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
 				);
