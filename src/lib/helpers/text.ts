@@ -89,12 +89,12 @@ export function getLines(text: string): Array<Line> {
 	return lines;
 }
 
-export function countWord(word: string, count: number): string {
-	return count + ' ' + word + (count > 1 ? 's' : '');
+export function countWord(word: string, count: number, plural?: string): string {
+	return count + ' ' + pluralize(word, count, plural);
 }
 
-export function pluralize(word: string, count: number): string {
-	return word + (count > 1 ? 's' : '');
+export function pluralize(word: string, count: number, plural?: string): string {
+	return count > 1 ? (plural ?? (word + 's')) : word;
 }
 
 export function capitalize(message: string): string {

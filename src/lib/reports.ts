@@ -30,24 +30,24 @@ export function getSkippedRuleReport(result: LintResult, message: string): strin
 }
 
 function getReport(result: LintResult, label: string, message: string, location = '', snippet = ''): string {
-	return chalk`  {dim ${location.padEnd(5, ' ')}}  ${label}  ${capitalize(message)}  {dim ${result.rule.name}} ${snippet.length > 0 ? `\n\n${snippet}` : ''}`;
+	return '  ' + chalk.dim.white(location.padEnd(5, ' ')) + '  ' + label + '  ' + capitalize(message) + '  ' + chalk.dim.white(result.rule.name) + (snippet.length > 0 ? ('\n\n' + snippet) : '');
 }
 
 export function getTotalsReport(errors: number, warnings: number, skipped: number): string {
 	const message = (errors === 0 && warnings === 0)
 		? 'Skipped ' + countWord('rule', skipped)
-		: countWord('problem', errors + warnings) + ` (${countWord('error', errors)}, ${countWord('warning', warnings)}, ${skipped} skipped)`;
+		: countWord('problem', errors + warnings) + ' (' + [countWord('error', errors), countWord('warning', warnings), skipped + ' skipped'].join(', ') + ')';
 
 	return chalk.bold(errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message);
 }
 
 export function getConditionsStatusReport(name: string, status: boolean): string {
-	return status ? chalk`  {blue {bold ✓} ${name}}` : chalk`  {yellow {bold ✗} ${name}}`;
+	return '  ' + status ? (chalk.blue.bold('✓') + ' ' + chalk.blue(name)) : (chalk.yellow.bold('✗') + ' ' + chalk.yellow(name));
 }
 
 export function getDepreciatedRulesReport(depreciatedRules: Array<string>): string {
 	return chalk.yellow(chalk.bold(pluralize('⚠️  depreciation warning', depreciatedRules.length).toUpperCase()) + '\n' + depreciatedRules.map(ruleName => {
-		let message = `    • "${ruleName}" is depreciated`;
+		let message = '    • ' + ruleName + ' is depreciated';
 
 		const infos = depreciations[ruleName];
 		if (infos === undefined) {
@@ -67,7 +67,7 @@ export function getDepreciatedRulesReport(depreciatedRules: Array<string>): stri
 }
 
 export function getRuleDocumentationUrl(ruleName: string): string {
-	return `https://devlint.org/rules/${ruleName}`;
+	return 'https://devlint.org/rules/' + ruleName;
 }
 
 export function formatTargetPath(fsPath: string, propertyPath?: string): string {
