@@ -27,15 +27,15 @@
     "build": "tsc",
     "build:clean": "rimraf build && npm run build",
     "build:watch": "tsc --watch",
-    "coverage": "jest --collectCoverage",
+    "coverage": "npm test -- --collectCoverage",
     "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "lint": "eslint . --ext .js,.ts --ignore-path .gitignore",
     "prepublishOnly": "npm run test && npm run build:clean",
-    "test": "jest",
+    "test": "jest --runInBand",
     "test:install": "npm run build:clean && sudo npm uninstall -g devlint && sudo npm link",
-    "test:watch": "jest --watch"
+    "test:watch": "npm test -- --watch"
   },
   "eslintConfig": {
     "root": true,
