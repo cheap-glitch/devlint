@@ -36,7 +36,7 @@ module.exports = {
 		// }}}
 
 		'lowercase word': [[ // {{{
-			'"lorem"', ['kebab', 'pascal'],
+			'"lorem"', ['pascal'],
 		],
 			"case style doesn't match any of the allowed styles",
 		], // }}}

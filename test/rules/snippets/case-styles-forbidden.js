@@ -2,7 +2,7 @@ module.exports = {
 	passing: {
 
 		'lowercase word': [ // {{{
-			'"lorem"', ['kebab', 'pascal'],
+			'"lorem"', ['pascal'],
 		], // }}}
 
 		'lowercase sentence': [ // {{{
