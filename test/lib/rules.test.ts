@@ -177,7 +177,30 @@ describe('parseRules', () => {
 
 	}); // }}}
 
-	test('permissive rules', () => { // {{{
+	test('strict rule', () => { // {{{
+
+		expect(parseRules({
+			'first-rule':  'error',
+			'second-rule': 'off',
+			'third-rule!': 'warn',
+		}))
+		.toEqual([
+			{
+				name:     'first-rule',
+				status:   'error',
+				target:   ['.', []],
+			},
+			{
+				name:     'third-rule',
+				status:   'warn',
+				target:   ['.', []],
+				isStrict: true,
+			},
+		]);
+
+	}); // }}}
+
+	test('permissive rule', () => { // {{{
 
 		expect(parseRules({
 			'first-rule':  'error',

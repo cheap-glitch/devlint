@@ -39,8 +39,9 @@ export enum RuleErrorType {
 	UnknownRule,
 	InvalidTargetType,
 	InvalidParameter,
-	Failed,
 	InvalidJson,
+	MissingTarget,
+	Failed,
 }
 
 export interface RuleErrorLocation {

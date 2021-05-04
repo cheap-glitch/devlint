@@ -32,6 +32,7 @@ export interface RuleObject {
 	parameter?:               JsonValue,
 	condition?:               string,
 	conditionExpectedResult?: boolean,
+	isStrict?:                boolean,
 	isPermissive?:            boolean,
 }
 
@@ -133,7 +134,7 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 
 function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): Array<RuleObject> {
 	return key.split(',').map(ruleDeclaration => {
-		const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)\??(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
+		const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flag>[!?])?(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
 		if (!match || !match.groups || !match.groups.name) {
 			throw new Error(`invalid rule declaration: "${ruleDeclaration}"`);
 		}
@@ -143,14 +144,17 @@ function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, p
 		if (parameter !== undefined) {
 			rule.parameter = parameter;
 		}
-		if (ruleDeclaration.includes('?')) {
-			rule.isPermissive = true;
+		if (match.groups.flag === '!') {
+			rule.isStrict = true;
 		}
-		if (match.groups.condition !== undefined) {
-			rule.condition = match.groups.condition;
+		if (match.groups.flag === '?') {
+			rule.isPermissive = true;
 		}
 		if (match.groups.not !== undefined) {
 			rule.conditionExpectedResult = false;
+		}
+		if (match.groups.condition !== undefined) {
+			rule.condition = match.groups.condition;
 		}
 
 		return rule;

@@ -125,6 +125,7 @@ async function executeRuleValidator(
 	jsonValue: JsonValue | SyntaxError,
 	jsonAst: JsonAst | SyntaxError,
 ): Promise<LintStatus | RuleResult> {
+	const isRuleStrict     = rule.isStrict     ?? false;
 	const isRulePermissive = rule.isPermissive ?? false;
 	const [targetFsPath, targetPropertyPathSegments] = rule.target;
 
@@ -149,8 +150,7 @@ async function executeRuleValidator(
 			return isRulePermissive ? LintStatus.SkippedForWrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 		}
 		if (fileContents === undefined) {
-			// TODO: throw/return error on missing/unaccessible file?
-			return true;
+			return isRuleStrict ? new RuleError(RuleErrorType.MissingTarget) : true;
 		}
 
 		return await validator(buildRuleContext({ contents: fileContents, lines, parameter: rule.parameter }));
@@ -160,15 +160,14 @@ async function executeRuleValidator(
 	 * JSON value
 	 */
 	if (fileContents === undefined) {
-		// TODO: thow/return error on missing/unaccessible file?
-		return true;
+		return isRuleStrict ? new RuleError(RuleErrorType.MissingTarget) : true;
 	}
 	if (jsonValue instanceof SyntaxError) {
-		// TODO [>=0.5.0]: exploit line & column numbers
+		// TODO [>=0.3.0]: exploit line & column numbers
 		return new RuleError(jsonValue.message ?? 'invalid JSON encountered');
 	}
 	if (jsonAst instanceof SyntaxError) {
-		// TODO [>=0.5.0]: exploit line & column numbers
+		// TODO [>=0.3.0]: exploit line & column numbers
 		return new RuleError(jsonAst.message ?? 'invalid JSON encountered');
 	}
 	if ((targetType === RuleTargetType.JsonValue || targetType === RuleTargetType.JsonString) && targetPropertyPathSegments.length === 0) {
@@ -178,9 +177,7 @@ async function executeRuleValidator(
 	const propertyValue = tryGettingJsonObjectProperty(jsonValue, targetPropertyPathSegments);
 	const propertyAst   = tryGettingJsonAstProperty(jsonAst,      targetPropertyPathSegments);
 	if (propertyValue === undefined || propertyAst === undefined) {
-		// The property doesn't exist in the object, so the rule is ignored
-		// TODO: throw/return error if the property is required
-		return true;
+		return isRuleStrict ? new RuleError(RuleErrorType.MissingTarget) : true;
 	}
 
 	const context = buildRuleContext({
