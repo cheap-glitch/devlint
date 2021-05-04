@@ -50,7 +50,8 @@
     "overrides": [
       {
         "files": [
-          "test/rules/snippets/*.js"
+          "test/rules/snippets/*.js",
+          "test/rules/snippets/templates/*.js"
         ],
         "rules": {
           "capitalized-comments": "off",
@@ -59,8 +60,7 @@
       }
     ],
     "ignorePatterns": [
-      "build",
-      "test/rules/snippets/_template.js"
+      "build"
     ]
   },
   "jest": {

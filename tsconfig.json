@@ -15,7 +15,7 @@
 		"noEmitOnError":              true,
     "removeComments":             true,
 
-    "lib":                        ["es2020"],
+    "lib":                        ["esnext"],
     "moduleResolution":           "node",
     "esModuleInterop":            true,
     "resolveJsonModule":          true,

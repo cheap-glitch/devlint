@@ -1,9 +1,18 @@
 module.exports = {
-	passing: [
-		['{}', 'alphabetical'],
-		['{}', 'alphabetical-blocks'],
+	passing: {
 
-		[`
+		/* ----- Alphabetical ----- */
+
+		'empty object #1': [ // {{{
+		`
+			{
+			}
+		`,
+			'alphabetical',
+		], // }}}
+
+		'properties with single-character keys': [ // {{{
+		`
 			{
 			  "a": true,
 			  "b": true,
@@ -11,8 +20,10 @@ module.exports = {
 			}
 		`,
 			'alphabetical',
-		],
-		[`
+		], // }}}
+
+		'properties with longer keys': [ // {{{
+		`
 			{
 			  "alpacaWool": true,
 			  "forestFire": true,
@@ -20,8 +31,10 @@ module.exports = {
 			}
 		`,
 			'alphabetical',
-		],
-		[`
+		], // }}}
+
+		'properties with numerical keys': [ // {{{
+		`
 			{
 			    "1": true,
 			   "02": true,
@@ -31,8 +44,10 @@ module.exports = {
 			}
 		`,
 			'alphabetical',
-		],
-		[`
+		], // }}}
+
+		'nested properties with single-character keys': [ // {{{
+		`
 			{
 			  "a": true,
 			  "f": {
@@ -43,9 +58,20 @@ module.exports = {
 			}
 		`,
 			'alphabetical',
-		],
+		], // }}}
 
-		[`
+		/* ----- Alphabetical blocks ----- */
+
+		'empty object #2': [ // {{{
+		`
+			{
+			}
+		`,
+			'alphabetical-blocks',
+		], // }}}
+
+		'grouped properties with single-character keys': [ // {{{
+		`
 			{
 			  "a": true,
 			  "d": "foo",
@@ -58,8 +84,10 @@ module.exports = {
 			}
 		`,
 			'alphabetical-blocks',
-		],
-		[`
+		], // }}}
+
+		'grouped properties with single-character keys and complex values': [ // {{{
+		`
 			{
 			  "a": [
 			    true,
@@ -84,15 +112,20 @@ module.exports = {
 			}
 		`,
 			'alphabetical-blocks',
-		],
-	],
+		], // }}}
 
-	failing: [
-		[['{}', ['alphabetical']],       2],
-		[['{}', { alphabetical: true }], 2],
-		[['{}', 'alphabet'],             2],
+	}, failing: {
 
-		[[`
+		/* ----- Alphabetical ----- */
+
+		// invalid parameters {{{
+		'invalid parameter #1': [['{}', ['alphabetical']],       2],
+		'invalid parameter #2': [['{}', { alphabetical: true }], 2],
+		'invalid parameter #3': [['{}', 'alphabet'],             2],
+		// }}}
+
+		'properties with single-character keys': [[ // {{{
+		`
 			{
 			  "b": true,
 			  "a": false
@@ -101,8 +134,10 @@ module.exports = {
 			'alphabetical',
 		],
 			'property "a" is not in alphabetical order', { line: 3, column: 3, char: 17 }, { line: 3, column: 6, char: 20 },
-		],
-		[[`
+		], // }}}
+
+		'properties with single-character keys and complex values': [[ // {{{
+		`
 			{
 			  "b": [
 			    1,
@@ -118,8 +153,10 @@ module.exports = {
 			'alphabetical',
 		],
 			'property "a" is not in alphabetical order', { line: 7, column: 3, char: 38 }, { line: 7, column: 6, char: 41 },
-		],
-		[[`
+		], // }}}
+
+		'properties with numerical keys': [[ // {{{
+		`
 			{
 			  "10": true,
 			   "5": false
@@ -128,9 +165,12 @@ module.exports = {
 			'alphabetical',
 		],
 			'property "5" is not in alphabetical order', { line: 3, column: 4, char: 19 }, { line: 3, column: 7, char: 22 },
-		],
+		], // }}}
 
-		[[`
+		/* ----- Alphabetical blocks ----- */
+
+		'grouped properties with single-character keys': [[ // {{{
+		`
 			{
 			  "a": true,
 			  "d": "foo",
@@ -144,8 +184,10 @@ module.exports = {
 			'alphabetical-blocks',
 		],
 			'property "a" is not in alphabetical order', { line: 7, column: 3, char: 54 }, { line: 7, column: 6, char: 57 },
-		],
-		[[`
+		], // }}}
+
+		'grouped properties with single-character keys and complex values': [[ // {{{
+		`
 			{
 			  "a": [
 			    1,
@@ -170,6 +212,7 @@ module.exports = {
 			'alphabetical-blocks',
 		],
 			'property "a" is not in alphabetical order', { line: 18, column: 3, char: 133 }, { line: 18, column: 6, char: 136 },
-		],
-	],
+		], // }}}
+
+	},
 };

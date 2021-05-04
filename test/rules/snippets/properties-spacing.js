@@ -1,13 +1,19 @@
 module.exports = {
-	passing: [
-		[`
+	passing: {
+
+		/* ----- Around ----- */
+
+		'empty object #1': [ // {{{
+		`
 			{
 			}
 		`,
 			'around',
-		],
+		], // }}}
+
+		'single property with primitive value and spacing around': [ // {{{
 		/* eslint-disable smarter-tabs/smarter-tabs */
-		[`
+		`
 			{
 
 			  "foo": true
@@ -15,9 +21,11 @@ module.exports = {
 			}
 		`,
 			'around',
-		],
 		/* eslint-enable smarter-tabs/smarter-tabs */
-		[`
+		], // }}}
+
+		'single property with array value and spacing around': [ // {{{
+		`
 			{
 
 			  "foo": [
@@ -29,9 +37,11 @@ module.exports = {
 			}
 		`,
 			'around',
-		],
+		], // }}}
+
+		'two properties and spacing around': [ // {{{
 		/* eslint-disable smarter-tabs/smarter-tabs */
-		[`
+		`
 			{
 
 			  "foo": true,
@@ -43,23 +53,30 @@ module.exports = {
 			}
 		`,
 			'around',
-		],
 		/* eslint-enable smarter-tabs/smarter-tabs */
+		], // }}}
 
-		[`
+		/* ----- Between ----- */
+
+		'empty object #2': [ // {{{
+		`
 			{
 			}
 		`,
 			'between',
-		],
-		[`
+		], // }}}
+
+		'single property with primitive value and no spacing': [ // {{{
+		`
 			{
 			  "foo": true
 			}
 		`,
 			'between',
-		],
-		[`
+		], // }}}
+
+		'single property with array value and no spacing': [ // {{{
+		`
 			{
 			  "foo": [
 			    1,
@@ -69,8 +86,10 @@ module.exports = {
 			}
 		`,
 			'between',
-		],
-		[`
+		], // }}}
+
+		'two properties with primitive values and spacing between': [ // {{{
+		`
 			{
 			  "foo": true,
 
@@ -78,8 +97,10 @@ module.exports = {
 			}
 		`,
 			'between',
-		],
-		[`
+		], // }}}
+
+		'two properties with object values and spacing between': [ // {{{
+		`
 			{
 			  "foo": {
 			    "foo": true
@@ -91,16 +112,21 @@ module.exports = {
 			}
 		`,
 			'between',
-		],
-	],
+		], // }}}
 
-	failing: [
-		[['{}', true],      2],
-		[['{}', false],     2],
-		[['{}', 2],         2],
-		[['{}', 'betwixt'], 2],
+	}, failing: {
 
-		[[`
+		// invalid parameters {{{
+		'invalid parameter #1': [['{}', true],      2],
+		'invalid parameter #2': [['{}', false],     2],
+		'invalid parameter #3': [['{}', 2],         2],
+		'invalid parameter #4': [['{}', 'betwixt'], 2],
+		// }}}
+
+		/* ----- Around ----- */
+
+		'single property with primitive value and no spacing above': [[ // {{{
+		`
 			{
 			  "foo": true
 
@@ -109,8 +135,10 @@ module.exports = {
 			'around',
 		],
 			'missing empty line above property key', { line: 2, column: 3, char: 4 }, { line: 2, column: 3, char: 4 },
-		],
-		[[`
+		], // }}}
+
+		'single property with primitive value and no spacing below': [[ // {{{
+		`
 			{
 
 			  "foo": true
@@ -119,8 +147,10 @@ module.exports = {
 			'around',
 		],
 			'missing empty line below property value', { line: 3, column: 14, char: 16 }, { line: 3, column: 14, char: 16 },
-		],
-		[[`
+		], // }}}
+
+		'single property with array value and no spacing above': [[ // {{{
+		`
 			{
 
 			  "foo": [
@@ -133,8 +163,10 @@ module.exports = {
 			'around',
 		],
 			'missing empty line below property value', { line: 7, column: 4, char: 38 }, { line: 7, column: 4, char: 38 },
-		],
-		[[`
+		], // }}}
+
+		'two properties with no spacing between': [[ // {{{
+		`
 			{
 
 			  "foo": true,
@@ -147,9 +179,12 @@ module.exports = {
 			'around',
 		],
 			'missing empty line below property value', { line: 3, column: 14, char: 16 }, { line: 3, column: 14, char: 16 },
-		],
+		], // }}}
 
-		[[`
+		/* ----- Between ----- */
+
+		'single property with primitive value extra spacing above': [[ // {{{
+		`
 			{
 
 			  "foo": true
@@ -158,8 +193,10 @@ module.exports = {
 			'between',
 		],
 			'extra empty line above property key', { line: 3, column: 3, char: 5 }, { line: 3, column: 3, char: 5 },
-		],
-		[[`
+		], // }}}
+
+		'single property with array value extra spacing below': [[ // {{{
+		`
 			{
 			  "foo": [
 			    1,
@@ -172,8 +209,10 @@ module.exports = {
 			'between',
 		],
 			'extra empty line below property value', { line: 6, column: 4, char: 37 }, { line: 6, column: 4, char: 37 },
-		],
-		[[`
+		], // }}}
+
+		'two properties with primitive values and no space between': [[ // {{{
+		`
 			{
 			  "foo": true,
 			  "bar": false
@@ -182,8 +221,10 @@ module.exports = {
 			'between',
 		],
 			'missing empty line below property value', { line: 2, column: 14, char: 15 }, { line: 2, column: 14, char: 15 },
-		],
-		[[`
+		], // }}}
+
+		'two properties with object values and no space between': [[ // {{{
+		`
 			{
 			  "foo": {
 			    "foo": true
@@ -196,6 +237,7 @@ module.exports = {
 			'between',
 		],
 			'missing empty line below property value', { line: 4, column: 4, char: 32 }, { line: 4, column: 4, char: 32 },
-		],
-	],
+		], // }}}
+
+	},
 };

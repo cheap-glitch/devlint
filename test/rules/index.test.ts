@@ -1,3 +1,5 @@
+/* eslint-disable jest/valid-title, @typescript-eslint/no-var-requires */
+
 import { JsonValue } from 'type-fest';
 import { readdirSync } from 'fs';
 import { JsonValue as JsonAst } from 'jsonast';
@@ -16,37 +18,30 @@ const pathToTestSnippets = [__dirname, 'snippets'];
 type TestSnippet = string | [string, JsonValue];
 
 interface TestSnippetsCollection {
-	passing: Array<TestSnippet>,
-	failing: Array<[TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>,
+	passing: Record<string, TestSnippet>,
+	failing: Record<string, [TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>,
 }
 
 const ruleNames   = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
 const rulesToTest = readdirSync(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
-	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js') && !directoryEntry.name.startsWith('_'))
+	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
 	            .map(file => file.name)
 		    .filter(rule => ruleNames.length === 0 || ruleNames.includes(rule.replace('.js', '')));
 
 for (const filename of rulesToTest) {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { targetType, validator } = require(getAbsolutePath([pathToRulePlugins, filename]));
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([...pathToTestSnippets, filename]));
 
-	// eslint-disable-next-line jest/valid-title
 	describe(filename.replace(/\.js$/, ''), () => {
-		describe('passing', () => {
-			for (const snippet of passingSnippets) {
-				const context = buildSnippetContext(targetType, snippet);
 
-				// eslint-disable-next-line jest/valid-title
-				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(), async () => {
-					expect(await validator(context)).toBe(true);
-				});
+		describe('passing', () => {
+			for (const [title, snippet] of Object.entries(passingSnippets)) {
+				test(title, async () => expect(await validator(buildSnippetContext(targetType, snippet))).toBe(true));
 			}
 		});
 
 		describe('failing', () => {
-			for (const [snippet, errorTypeOrMessage, errorStart, errorEnd] of failingSnippets) {
+			for (const [title, [snippet, errorTypeOrMessage, errorStart, errorEnd]] of Object.entries(failingSnippets)) {
 				const context   = buildSnippetContext(targetType, snippet);
 				const jsonValue = tryParsingJsonValue(context.contents);
 
@@ -61,8 +56,7 @@ for (const filename of rulesToTest) {
 							: errorEnd,
 					});
 
-				// eslint-disable-next-line jest/valid-title
-				test([context.contents, context.parameter ?? ''].filter(Boolean).map(data => JSON.stringify(data)).join(), async () => {
+				test(title, async () => {
 					const result = await validator(context);
 
 					expect(result).toBeInstanceOf(Error);
@@ -77,7 +71,7 @@ for (const filename of rulesToTest) {
 function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
-	const contents  = rawContents.replace(/^\n/, '').replace(/^\t{3}/gm, '').replace('\\n', '\n');
+	const contents  = rawContents.replace(/^\n/, '').replace(/^\t{3}/gm, '').replaceAll('\\n', '\n');
 	const lines     = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
 	let jsonAst: JsonAst | SyntaxError | undefined = tryParsingJsonAst(contents);
