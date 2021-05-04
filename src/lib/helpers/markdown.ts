@@ -1,35 +1,33 @@
-interface MarkdownHeader {
+interface MarkdownHeading {
 	text:      string,
 	level:     number,
 	char:      number,
 	fullMatch: string,
 }
 
-const markdownHeaderRegex = /^(?<level>#{1,6})\s+(?<text>.+)$/;
+const markdownHeadingRegex = /^(?<level>#{1,6})\s+(?<text>.+)$/;
 
-export function parseMarkdownHeaders(rawHeaders: Array<unknown>): Array<MarkdownHeader> | Error {
-	const headers = [];
-	for (const rawHeader of rawHeaders) {
-		if (typeof rawHeader !== 'string') {
+export function parseMarkdownHeadings(rawHeadings: Array<unknown>): Array<MarkdownHeading> | Error {
+	const headings = [];
+	for (const rawHeading of rawHeadings) {
+		if (typeof rawHeading !== 'string') {
 			return new Error();
 		}
 
-		const match = rawHeader.match(markdownHeaderRegex);
-		const header = {
-			text:      match?.groups?.text.trim()  ?? rawHeader.trim(),
+		const match = rawHeading.match(markdownHeadingRegex);
+		headings.push({
+			text:      match?.groups?.text.trim()  ?? rawHeading.trim(),
 			level:     match?.groups?.level.length ?? 0,
 			char:      match?.index                ?? -1,
 			fullMatch: match?.[0]                  ?? '',
-		};
-
-		headers.push(header);
+		});
 	}
 
-	return headers;
+	return headings;
 }
 
-export function getMarkdownHeaders(text: string): Array<MarkdownHeader> {
-	return [...text.matchAll(new RegExp(markdownHeaderRegex, 'gm'))].map(match => ({
+export function getMarkdownHeadings(text: string): Array<MarkdownHeading> {
+	return [...text.matchAll(new RegExp(markdownHeadingRegex, 'gm'))].map(match => ({
 		text:      match.groups?.text.trim()  ?? '',
 		level:     match.groups?.level.length ?? 0,
 		char:      match.index                ?? -1,
@@ -37,6 +35,6 @@ export function getMarkdownHeaders(text: string): Array<MarkdownHeader> {
 	}));
 }
 
-export function isMatchingHeader({ text, level }: MarkdownHeader, baseHeader: MarkdownHeader): boolean {
-	return text === baseHeader.text && (level === baseHeader.level || baseHeader.level === 0);
+export function isMatchingHeading({ text, level }: MarkdownHeading, baseHeading: MarkdownHeading): boolean {
+	return text === baseHeading.text && (level === baseHeading.level || baseHeading.level === 0);
 }

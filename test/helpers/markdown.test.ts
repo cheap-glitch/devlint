@@ -1,12 +1,12 @@
 import outdent from 'outdent';
 
-import { getMarkdownHeaders } from '../../src/lib/helpers/markdown';
+import { getMarkdownHeadings } from '../../src/lib/helpers/markdown';
 
-describe('getMarkdownHeaders', () => {
+describe('getMarkdownHeadings', () => {
 
-	test('headers in text', () => { // {{{
+	test('headings in text', () => { // {{{
 
-		expect(getMarkdownHeaders(outdent`
+		expect(getMarkdownHeadings(outdent`
 			# foo
 
 			## bar

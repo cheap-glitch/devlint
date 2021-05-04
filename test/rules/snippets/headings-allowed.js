@@ -15,15 +15,15 @@ module.exports = {
 
 		'some headings with other text and an empty list': [ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 
-			## Header
+			## Heading
 
 			> Quote block
 
-			## Header
+			## Heading
 
 			- List item
 			- List item
@@ -105,7 +105,7 @@ module.exports = {
 		`,
 			['Foo'],
 		],
-			'header "Bar" is not allowed', { line: 5, column: 1, char: 18 }, { line: 5, column: 5, char: 22 },
+			'heading "Bar" is not allowed', { line: 5, column: 1, char: 18 }, { line: 5, column: 5, char: 22 },
 		], // }}}
 
 		'unlisted heading #2': [[ // {{{
@@ -120,7 +120,7 @@ module.exports = {
 		`,
 			['Bar'],
 		],
-			'header "Foo" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 6, char: 5 },
+			'heading "Foo" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 6, char: 5 },
 		], // }}}
 
 		'heading with the wrong level': [[ // {{{
@@ -130,7 +130,7 @@ module.exports = {
 		`,
 			['# Foo', '### Bar'],
 		],
-			'header "Foo" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 7, char: 6 },
+			'heading "Foo" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 7, char: 6 },
 		], // }}}
 
 		'unlisted heading with an explicit level': [[ // {{{
@@ -141,7 +141,7 @@ module.exports = {
 		`,
 			['# Foo', '### Bar'],
 		],
-			'header "Baz" is not allowed', { line: 3, column: 1, char: 13 }, { line: 3, column: 7, char: 19 },
+			'heading "Baz" is not allowed', { line: 3, column: 1, char: 13 }, { line: 3, column: 7, char: 19 },
 		], // }}}
 
 	},

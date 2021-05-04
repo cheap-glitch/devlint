@@ -3,7 +3,7 @@ module.exports = {
 
 		'empty list': [ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 
@@ -16,7 +16,7 @@ module.exports = {
 
 		'one unlisted heading': [ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 		`,
@@ -25,7 +25,7 @@ module.exports = {
 
 		'two unlisted headings': [ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 
@@ -38,7 +38,7 @@ module.exports = {
 
 		'one unlisted heading and one heading of different level': [ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 
@@ -61,7 +61,7 @@ module.exports = {
 
 		'one forbidden heading': [[ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 
@@ -71,12 +71,12 @@ module.exports = {
 		`,
 			['Foo'],
 		],
-			'header "Foo" is forbidden', { line: 5, column: 1, char: 21 }, { line: 5, column: 6, char: 26 },
+			'heading "Foo" is forbidden', { line: 5, column: 1, char: 22 }, { line: 5, column: 6, char: 27 },
 		], // }}}
 
 		'one forbidden heading with specific level': [[ // {{{
 		`
-			# Header
+			# Heading
 
 			Paragraph
 
@@ -86,7 +86,7 @@ module.exports = {
 		`,
 			['## Foo'],
 		],
-			'header "Foo" is forbidden', { line: 5, column: 1, char: 21 }, { line: 5, column: 6, char: 26 },
+			'heading "Foo" is forbidden', { line: 5, column: 1, char: 22 }, { line: 5, column: 6, char: 27 },
 		], // }}}
 
 		'one forbidden heading with specific level and some other text content': [[ // {{{
@@ -106,7 +106,7 @@ module.exports = {
 		`,
 			['## Foo'],
 		],
-			'header "Foo" is forbidden', { line: 10, column: 1, char: 54 }, { line: 10, column: 6, char: 59 },
+			'heading "Foo" is forbidden', { line: 10, column: 1, char: 54 }, { line: 10, column: 6, char: 59 },
 		], // }}}
 
 	},

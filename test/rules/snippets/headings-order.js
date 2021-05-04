@@ -49,7 +49,7 @@ module.exports = {
 		`
 			# Foo
 
-			# Header
+			# Heading
 
 			# Bar
 
@@ -128,7 +128,7 @@ module.exports = {
 		`,
 			['Foo', 'Bar', 'Baz'],
 		],
-			'header "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 6 }, { line: 2, column: 5, char: 10 },
+			'heading "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 6 }, { line: 2, column: 5, char: 10 },
 		], // }}}
 
 		'disordered headings with paragraphs in between': [[ // {{{
@@ -145,7 +145,7 @@ module.exports = {
 		`,
 			['Foo', 'Bar', 'Baz'],
 		],
-			'header "Foo" should be placed before "Bar"', { line: 9, column: 1, char: 36 }, { line: 9, column: 5, char: 40 },
+			'heading "Foo" should be placed before "Bar"', { line: 9, column: 1, char: 36 }, { line: 9, column: 5, char: 40 },
 		], // }}}
 
 		'disordered headings and one extra listed heading': [[ // {{{
@@ -156,14 +156,14 @@ module.exports = {
 		`,
 			['Foo', 'Foobar', 'Bar', 'Baz'],
 		],
-			'header "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 6 }, { line: 2, column: 5, char: 10 },
+			'heading "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 6 }, { line: 2, column: 5, char: 10 },
 		], // }}}
 
 		'disordered headings and one unlisted heading': [[ // {{{
 		`
 			# Foo
 
-			# Header
+			# Heading
 
 			# Baz
 
@@ -173,7 +173,7 @@ module.exports = {
 		`,
 			['Foo', 'Bar', 'Baz'],
 		],
-			'header "Bar" should be placed between "Foo" and "Baz"', { line: 9, column: 1, char: 35 }, { line: 9, column: 5, char: 39 },
+			'heading "Bar" should be placed between "Foo" and "Baz"', { line: 9, column: 1, char: 36 }, { line: 9, column: 5, char: 40 },
 		], // }}}
 
 		'disordered headings and specific levels in list #1': [[ // {{{
@@ -184,7 +184,7 @@ module.exports = {
 		`,
 			['# Foo', '# Bar', '# Baz'],
 		],
-			'header "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 6 }, { line: 2, column: 5, char: 10 },
+			'heading "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 6 }, { line: 2, column: 5, char: 10 },
 		], // }}}
 
 		'disordered headings and specific levels in list #2': [[ // {{{
@@ -195,7 +195,7 @@ module.exports = {
 		`,
 			['# Foo', '## Bar', '### Baz'],
 		],
-			'header "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 8 }, { line: 2, column: 5, char: 12 },
+			'heading "Foo" should be placed before "Bar"', { line: 2, column: 1, char: 8 }, { line: 2, column: 5, char: 12 },
 		], // }}}
 
 	},
