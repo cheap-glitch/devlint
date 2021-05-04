@@ -42,7 +42,7 @@ export function getTotalsReport(errors: number, warnings: number, skipped: numbe
 }
 
 export function getConditionsStatusReport(name: string, status: boolean): string {
-	return '  ' + status ? (chalk.blue.bold('✓') + ' ' + chalk.blue(name)) : (chalk.yellow.bold('✗') + ' ' + chalk.yellow(name));
+	return '  ' + (status ? (chalk.green.bold('✓') + ' ' + chalk.green(name)) : (chalk.red.bold('✗') + ' ' + chalk.red(name)));
 }
 
 export function getDepreciatedRulesReport(depreciatedRules: Array<string>): string {
