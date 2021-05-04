@@ -90,6 +90,13 @@ export async function cli(): Promise<void> {
 		const conditions = await testConditions(directory, config?.conditions ?? {});
 		const results    = await lintDirectory(directory, selectedRules, conditions);
 
+		if (verbosityLevel >= 2) {
+			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => getConditionsStatusReport(name, status)).join('\n');
+			if (conditionsStatusReport.length > 0) {
+				console.log(`\nConditions status in ${getAbsolutePath([directory])}:\n` + conditionsStatusReport);
+			}
+		}
+
 		for (const [fsPath, fsTargetResults] of results.entries()) {
 			for (const [propertyPath, propertyTargetResults] of fsTargetResults.entries()) {
 				const reports: Array<string> = [];
@@ -160,13 +167,6 @@ export async function cli(): Promise<void> {
 					'\n' +
 					reports.join(verbosityLevel >= 1 ? '\n\n' : '\n')
 				);
-			}
-		}
-
-		if (verbosityLevel >= 2) {
-			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => getConditionsStatusReport(name, status)).join('\n');
-			if (conditionsStatusReport.length > 0) {
-				console.log(`\nConditions status in ${getAbsolutePath([directory])}:\n` + conditionsStatusReport);
 			}
 		}
 	}

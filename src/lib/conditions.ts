@@ -14,20 +14,27 @@ export async function testConditions(workingDirectory: string, conditionsObject:
 
 	const conditionsResults: Record<string, boolean> = {};
 	for (const [conditionName, conditionRules] of Object.entries(conditionsObject)) {
-		if (!isJsonObject(conditionRules)) {
+		if (conditionRules === undefined) {
 			continue;
 		}
 
-		// Parse the condition object
 		const condition = wrapInArray(conditionRules).map(rulesObject => parseRules(rulesObject));
 
-		// Execute the condition rules and check if the condition is fulfilled
-		conditionsResults[conditionName] = false;
-		for (const rulesArray of condition) {
+		// The condition is fulfilled if at least one of the rules array is entirely valid
+		conditionsResults[conditionName] = true;
+		checkEachRuleArray: for (const rulesArray of condition) {
 			const results = await lintDirectory(workingDirectory, rulesArray, {});
-			if ([...results.values()].every(targetPathReports => [...targetPathReports.values()].every(results => [...results].every(result => result.status === LintStatus.Success)))) {
-				conditionsResults[conditionName] = true;
-				break;
+
+			// All of the rules must pass for a rule array to pass
+			for (const fileResults of results.values()) {
+				for (const propertyResults of fileResults.values()) {
+					for (const result of propertyResults) {
+						if (result.status === LintStatus.Error) {
+							conditionsResults[conditionName] = false;
+							continue checkEachRuleArray;
+						}
+					}
+				}
 			}
 		}
 	}
