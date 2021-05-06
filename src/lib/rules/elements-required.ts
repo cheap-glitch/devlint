@@ -13,7 +13,7 @@ export function validator({ lines, jsonArray, jsonArrayAst, parameter: requiredE
 			continue;
 		}
 
-		return new RuleError(`required element "${requiredElement}" is missing`, jsonArrayAst.pos, lines);
+		return new RuleError(`required element "${JSON.stringify(requiredElement)}" is missing`, jsonArrayAst.pos, lines);
 	}
 
 	return true;
