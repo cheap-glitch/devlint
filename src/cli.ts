@@ -55,12 +55,18 @@ export async function cli(): Promise<void> {
 		}
 	}
 
-	const lintedDirectories = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
-		const directory = normalizePath(arg.toString());
-		await testDirectoryAccess(directory, fsConstants.R_OK);
+	let directoriesToLint: Array<string> = [];
+	try {
+		directoriesToLint = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
+			const directory = normalizePath(arg.toString());
+			await testDirectoryAccess(directory, fsConstants.R_OK);
 
-		return isAbsolutePath(directory) ? directory : joinPathSegments([currentWorkingDirectory, directory]);
-	}));
+			return isAbsolutePath(directory) ? directory : joinPathSegments([currentWorkingDirectory, directory]);
+		}));
+	} catch (error) {
+		console.error(error.message);
+		process.exitCode = 1;
+	}
 
 	const totals = {
 		errors:   0,
@@ -73,7 +79,7 @@ export async function cli(): Promise<void> {
 	const depreciatedRules = Object.keys(depreciations);
 	const depreciatedRulesUsed: Array<string> = [];
 
-	for (const directory of lintedDirectories) {
+	for (const directory of directoriesToLint) {
 		const relativePath = getRelativePath(currentWorkingDirectory, directory);
 		// TODO: avoid loading the config for every directory
 		const config = await loadConfig();
