@@ -114,6 +114,19 @@ module.exports = {
 			'between',
 		], // }}}
 
+		'properties starting/ending on the same line as their containing object': [ // {{{
+		`
+			{ "foo": {
+			    "foo": true
+			  },
+
+			  "bar": {
+			    "baz": false
+			  } }
+		`,
+			'between',
+		], // }}}
+
 	}, failing: {
 
 		// invalid parameters {{{
@@ -215,6 +228,19 @@ module.exports = {
 		`
 			{
 			  "foo": true,
+			  "bar": false
+			}
+		`,
+			'between',
+		],
+			'missing empty line below property value', { line: 2, column: 14, char: 15 }, { line: 2, column: 14, char: 15 },
+		], // }}}
+
+		'two properties with primitive values and a blank but non-empty line between': [[ // {{{
+		`
+			{
+			  "foo": true,
+			  \t\t
 			  "bar": false
 			}
 		`,
