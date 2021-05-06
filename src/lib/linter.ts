@@ -87,30 +87,35 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		const jsonAst   = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError();
 
 		// TODO: expand property-path globs here?
-		await Promise.all([...fsTargetLints.entries()].flatMap(async ([, propertyTargetLints]) => [...propertyTargetLints].map(async (lint) => {
-			if (lint.status !== LintStatus.Pending) {
-				return;
-			}
+		// TODO: rewrite using Promise.all()? (seems like it can cause race conditions)
+		// await Promise.all([...fsTargetLints.entries()].flatMap(async ([, propertyTargetLints]) => [...propertyTargetLints].map(async (lint) => {
+		for (const propertyTargetLints of fsTargetLints.values()) {
+			for (const lint of propertyTargetLints) {
+				if (lint.status !== LintStatus.Pending) {
+					return;
+				}
 
-			const rulePlugin = plugins.get(lint.rule.name);
-			if (rulePlugin === undefined) {
-				// FIXME: this should never happen anyway
-				throw new Error();
-			}
+				const rulePlugin = plugins.get(lint.rule.name);
+				if (rulePlugin === undefined) {
+					// FIXME: this should never happen anyway
+					throw new Error(`could not load plugin for rule "${lint.rule.name}"`);
+				}
 
-			const result = await executeRuleValidator(workingDirectory, lint.rule, rulePlugin, fileContents, lines, jsonValue, jsonAst);
-			if (result === true) {
-				lint.status = LintStatus.Success;
-				return;
-			}
-			if (result instanceof RuleError) {
-				lint.status = LintStatus.Error;
-				lint.error  = result;
-				return;
-			}
+				// eslint-ignore-next-line unicorn/no-await-in-loop
+				const result = await executeRuleValidator(workingDirectory, lint.rule, rulePlugin, fileContents, lines, jsonValue, jsonAst);
+				if (result === true) {
+					lint.status = LintStatus.Success;
+					return;
+				}
+				if (result instanceof RuleError) {
+					lint.status = LintStatus.Error;
+					lint.error  = result;
+					return;
+				}
 
-			lint.status = result;
-		})));
+				lint.status = result;
+			}
+		}
 	}));
 
 	return lints;
@@ -138,8 +143,11 @@ async function executeRuleValidator(
 		}
 
 		// TODO: test that the path is also an accessible directory
-		// TODO: fetch directory listing
-		return await validator(buildRuleContext({ workingDirectory: joinPathSegments([workingDirectory, targetFsPath]), parameter: rule.parameter }));
+		// TODO: fetch directory listing only once
+		return validator(buildRuleContext({
+			workingDirectory: joinPathSegments([workingDirectory, targetFsPath]),
+			parameter:        rule.parameter,
+		}));
 	}
 
 	/**
@@ -153,7 +161,7 @@ async function executeRuleValidator(
 			return isRuleStrict ? new RuleError(RuleErrorType.MissingTarget) : true;
 		}
 
-		return await validator(buildRuleContext({ contents: fileContents, lines, parameter: rule.parameter }));
+		return validator(buildRuleContext({ contents: fileContents, lines, parameter: rule.parameter }));
 	}
 
 	/**
@@ -182,7 +190,7 @@ async function executeRuleValidator(
 
 	const context = buildRuleContext({
 		contents:  fileContents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char + 1),
-		lines:     (lines ?? []).slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line - 1),
+		lines:     lines?.slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line - 1) ?? [],
 		parameter: rule.parameter,
 	});
 
@@ -217,7 +225,7 @@ async function executeRuleValidator(
 			break;
 	}
 
-	return await validator(context);
+	return validator(context);
 }
 
 export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
