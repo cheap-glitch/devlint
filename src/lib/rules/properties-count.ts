@@ -5,7 +5,7 @@ import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } fro
 export const targetType = RuleTargetType.JsonObject;
 
 export function validator({ jsonObject, parameter: propertiesCounts }: RuleContext): RuleResult {
-	if (!isJsonObject(propertiesCounts) || Object.keys(propertiesCounts).some(key => ['min', 'max'].includes(key))) {
+	if (!isJsonObject(propertiesCounts) || Object.keys(propertiesCounts).some(key => !['min', 'max'].includes(key))) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
@@ -17,7 +17,7 @@ export function validator({ jsonObject, parameter: propertiesCounts }: RuleConte
 		return new RuleError(`object has ${countWord('property', propertiesCount, 'properties')}, minimum is ${propertiesCounts.min}`);
 	}
 	if (propertiesCount > maxPropertiesCount) {
-		return new RuleError(`object has ${countWord('property', propertiesCount, 'properties')}, maximum is ${propertiesCounts.min}`);
+		return new RuleError(`object has ${countWord('property', propertiesCount, 'properties')}, maximum is ${propertiesCounts.max}`);
 	}
 
 	return true;
