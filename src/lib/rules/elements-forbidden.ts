@@ -8,9 +8,13 @@ export function validator({ lines, jsonArray, jsonArrayAst, parameter: forbidden
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
+	if (jsonArrayAst.elements === undefined) {
+		return true;
+	}
+
 	for (const [index, element] of jsonArray.entries()) {
 		if (forbiddenElements.some(forbiddenElement => matchJsonValues(forbiddenElement, element))) {
-			return new RuleError(`element "${JSON.stringify(element)}" is forbidden`, jsonArrayAst.elements?.[index]?.pos, lines);
+			return new RuleError(`element "${JSON.stringify(element)}" is forbidden`, jsonArrayAst.elements[index].pos, lines);
 		}
 	}
 

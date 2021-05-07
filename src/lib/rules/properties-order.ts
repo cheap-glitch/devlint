@@ -22,19 +22,15 @@ export function validator({ lines, jsonObjectAst, parameter: properties }: RuleC
 		}
 
 		const jsonObjectProperties = jsonObjectAst.members.map(({ key }) => key.value);
-		const propertyBefore       = properties.slice(0, index).reverse().find(property => jsonObjectProperties.includes(String(property)));
-		const propertyAfter        = properties.slice(index + 1).find(property => jsonObjectProperties.includes(String(property)));
+		const propertyBefore = properties.slice(0, index).reverse().find(property => jsonObjectProperties.includes(String(property)));
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const propertyAfter  = properties.slice(index + 1).find(property => jsonObjectProperties.includes(String(property)))!;
 
-		if (propertyBefore !== undefined && propertyAfter !== undefined) {
+		if (propertyBefore !== undefined) {
 			return new RuleError(`property "${key.value}" should be placed between "${propertyBefore}" and "${propertyAfter}"`, key.pos, lines);
 		}
 
-		if (propertyAfter !== undefined) {
-			return new RuleError(`property "${key.value}" should be placed before "${propertyAfter}"`, key.pos, lines);
-		}
-
-		/* istanbul ignore next */
-		return new RuleError(`property "${key.value}" isn't placed in the right order`, key.pos, lines);
+		return new RuleError(`property "${key.value}" should be placed before "${propertyAfter}"`, key.pos, lines);
 	}
 
 	return true;

@@ -14,7 +14,7 @@ export function validator({ lines, jsonValue, jsonAst, parameter: allowedTypes }
 		}
 
 		const result = checkValueType(jsonValue, type);
-		if (result instanceof Error) {
+		if (result instanceof RuleError) {
 			return result;
 		}
 		if (result === true) {

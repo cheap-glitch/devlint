@@ -26,7 +26,7 @@ export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleCont
 			return new RuleError(errorMessage, { start: key.pos.start, end: key.pos.start }, lines);
 		}
 
-		const lineBelow = lines[value.pos.end.line]?.text;
+		const lineBelow = lines[value.pos.end.line].text;
 		if (spacing === 'between' && propertyIndex === jsonObjectAst.members.length - 1) {
 			if (lineBelow === '') {
 				errorMessage = 'extra empty line below property value';
