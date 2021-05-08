@@ -100,3 +100,7 @@ export function pluralize(word: string, count: number, plural?: string): string 
 export function capitalize(message: string): string {
 	return message.slice(0, 1).toUpperCase() + message.slice(1);
 }
+
+export function quoteJsonString(json: string): string {
+	return (json.startsWith('"') ? '' : '"') + json + (json.endsWith('"') ? '' : '"');
+}

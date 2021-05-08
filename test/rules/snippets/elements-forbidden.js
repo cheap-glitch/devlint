@@ -72,7 +72,7 @@ module.exports = {
 		`,
 			['1'],
 		],
-			'element ""1"" is forbidden', { line: 2, column: 3, char: 4 }, { line: 2, column: 6, char: 7 },
+			'element "1" is forbidden', { line: 2, column: 3, char: 4 }, { line: 2, column: 6, char: 7 },
 		], // }}}
 
 		'forbidden simple array element': [[ // {{{

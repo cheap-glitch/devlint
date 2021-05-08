@@ -1,4 +1,5 @@
 import { matchJsonValues } from '../helpers/json';
+import { quoteJsonString } from '../helpers/text';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonArray;
@@ -13,7 +14,7 @@ export function validator({ lines, jsonArray, jsonArrayAst, parameter: requiredE
 			continue;
 		}
 
-		return new RuleError(`required element "${JSON.stringify(requiredElement)}" is missing`, jsonArrayAst.pos, lines);
+		return new RuleError(`required element ${quoteJsonString(JSON.stringify(requiredElement))} is missing`, jsonArrayAst.pos, lines);
 	}
 
 	return true;
