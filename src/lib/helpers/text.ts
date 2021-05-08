@@ -89,7 +89,7 @@ export function getLines(text: string): Array<Line> {
 	return lines;
 }
 
-export function countWord(word: string, count: number, plural?: string): string {
+export function countWord(count: number, word: string, plural?: string): string {
 	return count + ' ' + pluralize(word, count, plural);
 }
 

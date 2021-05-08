@@ -35,8 +35,8 @@ function getReport(result: LintResult, label: string, message: string, location 
 
 export function getTotalsReport(errors: number, warnings: number, skipped: number): string {
 	const message = (errors === 0 && warnings === 0)
-		? 'Skipped ' + countWord('rule', skipped)
-		: countWord('problem', errors + warnings) + ' (' + [countWord('error', errors), countWord('warning', warnings), skipped + ' skipped'].join(', ') + ')';
+		? 'Skipped ' + countWord(skipped, 'rule')
+		: countWord(errors + warnings, 'problem') + ' (' + [countWord(errors, 'error'), countWord(warnings, 'warning'), skipped + ' skipped'].join(', ') + ')';
 
 	return chalk.bold(errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message);
 }
