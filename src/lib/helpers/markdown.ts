@@ -38,3 +38,7 @@ export function getMarkdownHeadings(text: string): Array<MarkdownHeading> {
 export function isMatchingHeading({ text, level }: MarkdownHeading, baseHeading: MarkdownHeading): boolean {
 	return text === baseHeading.text && (level === baseHeading.level || baseHeading.level === 0);
 }
+
+export function isMarkdownHeading(line: string): boolean {
+	return markdownHeadingRegex.test(line);
+}
