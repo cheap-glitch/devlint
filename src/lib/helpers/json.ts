@@ -6,9 +6,21 @@ import { PropertyPathSegments } from './properties';
 
 import { RuleError, RuleErrorType } from '../errors';
 
-export function matchJsonValues(model: JsonValue | undefined, value: JsonValue | undefined, propertyPath?: PropertyPathSegments): boolean | PropertyPathSegments {
+type TypeFunction = typeof Boolean | typeof Number | typeof String;
+
+export function matchJsonValues(
+	model: Record<string, JsonValue | TypeFunction> | JsonValue | TypeFunction | undefined,
+	value: JsonValue | undefined,
+	propertyPath?: PropertyPathSegments
+): boolean | PropertyPathSegments {
 	if (typeof model === 'string' && typeof value === 'string') {
 		return matchStrings(model, value) || (propertyPath ?? false);
+	}
+
+	switch (model) {
+		case Boolean: return (typeof value === 'boolean') || (propertyPath ?? false);
+		case Number:  return (typeof value === 'number')  || (propertyPath ?? false);
+		case String:  return (typeof value === 'string')  || (propertyPath ?? false);
 	}
 
 	if (model === null || value === null || typeof model !== 'object' || typeof value !== 'object') {

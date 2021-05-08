@@ -85,6 +85,7 @@ module.exports = {
 		'invalid parameter #1': [['{}', null],          2],
 		'invalid parameter #2': [['{}', 42],            2],
 		'invalid parameter #3': [['{}', { count: 42 }], 2],
+		'invalid parameter #4': [['{}', { min: true }], 2],
 		// }}}
 
 		'property count under minimum #1': [[ // {{{
