@@ -14,6 +14,14 @@ const labels: Record<RuleStatus, string> = {
 	[RuleStatus.Warning]: chalk.yellow('warning '),
 };
 
+export function getDisabledRuleReport(result: LintResult, message: string): string {
+	return getReport(result, labels[RuleStatus.Off], message);
+}
+
+export function getSkippedRuleReport(result: LintResult, message: string): string {
+	return getReport(result, chalk.gray('skipped '), message);
+}
+
 export function getErrorReport(result: LintResult, error: RuleError, verbosityLevel: number): string {
 	const location = error.start ? (error.start.line + ':' + error.start.column) : '';
 	const snippet  = verbosityLevel >= 1 && error.snippet && error.start && error.end ? formatSnippet(error.snippet, error.start, error.end, result.status) : '';
@@ -21,12 +29,8 @@ export function getErrorReport(result: LintResult, error: RuleError, verbosityLe
 	return getReport(result, labels[result.rule.status], error.message, location, snippet);
 }
 
-export function getDisabledRuleReport(result: LintResult, message: string): string {
-	return getReport(result, labels[RuleStatus.Off], message);
-}
-
-export function getSkippedRuleReport(result: LintResult, message: string): string {
-	return getReport(result, chalk.gray('skipped '), message);
+export function getSuccessReport(result: LintResult): string {
+	return getReport(result, chalk.green('success'), 'rule passed');
 }
 
 function getReport(result: LintResult, label: string, message: string, location = '', snippet = ''): string {

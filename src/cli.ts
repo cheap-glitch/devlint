@@ -12,7 +12,8 @@ import { depreciations } from './lib/depreciations';
 import { testConditions } from './lib/conditions';
 import { LintStatus, lintDirectory } from './lib/linter';
 import { RuleStatus, RuleErrorType, parseRules } from './lib/rules';
-import { getRuleDocumentationUrl, formatTargetPath, getErrorReport, getDisabledRuleReport, getSkippedRuleReport, getTotalsReport, getConditionsStatusReport, getDepreciatedRulesReport } from './lib/reports';
+import { getRuleDocumentationUrl, formatTargetPath } from './lib/reports';
+import { getSuccessReport, getErrorReport, getDisabledRuleReport, getSkippedRuleReport, getTotalsReport, getConditionsStatusReport, getDepreciatedRulesReport } from './lib/reports';
 
 const { isAbsolute: isAbsolutePath, normalize: normalizePath, relative: getRelativePath } = posix;
 
@@ -108,6 +109,12 @@ export async function cli(): Promise<void> {
 				const reports: Array<string> = [];
 				for (const result of propertyTargetResults) {
 					switch (result.status) {
+						case LintStatus.Success:
+							if (verbosityLevel >= 3) {
+								reports.push(getSuccessReport(result));
+							}
+							break;
+
 						case LintStatus.SkippedForWrongTargetType:
 							if (verbosityLevel >= 1) {
 								reports.push(getDisabledRuleReport(result, "rule doesn't apply to target type"));
@@ -159,6 +166,7 @@ export async function cli(): Promise<void> {
 									case RuleStatus.Warning: totals.warnings++; break;
 								}
 								reports.push(getErrorReport(result, result.error, verbosityLevel));
+								break;
 						}
 					}
 				}
