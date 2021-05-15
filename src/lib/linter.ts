@@ -92,7 +92,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		for (const propertyTargetLints of fsTargetLints.values()) {
 			for (const lint of propertyTargetLints) {
 				if (lint.status !== LintStatus.Pending) {
-					return;
+					continue;
 				}
 
 				const rulePlugin = plugins.get(lint.rule.name);
@@ -105,12 +105,12 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 				const result = await executeRuleValidator(workingDirectory, lint.rule, rulePlugin, fileContents, lines, jsonValue, jsonAst);
 				if (result === true) {
 					lint.status = LintStatus.Success;
-					return;
+					continue;
 				}
 				if (result instanceof RuleError) {
 					lint.status = LintStatus.Error;
 					lint.error  = result;
-					return;
+					continue;
 				}
 
 				lint.status = result;
