@@ -14,7 +14,7 @@ export function validator({ lines, parameter: forbiddenLines }: RuleContext): Ru
 		}
 
 		const index = lines.findIndex(line => matchStrings(forbiddenLine, line.text));
-		if (index !== -1) {
+		if (index === -1) {
 			continue;
 		}
 

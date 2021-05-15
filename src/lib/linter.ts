@@ -165,7 +165,7 @@ async function executeRuleValidator(
 	}
 
 	/**
-	 * JSON value
+	 * JSON property/value
 	 */
 	if (fileContents === undefined) {
 		return isRuleStrict ? new RuleError(RuleErrorType.MissingTarget) : true;
@@ -190,7 +190,7 @@ async function executeRuleValidator(
 
 	const context = buildRuleContext({
 		contents:  fileContents.slice(propertyAst.pos.start.char, propertyAst.pos.end.char + 1),
-		lines:     lines?.slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line - 1) ?? [],
+		lines:     lines?.slice(propertyAst.pos.start.line - 1, propertyAst.pos.end.line) ?? [],
 		parameter: rule.parameter,
 	});
 
