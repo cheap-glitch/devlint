@@ -19,7 +19,8 @@ export function validator({ contents, lines, parameter: forbiddenPatterns }: Rul
 			const results = contents.match(new RegExp(pattern.slice(1, -1)));
 			if (results) {
 				match = results[0];
-				matchIndex = results?.index ?? -1;
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				matchIndex = results.index!;
 			}
 		} else {
 			match = pattern;
