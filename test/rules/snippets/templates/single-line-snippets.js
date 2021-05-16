@@ -1,15 +1,7 @@
 module.exports = {
 	passing: {
 
-		'valid snippet #1': [ // {{{
-			'""', [],
-		], // }}}
-
-		'valid snippet #2': [ // {{{
-			'""', [],
-		], // }}}
-
-		'valid snippet #3': [ // {{{
+		'valid snippet': [ // {{{
 			'""', [],
 		], // }}}
 
@@ -21,19 +13,7 @@ module.exports = {
 		'invalid parameter #3': [['""', false], 2],
 		// }}}
 
-		'invalid snippet #1': [[ // {{{
-			'""', [],
-		],
-			'error message',
-		], // }}}
-
-		'invalid snippet #2': [[ // {{{
-			'""', [],
-		],
-			'error message',
-		], // }}}
-
-		'invalid snippet #3': [[ // {{{
+		'invalid snippet': [[ // {{{
 			'""', [],
 		],
 			'error message',
