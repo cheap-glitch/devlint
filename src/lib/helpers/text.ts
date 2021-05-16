@@ -89,6 +89,22 @@ export function getLines(text: string): Array<Line> {
 	return lines;
 }
 
+export function trimLineOverflow(line: string, maxLength = 30): string {
+	const ellipsis = ' […]';
+
+	if (line.length <= maxLength) {
+		return line;
+	}
+
+	// Find the first space before the maximum length
+	let index = maxLength - ellipsis.length;
+	while (index >= 0 && line[index] !== ' ') {
+		index --;
+	}
+
+	return (index === -1 ? line.slice(0, maxLength - ellipsis.length) : line.slice(0, index)) + ellipsis;
+}
+
 export function countWord(count: number, word: string, plural?: string): string {
 	return count + ' ' + pluralize(word, count, plural);
 }
