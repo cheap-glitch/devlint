@@ -1,7 +1,9 @@
 /* eslint-disable jest/valid-title, @typescript-eslint/no-var-requires */
 
 import { JsonValue } from 'type-fest';
-import { readdirSync } from 'fs';
+import { tmpdir as getOsTempDir } from 'os';
+import { readdirSync as getDirListing, writeFileSync as createFile, mkdirSync as createDir, mkdtempSync as createTempDir, rmSync as removeDir } from 'fs';
+
 import { JsonValue as JsonAst } from 'jsonast';
 
 import { getLines } from '../../src/lib/helpers/text';
@@ -12,9 +14,6 @@ import { buildRuleContext } from '../../src/lib/linter';
 import { RuleTargetType, RuleContext } from '../../src/lib/rules';
 import { RuleError, RuleErrorType, RuleErrorPosition } from '../../src/lib/errors';
 
-const pathToRulePlugins  = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
-const pathToTestSnippets = [__dirname, 'snippets'];
-
 type TestSnippet = string | [string, JsonValue];
 
 interface TestSnippetsCollection {
@@ -22,41 +21,58 @@ interface TestSnippetsCollection {
 	failing: Record<string, [TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>,
 }
 
+const pathToRulePlugins  = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
+const pathToTestSnippets = [__dirname, 'snippets'];
+
 const ruleNames   = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
-const rulesToTest = readdirSync(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
-	            .filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
-	            .map(file => file.name)
-		    .filter(rule => ruleNames.length === 0 || ruleNames.includes(rule.replace('.js', '')));
+const rulesToTest = getDirListing(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
+	.filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
+	.map(file => file.name)
+	.filter(rule => ruleNames.length === 0 || ruleNames.includes(rule.replace('.js', '')));
+
+let testsTempDir: string;
+beforeAll(() => {
+	testsTempDir = createTempDir(joinPathSegments([getOsTempDir(), 'devlint-']));
+});
+afterAll(() => {
+	removeDir(testsTempDir, {
+		force:      true,
+		recursive:  true,
+		maxRetries: 3,
+	});
+});
 
 for (const filename of rulesToTest) {
+	const ruleName = filename.replace(/\.js$/, '');
 	const { targetType, validator } = require(getAbsolutePath([pathToRulePlugins, filename]));
 	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([...pathToTestSnippets, filename]));
 
-	describe(filename.replace(/\.js$/, ''), () => {
-
+	describe(ruleName, () => {
 		describe('passing', () => {
 			for (const [title, snippet] of Object.entries(passingSnippets)) {
-				test(title, async () => expect(await validator(buildSnippetContext(targetType, snippet))).toBe(true));
+				test(title, async () => {
+					expect(await validator(buildSnippetContext(ruleName, targetType, snippet))).toBe(true);
+				});
 			}
 		});
 
 		describe('failing', () => {
 			for (const [title, [snippet, errorTypeOrMessage, errorStart, errorEnd]] of Object.entries(failingSnippets)) {
-				const context   = buildSnippetContext(targetType, snippet);
-				const jsonValue = tryParsingJsonValue(context.contents);
-
-				const error = typeof errorTypeOrMessage === 'number'
-					? new RuleError(errorTypeOrMessage)
-					: new RuleError(errorTypeOrMessage, {
-						start: errorStart === undefined && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object'
-							? { line: 1, column: 9, char: 8 }
-							: errorStart,
-						end: errorEnd === undefined && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object'
-							? { line: 1, column: 9 + context.contents.length, char: 8 + context.contents.length }
-							: errorEnd,
-					});
-
 				test(title, async () => {
+					const context   = buildSnippetContext(ruleName, targetType, snippet);
+					const jsonValue = tryParsingJsonValue(context.contents);
+
+					const error = typeof errorTypeOrMessage === 'number'
+						? new RuleError(errorTypeOrMessage)
+						: new RuleError(errorTypeOrMessage, {
+							start: errorStart === undefined && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object'
+								? { line: 1, column: 9, char: 8 }
+								: errorStart,
+							end: errorEnd === undefined && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object'
+								? { line: 1, column: 9 + context.contents.length, char: 8 + context.contents.length }
+								: errorEnd,
+						});
+
 					const result = await validator(context);
 
 					expect(result).toBeInstanceOf(Error);
@@ -68,7 +84,7 @@ for (const filename of rulesToTest) {
 	});
 }
 
-function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
+function buildSnippetContext(ruleName: string, targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
 	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
 
 	const contents  = rawContents.replace(/^\n/, '').replace(/^\t{3}/gm, '').replaceAll('\\n', '\n');
@@ -77,9 +93,24 @@ function buildSnippetContext(targetType: RuleTargetType, snippet: TestSnippet): 
 	let jsonAst: JsonAst | SyntaxError | undefined = tryParsingJsonAst(contents);
 
 	switch (targetType) {
-		// TODO
-		case RuleTargetType.DirectoryListing:
-			throw new TypeError();
+		case RuleTargetType.DirectoryListing: {
+			const ruleTempDir = createTempDir(joinPathSegments([testsTempDir, ruleName + '-']));
+
+			// Treat each line of the snippet as a path to create in the temp dir
+			for (const path of contents.trim().split('\n')) {
+				if (path.length === 0) {
+					continue;
+				}
+
+				if (path.endsWith('/')) {
+					createDir(joinPathSegments([ruleTempDir, path.slice(0, -1)]), { recursive: true });
+				} else {
+					createFile(joinPathSegments([ruleTempDir, path]), '');
+				}
+			}
+
+			return buildRuleContext({ workingDirectory: ruleTempDir, parameter });
+		}
 
 		case RuleTargetType.FileContents:
 			return buildRuleContext({ contents, lines, parameter });
