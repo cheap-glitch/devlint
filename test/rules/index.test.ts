@@ -21,14 +21,10 @@ interface TestSnippetsCollection {
 	failing: Record<string, [TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>,
 }
 
-const pathToRulePlugins  = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
-const pathToTestSnippets = [__dirname, 'snippets'];
-
-const ruleNames   = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
-const rulesToTest = getDirListing(getAbsolutePath(pathToTestSnippets), { withFileTypes: true })
-	.filter(directoryEntry => directoryEntry.isFile() && directoryEntry.name.endsWith('.js'))
-	.map(file => file.name)
-	.filter(rule => ruleNames.length === 0 || ruleNames.includes(rule.replace('.js', '')));
+const pathToRulePlugins   = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
+const pathToTestSnippets  = [__dirname, 'snippets'];
+const selectedRules       = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
+const testSnippetsEntries = getDirListing(getAbsolutePath(pathToTestSnippets), { withFileTypes: true });
 
 let testsTempDir: string;
 beforeAll(() => {
@@ -42,8 +38,17 @@ afterAll(() => {
 	});
 });
 
-for (const filename of rulesToTest) {
+for (const entry of testSnippetsEntries) {
+	if (!entry.isFile() || !entry.name.endsWith('.js')) {
+		continue;
+	}
+
+	const filename = entry.name;
 	const ruleName = filename.replace(/\.js$/, '');
+	if (selectedRules.length > 0 && !selectedRules.some(selectedRuleName => ruleName.startsWith(selectedRuleName))) {
+		continue;
+	}
+
 	const { targetType, validator } = require(getAbsolutePath([pathToRulePlugins, filename]));
 	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([...pathToTestSnippets, filename]));
 
