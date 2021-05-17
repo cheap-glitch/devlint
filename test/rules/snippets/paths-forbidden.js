@@ -35,8 +35,9 @@ module.exports = {
 
 		// invalid parameters {{{
 		'invalid parameter #1': [['', false],               2],
-		'invalid parameter #2': [['', [['foo/']]],          2],
-		'invalid parameter #3': [['', { 'foo.js': false }], 2],
+		'invalid parameter #2': [['', ['foo/', null]],      2],
+		'invalid parameter #3': [['', [['foo/']]],          2],
+		'invalid parameter #4': [['', { 'foo.js': false }], 2],
 		// }}}
 
 		'matching top-level file': [[ // {{{
