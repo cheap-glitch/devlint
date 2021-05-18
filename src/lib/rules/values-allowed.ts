@@ -1,5 +1,5 @@
 import { quoteJsonString } from '../helpers/text';
-import { matchJsonPrimitives } from '../helpers/json';
+import { matchJsonValues } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;
@@ -9,7 +9,7 @@ export function validator({ lines, jsonValue, jsonAst, parameter: allowedValues 
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	if (allowedValues.some(value => matchJsonPrimitives(value, jsonValue))) {
+	if (allowedValues.some(model => matchJsonValues(model, jsonValue))) {
 		return true;
 	}
 

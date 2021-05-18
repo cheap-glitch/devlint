@@ -7,5 +7,5 @@
  * (as a semver string), and the name of an eventual replacement rule
  */
 export const depreciations: Record<string, true | { version?: string, replacement?: string }> = {
-	'match-object': { version: '1.0.0', replacement: 'allowed-values' },
+	'match-object': { version: '1.0.0', replacement: 'values-allowed' },
 };

@@ -1,5 +1,5 @@
 import { quoteJsonString } from '../helpers/text';
-import { matchJsonPrimitives } from '../helpers/json';
+import { matchJsonValues } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;
