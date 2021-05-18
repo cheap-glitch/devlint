@@ -4,7 +4,7 @@
  * | |) / -_) V / |__| | ' \  _|
  * |___/\___|\_/|____|_|_||_\__|
  *
- * A meta-linter  to verify  configuration  files,  projects  structure and  git
+ * A  meta-linter   for  configuration  files,  directory   structures  and  git
  * repositories.
  *
  * Copyright (c) 2021-present, cheap glitch

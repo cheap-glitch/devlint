@@ -1,6 +1,6 @@
 {
   "name": "devlint",
-  "description": "A meta-linter to verify configuration files, projects structure and git repositories.",
+  "description": "A meta-linter for configuration files, directory structures and git repositories.",
   "version": "0.2.0",
   "license": "ISC",
   "repository": {
