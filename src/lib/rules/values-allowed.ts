@@ -1,3 +1,4 @@
+import { quoteJsonString } from '../helpers/text';
 import { matchJsonPrimitives } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
@@ -12,5 +13,5 @@ export function validator({ lines, jsonValue, jsonAst, parameter: allowedValues 
 		return true;
 	}
 
-	return new RuleError("value doesn't match any of the allowed values", jsonAst.pos, lines);
+	return new RuleError(`value ${quoteJsonString(JSON.stringify(jsonValue))} is not allowed`, jsonAst.pos, lines);
 }

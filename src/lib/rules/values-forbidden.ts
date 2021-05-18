@@ -1,3 +1,4 @@
+import { quoteJsonString } from '../helpers/text';
 import { matchJsonPrimitives } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
@@ -8,8 +9,8 @@ export function validator({ lines, jsonValue, jsonAst, parameter: forbiddenValue
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	if (forbiddenValues.some(value => matchJsonPrimitives(value, jsonValue))) {
-		return new RuleError('value is forbidden', jsonAst.pos, lines);
+	if (forbiddenValues.some(model => matchJsonValues(model, jsonValue))) {
+		return new RuleError(`value ${quoteJsonString(JSON.stringify(jsonValue))} is forbidden`, jsonAst.pos, lines);
 	}
 
 	return true;
