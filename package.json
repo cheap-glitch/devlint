@@ -1,7 +1,7 @@
 {
   "name": "devlint",
   "description": "A meta-linter for configuration files, directory structures and git repositories.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "ISC",
   "repository": {
     "type": "git",
