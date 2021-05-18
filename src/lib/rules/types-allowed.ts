@@ -1,23 +1,14 @@
-import { checkValueType } from '../helpers/json';
+import { jsonTypes, getJsonValueType } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;
 
 export function validator({ lines, jsonValue, jsonAst, parameter: allowedTypes }: RuleContext): RuleResult {
-	if (!Array.isArray(allowedTypes)) {
+	if (!Array.isArray(allowedTypes) || allowedTypes.some(type => typeof type !== 'string' || !jsonTypes.includes(type))) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	for (const type of allowedTypes) {
-		if (typeof type !== 'string') {
-			return new RuleError(RuleErrorType.InvalidParameter);
-		}
+	const valueType = getJsonValueType(jsonValue);
 
-		const result = checkValueType(jsonValue, type);
-		if (result !== false) {
-			return result;
-		}
-	}
-
-	return new RuleError("type of value isn't one of the allowed types", jsonAst.pos, lines);
+	return allowedTypes.includes(valueType) ? true : new RuleError(`"${valueType}" type is not allowed`, jsonAst.pos, lines);
 }

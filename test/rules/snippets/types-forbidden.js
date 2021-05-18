@@ -39,31 +39,31 @@ module.exports = {
 		'boolean': [[ // {{{
 			'true', ['boolean'],
 		],
-			'type of value is forbidden',
+			'"boolean" type is forbidden',
 		], // }}}
 
 		'number': [[ // {{{
 			'55', ['string', 'number', 'array'],
 		],
-			'type of value is forbidden',
+			'"number" type is forbidden',
 		], // }}}
 
 		'string': [[ // {{{
 			'"foo"', ['string'],
 		],
-			'type of value is forbidden',
+			'"string" type is forbidden',
 		], // }}}
 
 		'empty array': [[ // {{{
 			'[]', ['array', 'null'],
 		],
-			'type of value is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 3, char: 2 },
+			'"array" type is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 3, char: 2 },
 		], // }}}
 
 		'object': [[ // {{{
 			'{ "foo": [] }', ['array', 'object'],
 		],
-			'type of value is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 14, char: 13 },
+			'"object" type is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 14, char: 13 },
 		], // }}}
 
 	},

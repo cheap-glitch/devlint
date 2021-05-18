@@ -33,37 +33,37 @@ module.exports = {
 		'boolean': [[ // {{{
 			'false', ['null'],
 		],
-			"type of value isn't one of the allowed types",
+			'"boolean" type is not allowed',
 		], // }}}
 
 		'number': [[ // {{{
 			'55', ['string', 'array'],
 		],
-			"type of value isn't one of the allowed types",
+			'"number" type is not allowed',
 		], // }}}
 
 		'string': [[ // {{{
 			'"true"', ['boolean'],
 		],
-			"type of value isn't one of the allowed types",
+			'"string" type is not allowed',
 		], // }}}
 
 		'empty array': [[ // {{{
-			'"[]"', ['array', 'null'],
+			'[]', ['object', 'null'],
 		],
-			"type of value isn't one of the allowed types",
+			'"array" type is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 3, char: 2 },
 		], // }}}
 
 		'array of strings': [[ // {{{
 			'["foo"]', ['string'],
 		],
-			"type of value isn't one of the allowed types", { line: 1, column: 1, char: 0 }, { line: 1, column: 8, char: 7 },
+			'"array" type is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 8, char: 7 },
 		], // }}}
 
 		'object': [[ // {{{
 			'{ "foo": [] }', ['array'],
 		],
-			"type of value isn't one of the allowed types", { line: 1, column: 1, char: 0 }, { line: 1, column: 14, char: 13 },
+			'"object" type is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 14, char: 13 },
 		], // }}}
 
 	},

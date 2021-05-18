@@ -4,9 +4,16 @@ import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonAr
 import { matchStrings } from './text';
 import { PropertyPathSegments } from './properties';
 
-import { RuleError, RuleErrorType } from '../errors';
-
 type TypeFunction = typeof Boolean | typeof Number | typeof String;
+
+export const jsonTypes = [
+	'null',
+	'boolean',
+	'number',
+	'string',
+	'object',
+	'array',
+];
 
 export function matchJsonValues(
 	model: Record<string, JsonValue | TypeFunction> | JsonValue | TypeFunction | undefined,
@@ -55,30 +62,6 @@ export function matchJsonValues(
 	}
 
 	return true;
-}
-
-export function matchJsonPrimitives(model: JsonValue, value: JsonValue): boolean {
-	return (typeof model === 'string' && typeof value === 'string') ? matchStrings(model, value) : model === value;
-}
-
-export function checkValueType(testedValue: JsonValue, type: string): boolean | RuleError {
-	switch (type) {
-		case 'null':
-			return typeof testedValue === null;
-
-		case 'boolean':
-		case 'number':
-		case 'string':
-			return typeof testedValue === type;
-
-		case 'object':
-			return isJsonObject(testedValue);
-
-		case 'array':
-			return Array.isArray(testedValue);
-	}
-
-	return new RuleError(RuleErrorType.InvalidParameter);
 }
 
 export function tryGettingJsonAstProperty(jsonAst: JsonAst, propertyPathSegments: PropertyPathSegments): JsonAst | undefined {
@@ -144,6 +127,19 @@ export function tryParsingJsonValue(json: string): JsonValue | SyntaxError {
 	}
 
 	return jsonValue;
+}
+
+export function getJsonValueType(value: JsonValue): (typeof jsonTypes)[number] {
+	const type = typeof value;
+	switch (type) {
+		case 'boolean':
+		case 'number':
+		case 'string':
+			return type;
+
+		default:
+			return Array.isArray(value) ? 'array' : value === null ? 'null' : 'object';
+	}
 }
 
 export function isJsonObjectAst(jsonAst: JsonAst | undefined): jsonAst is JsonObjectAst {
