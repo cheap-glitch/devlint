@@ -134,7 +134,7 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 
 function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): Array<RuleObject> {
 	return key.split(',').map(ruleDeclaration => {
-		const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flag>[!?])?(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
+		const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
 		if (!match || !match.groups || !match.groups.name) {
 			throw new Error(`invalid rule declaration: "${ruleDeclaration}"`);
 		}
@@ -144,10 +144,10 @@ function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, p
 		if (parameter !== undefined) {
 			rule.parameter = parameter;
 		}
-		if (match.groups.flag === '!') {
+		if (match.groups.flags.includes('!')) {
 			rule.isStrict = true;
 		}
-		if (match.groups.flag === '?') {
+		if (match.groups.flags.includes('?')) {
 			rule.isPermissive = true;
 		}
 		if (match.groups.not !== undefined) {
