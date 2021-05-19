@@ -53,7 +53,7 @@ export function getDepreciatedRulesReport(depreciatedRules: Array<string>): stri
 	return chalk.yellow(chalk.bold(pluralize('⚠️  depreciation warning', depreciatedRules.length).toUpperCase()) + '\n' + depreciatedRules.map(ruleName => {
 		let message = '    • ' + ruleName + ' is depreciated';
 
-		const infos = depreciations[ruleName];
+		const infos = depreciations.get(ruleName);
 		if (infos === undefined) {
 			return message;
 		}

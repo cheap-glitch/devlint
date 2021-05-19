@@ -7,12 +7,13 @@ import { parseRules } from './rules';
 import { LintStatus, lintDirectory } from './linter';
 
 // TODO: merge with main linter function
-export async function testConditions(workingDirectory: string, conditionsObject: JsonValue): Promise<Record<string, boolean>> {
+export async function testConditions(workingDirectory: string, conditionsObject: JsonValue): Promise<Map<string, boolean>> {
+	const conditionsResults: Map<string, boolean> = new Map();
+
 	if (!isJsonObject(conditionsObject)) {
-		return {};
+		return conditionsResults;
 	}
 
-	const conditionsResults: Record<string, boolean> = {};
 	for (const [conditionName, conditionRules] of Object.entries(conditionsObject)) {
 		if (conditionRules === undefined) {
 			continue;
@@ -21,16 +22,16 @@ export async function testConditions(workingDirectory: string, conditionsObject:
 		const conditionRuleArrays = wrapInArray(conditionRules).map(rulesObject => parseRules(rulesObject));
 
 		// The condition is fulfilled if at least one of the rules array is entirely valid
-		conditionsResults[conditionName] = true;
+		conditionsResults.set(conditionName, true);
 		checkEachRuleArray: for (const ruleArray of conditionRuleArrays) {
-			const results = await lintDirectory(workingDirectory, ruleArray, {});
+			const results = await lintDirectory(workingDirectory, ruleArray);
 
 			// All of the rules must pass for a rule array to pass
 			for (const fileResults of results.values()) {
 				for (const propertyResults of fileResults.values()) {
 					for (const result of propertyResults) {
 						if (result.status === LintStatus.Error) {
-							conditionsResults[conditionName] = false;
+							conditionsResults.set(conditionName, false);
 							continue checkEachRuleArray;
 						}
 					}

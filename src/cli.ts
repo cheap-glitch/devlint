@@ -77,7 +77,7 @@ export async function cli(): Promise<void> {
 
 	const selectedRulesNames = (options.rules === '*') ? undefined : options.rules.split(',');
 
-	const depreciatedRules = Object.keys(depreciations);
+	const depreciatedRules = [...depreciations.keys()];
 	const depreciatedRulesUsed: Array<string> = [];
 
 	for (const directory of directoriesToLint) {

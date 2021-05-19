@@ -35,7 +35,7 @@ export enum LintStatus {
 const BUILTIN_RULE_PLUGINS_DIR_PATH  = [__dirname, 'rules'];
 const BUILTIN_RULE_PLUGINS_FILENAMES = mem(() => getFilenamesInDirectory(BUILTIN_RULE_PLUGINS_DIR_PATH));
 
-export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions: Record<string, boolean>): Promise<Map<FsPath, Map<PropertyPath, Set<LintResult>>>> {
+export async function lintDirectory(workingDirectory: string, rules: Array<RuleObject>, conditions?: Map<string, boolean>): Promise<Map<FsPath, Map<PropertyPath, Set<LintResult>>>> {
 	const lints: Map<FsPath, Map<PropertyPath, Set<LintResult>>> = new Map();
 
 	const plugins: Map<string, Plugin> = new Map();
@@ -44,7 +44,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 	// Filter invalid or inapplicable rules and load their corresponding plugins
 	// TODO: only load each plugin once (=> keep a list of loaded plugins in the global scope | actually, is this really needed ? since Node will probably cache them anyway)
 	const filteredRules = rules.filter(rule => {
-		if (rule.condition !== undefined && conditions[rule.condition] !== (rule?.conditionExpectedResult ?? true)) {
+		if (conditions !== undefined && rule.condition !== undefined && conditions.get(rule.condition) !== (rule?.conditionExpectedResult ?? true)) {
 			insertInNestedSetMap(lints, rule.target[0], joinPropertyPathSegments(rule.target[1]), { rule, status: LintStatus.SkippedForUnfulfilledCondition });
 			return false;
 		}
@@ -68,7 +68,7 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 
 	// Group pending lint results by filesystem path & property path
 	// TODO: filter some rules with wrong target type here (e.g.: file-based rule targeting a directory)
-	await Promise.all(filteredRules.map(async (rule) => {
+	await Promise.allSettled(filteredRules.map(async (rule) => {
 		const [targetFsPath, targetPropertyPathSegments] = rule.target;
 
 		// TODO: use `isGlobPattern` when available
@@ -78,17 +78,17 @@ export async function lintDirectory(workingDirectory: string, rules: Array<RuleO
 		}
 	}));
 
-	await Promise.all([...lints.entries()].map(async ([targetFsPath, fsTargetLints]) => {
+	await Promise.allSettled([...lints.entries()].map(async ([targetFsPath, fsTargetLints]) => {
 		const fileContents = await tryReadingFileContents([workingDirectory, targetFsPath]);
 
+		// TODO: don't try parsing files that don't need to be parsed
 		const lines     = fileContents !== undefined ? getLines(fileContents)            : [];
-		// TODO: don't try parsing files that don't need to be
 		const jsonValue = fileContents !== undefined ? tryParsingJsonValue(fileContents) : new SyntaxError();
 		const jsonAst   = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError();
 
 		// TODO: expand property-path globs here?
-		// TODO: rewrite using Promise.all()? (seems like it can cause race conditions)
-		// await Promise.all([...fsTargetLints.entries()].flatMap(async ([, propertyTargetLints]) => [...propertyTargetLints].map(async (lint) => {
+		// TODO: rewrite using Promise.allSettled()? (seems like it can cause race conditions)
+		// await Promise.allSettled([...fsTargetLints.entries()].flatMap(async ([, propertyTargetLints]) => [...propertyTargetLints].map(async (lint) => {
 		for (const propertyTargetLints of fsTargetLints.values()) {
 			for (const lint of propertyTargetLints) {
 				if (lint.status !== LintStatus.Pending) {
