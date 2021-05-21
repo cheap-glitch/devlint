@@ -195,12 +195,12 @@ describe('parseRules', () => {
 					{
 						name:      'first-rule',
 						status:    'error',
-						condition: { name: 'condition', negated: false },
+						condition: { name: 'condition', isNegated: false },
 					},
 					{
 						name:      'third-rule',
 						status:    'warn',
-						condition: { name: 'condition', negated: true },
+						condition: { name: 'condition', isNegated: true },
 					},
 				])],
 			])],
@@ -270,7 +270,7 @@ describe('parseRules', () => {
 					{
 						name:         'first-rule',
 						status:       'error',
-						condition:    { name: 'condition', negated: false },
+						condition:    { name: 'condition', isNegated: false },
 					},
 					{
 						name:         'third-rule',

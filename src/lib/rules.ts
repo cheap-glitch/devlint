@@ -13,7 +13,7 @@ export interface RuleObject {
 	name:          string
 	status:        RuleStatus,
 	parameter?:    JsonValue,
-	condition?:    { name: string, negated: boolean },
+	condition?:    { name: string, isNegated: boolean },
 	isStrict?:     boolean,
 	isPermissive?: boolean,
 }
@@ -54,6 +54,7 @@ export function parseRules(rulesObject: JsonValue): RulesMap {
 		return new Map();
 	}
 
+	// TODO: try/catch block here?
 	return parseRulesObject(new Map(), rulesObject, ['.', undefined]);
 }
 
@@ -65,44 +66,46 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, 
 
 		// Rule definition
 		if (typeof value === 'string' || typeof value === 'number' || Array.isArray(value)) {
+			const ruleName = key;
 			if (Array.isArray(value) && value.length !== 2) {
-				throw new Error(`invalid rule declaration: the value of "${key}" must be an array of two elements`);
+				throw new Error(`invalid rule declaration: the value of "${ruleName}" must be an array of two elements`);
 			}
 
 			const rawStatus = Array.isArray(value) ? value[0] : value;
 			if (typeof rawStatus !== 'string' && typeof rawStatus !== 'number') {
-				throw new TypeError(`invalid rule declaration: the status of "${key}" must be a string of a number`);
+				throw new TypeError(`invalid rule declaration: the status of "${ruleName}" must be a string of a number`);
 			}
 
-			const status = parseRuleStatus(rawStatus);
+			const status = parseRuleStatus(rawStatus, ruleName);
 			if (status === RuleStatus.Off) {
 				continue;
 			}
 
-			// TODO: normalize property path ↓
-			insertInNestedSetMap(rulesMap, fsPath, propertyPath, buildRuleObjects(key, status, Array.isArray(value) ? value[1] : undefined));
+			// TODO: normalize paths ↓
+			insertInNestedSetMap(rulesMap, fsPath, propertyPath, buildRuleObjects(ruleName, status, Array.isArray(value) ? value[1] : undefined));
 			continue;
 		}
 
 		// Sub-target
 		if (typeof value === 'object') {
-			if (key.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
+			const target = key;
+			if (target.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
 				if (propertyPath !== undefined) {
-					throw new Error(`invalid rule declaration: "${key}" starts a property path inside another property path`);
+					throw new Error(`invalid rule declaration: "${target}" starts a property path inside another property path`);
 				}
 
-				const [fsSubpath, propertySubpath] = key.split('#', 2);
+				const [fsSubpath, propertySubpath] = target.split('#', 2);
 
 				parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, fsSubpath]), propertySubpath]);
 				continue;
 			}
 
 			if (propertyPath !== undefined) {
-				parseRulesObject(rulesMap, value, [fsPath, joinPropertyPathSegments([propertyPath, key])]);
+				parseRulesObject(rulesMap, value, [fsPath, joinPropertyPathSegments([propertyPath, target])]);
 				continue;
 			}
 
-			parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, key]), undefined]);
+			parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, target]), undefined]);
 			continue;
 		}
 
@@ -112,13 +115,13 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, 
 	return rulesMap;
 }
 
-function parseRuleStatus(rawStatus: number | string): RuleStatus {
+function parseRuleStatus(rawStatus: number | string, ruleName: string): RuleStatus {
 	switch (rawStatus) {
 		case 0: case 'off':   return RuleStatus.Off;
 		case 1: case 'warn':  return RuleStatus.Warning;
 		case 2: case 'error': return RuleStatus.Error;
 
-		default: throw new Error(`invalid rule declaration: "${rawStatus}" status is invalid`);
+		default: throw new Error(`invalid rule declaration: "${ruleName}" has an invalid status of "${rawStatus}"`);
 	}
 }
 
@@ -144,8 +147,8 @@ function buildRuleObjects(key: string, status: RuleStatus, parameter?: JsonValue
 		}
 		if (match.groups.condition !== undefined) {
 			rule.condition = {
-				name:    match.groups.condition,
-				negated: match.groups.not !== undefined,
+				name:      match.groups.condition,
+				isNegated: match.groups.not !== undefined,
 			};
 		}
 
