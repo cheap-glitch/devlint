@@ -12,18 +12,24 @@ describe('parseRules', () => {
 
 	test('invalid rule declarations', () => { // {{{
 
-		expect(() => parseRules({ 'rule name':              'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ '?rule-name':             'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name condition':    'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ '(condition) rule-name':  'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name !(condition)': 'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name (condition!)': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule name':              'warn'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name':              'nope'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name':              '1'            })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name':              3              })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ '?rule-name':             'warn'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name condition':    'warn'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ '(condition) rule-name':  'warn'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name !(condition)': 'warn'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name (condition!)': 'warn'         })).toThrow('invalid rule declaration:');
 
-		expect(() => parseRules({ 'rule-name': null                })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': true                })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': false               })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': [null,  'foo']      })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': [true, ['foo']]     })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': null                        })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': true                        })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': false                       })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': [null,  'foo']              })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': [true, ['foo']]             })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('invalid rule declaration:');
+
+		expect(() => parseRules({ 'filename.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('invalid rule declaration:');
 
 	}); // }}}
 
