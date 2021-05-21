@@ -83,11 +83,11 @@ export async function cli(): Promise<void> {
 	};
 	for (const directory of directoriesToLint) {
 		const config     = await loadConfig();
-		const conditions = await testConditions(directory, config?.conditions ?? {});
-		const results    = await lintDirectory(directory, config?.rules ?? {}, conditions, selectedRules);
+		const conditions = await testConditions(directory, config.conditions ?? {});
+		const results    = await lintDirectory(directory, config.rules ?? {}, conditions, selectedRules);
 
 		if (verbosityLevel >= 2) {
-			const conditionsStatusReport = Object.entries(conditions).map(([name, status]) => getConditionsStatusReport(name, status)).join('\n');
+			const conditionsStatusReport = [...conditions.entries()].map(([name, status]) => getConditionsStatusReport(name, status)).join('\n');
 			if (conditionsStatusReport.length > 0) {
 				console.log(`\nConditions status in "${getAbsolutePath([directory])}":\n${conditionsStatusReport}`);
 			}
@@ -119,7 +119,7 @@ export async function cli(): Promise<void> {
 
 	if (!options.quiet) {
 		if (reports.length > 0) {
-			console.log(reports.join(verbosityLevel >= 1 ? '\n\n' : '\n'));
+			console.log(reports.join('\n'));
 		}
 
 		if (Object.values(totals).some(Boolean)) {
@@ -142,7 +142,7 @@ function parseLintResult(result: LintResult, totals: Record<string, number>, ver
 			return verbosityLevel >= 1 ? getDisabledRuleReport(result, 'rule does not apply to target') : undefined;
 
 		case LintStatus.SkippedForUnfulfilledCondition:
-			return verbosityLevel >= 2 ? getDisabledRuleReport(result, `condition "${result.rule.condition}" is false`) : undefined;
+			return verbosityLevel >= 2 ? getDisabledRuleReport(result, `condition "${result.rule.condition?.name ?? ''}" is not fulfilled`) : undefined;
 
 		case LintStatus.Failure: switch (result.error?.type) {
 			case RuleErrorType.UnknownRule:

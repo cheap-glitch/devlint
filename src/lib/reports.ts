@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 
+import { FsPath } from './helpers/fs';
+import { PropertyPath } from './helpers/properties';
 import { formatSnippet } from './helpers/snippets';
 import { capitalize, pluralize, countWord } from './helpers/text';
 import { PROPERTY_PATH_STARTING_CHARACTER } from './helpers/properties';
@@ -9,9 +11,9 @@ import { depreciations } from './depreciations';
 import { RuleStatus, RuleError } from './rules';
 
 const labels: Record<RuleStatus, string> = {
-	[RuleStatus.Off]:      chalk.black('disabled'),
-	[RuleStatus.Error]:      chalk.red('error   '),
-	[RuleStatus.Warning]: chalk.yellow('warning '),
+	[RuleStatus.Off]:     chalk.black('disabled'),
+	[RuleStatus.Warning]: chalk.yellow('warning') + ' ',
+	[RuleStatus.Error]:   chalk.red('error') + '   ',
 };
 
 export function getDisabledRuleReport(result: LintResult, message: string): string {
@@ -30,7 +32,7 @@ export function getErrorReport(result: LintResult, error: RuleError, verbosityLe
 }
 
 export function getSuccessReport(result: LintResult): string {
-	return getReport(result, chalk.green('success'), 'rule passed');
+	return getReport(result, chalk.green('success') + ' ', 'rule passed');
 }
 
 function getReport(result: LintResult, label: string, message: string, location = '', snippet = ''): string {
@@ -74,6 +76,6 @@ export function getRuleDocumentationUrl(ruleName: string): string {
 	return 'https://devlint.org/rules/' + ruleName;
 }
 
-export function getTargetHeader(fsPath: string, propertyPath?: string): string {
-	return '\n' + chalk.underline(fsPath + (propertyPath ? propertyPath.replace('.', chalk.bold(PROPERTY_PATH_STARTING_CHARACTER)) : '')) + '\n';
+export function getTargetHeader(fsPath: FsPath, propertyPath: PropertyPath): string {
+	return '\n' + chalk.underline(fsPath + (propertyPath ? (chalk.bold(PROPERTY_PATH_STARTING_CHARACTER) + propertyPath) : '')) + '\n';
 }
