@@ -74,6 +74,6 @@ export function getRuleDocumentationUrl(ruleName: string): string {
 	return 'https://devlint.org/rules/' + ruleName;
 }
 
-export function formatTargetPath(fsPath: string, propertyPath?: string): string {
-	return chalk.underline(fsPath + (propertyPath ? propertyPath.replace('.', chalk.bold(PROPERTY_PATH_STARTING_CHARACTER)) : ''));
+export function getTargetHeader(fsPath: string, propertyPath?: string): string {
+	return '\n' + chalk.underline(fsPath + (propertyPath ? propertyPath.replace('.', chalk.bold(PROPERTY_PATH_STARTING_CHARACTER)) : '')) + '\n';
 }

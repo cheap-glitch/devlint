@@ -3,37 +3,19 @@ import { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArr
 
 import { Line } from './helpers/text';
 import { isJsonObject } from './helpers/json';
+import { insertInNestedSetMap } from './helpers/utilities';
 import { FsPath, joinPathSegments } from './helpers/fs';
-import { PROPERTY_PATH_STARTING_CHARACTER, PropertyPathSegments, parsePropertyPath } from './helpers/properties';
+import { PROPERTY_PATH_STARTING_CHARACTER, PropertyPath, joinPropertyPathSegments } from './helpers/properties';
 
 export { RuleResult, RuleError, RuleErrorType } from './errors';
 
-export enum RuleStatus {
-	Off      = 'off',
-	Warning  = 'warn',
-	Error    = 'error',
-}
-
-export type RuleTarget = [FsPath, PropertyPathSegments];
-
-export enum RuleTargetType {
-	DirectoryListing,
-	FileContents,
-	JsonValue,
-	JsonObject,
-	JsonArray,
-	JsonString,
-}
-
 export interface RuleObject {
-	name:                     string
-	status:                   RuleStatus,
-	target:                   RuleTarget,
-	parameter?:               JsonValue,
-	condition?:               string,
-	conditionExpectedResult?: boolean,
-	isStrict?:                boolean,
-	isPermissive?:            boolean,
+	name:          string
+	status:        RuleStatus,
+	parameter?:    JsonValue,
+	condition?:    { name: string, negated: boolean },
+	isStrict?:     boolean,
+	isPermissive?: boolean,
 }
 
 export interface RuleContext {
@@ -50,42 +32,46 @@ export interface RuleContext {
 	parameter:        JsonValue,
 }
 
-export function parseRules(rulesObject: JsonValue): Array<RuleObject> {
-	if (!isJsonObject(rulesObject)) {
-		return [];
-	}
-
-	return parseRulesObject(rulesObject, ['.', []]);
+export enum RuleTargetType {
+	DirectoryListing,
+	FileContents,
+	JsonValue,
+	JsonObject,
+	JsonArray,
+	JsonString,
 }
 
-function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Array<RuleObject> {
-	const rules: Array<RuleObject> = [];
+export enum RuleStatus {
+	Off      = 'off',
+	Warning  = 'warn',
+	Error    = 'error',
+}
 
+type RulesMap = Map<FsPath, Map<PropertyPath, Set<RuleObject>>>;
+
+export function parseRules(rulesObject: JsonValue): RulesMap {
+	if (!isJsonObject(rulesObject)) {
+		return new Map();
+	}
+
+	return parseRulesObject(new Map(), rulesObject, ['.', undefined]);
+}
+
+function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, propertyPath]: [FsPath, PropertyPath]): RulesMap {
 	for (const [key, value] of Object.entries(rulesObject)) {
 		if (value === null) {
-			throw new Error(`invalid rule configuration: "${key}" has a value of \`null\``);
+			throw new Error(`invalid rule declaration: "${key}" has a value of \`null\``);
 		}
 
-		// Rule state
-		if (typeof value === 'string' || typeof value === 'number') {
-			const status = parseRuleStatus(value);
-			if (status === RuleStatus.Off) {
-				continue;
+		// Rule definition
+		if (typeof value === 'string' || typeof value === 'number' || Array.isArray(value)) {
+			if (Array.isArray(value) && value.length !== 2) {
+				throw new Error(`invalid rule declaration: the value of "${key}" must be an array of two elements`);
 			}
 
-			rules.push(...buildRuleObjects(key, status, parentTarget));
-			continue;
-		}
-
-		// Rule state and parameter
-		if (Array.isArray(value)) {
-			if (value.length !== 2) {
-				throw new Error(`invalid rule configuration: the value of "${key}" must be an array of two elements`);
-			}
-
-			const [rawStatus, parameter] = value;
+			const rawStatus = Array.isArray(value) ? value[0] : value;
 			if (typeof rawStatus !== 'string' && typeof rawStatus !== 'number') {
-				throw new TypeError(`invalid rule configuration: the status of "${key}" must be a string`);
+				throw new TypeError(`invalid rule declaration: the status of "${key}" must be a string of a number`);
 			}
 
 			const status = parseRuleStatus(rawStatus);
@@ -93,53 +79,60 @@ function parseRulesObject(rulesObject: JsonObject, parentTarget: RuleTarget): Ar
 				continue;
 			}
 
-			rules.push(...buildRuleObjects(key, status, parentTarget, parameter));
+			// TODO: normalize property path ↓
+			insertInNestedSetMap(rulesMap, fsPath, propertyPath, buildRuleObjects(key, status, Array.isArray(value) ? value[1] : undefined));
 			continue;
 		}
 
 		// Sub-target
 		if (typeof value === 'object') {
-			const [parentFsPath, parentPropertyPath] = parentTarget;
-			const childFsPath         = [parentFsPath];
-			const childPropertyPath = [...parentPropertyPath];
-
-			// The hashtag indicates the start of the property path
-			if (key.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
-				if (parentPropertyPath.length > 0) {
-					throw new Error(`invalid rule configuration: "${key}" starts a property path inside another property path`);
-				}
-
-				const [fsPath, propertyPath] = key.split('#', 2);
-				if (fsPath !== undefined && fsPath.length > 0) {
-					childFsPath.push(fsPath);
-				}
-				if (propertyPath !== undefined && propertyPath.length > 0) {
-					childPropertyPath.push(...parsePropertyPath(propertyPath));
-				}
-			} else if (parentPropertyPath.length > 0) {
-				childPropertyPath.push(...parsePropertyPath(key));
-			} else {
-				childFsPath.push(key);
+			if (propertyPath !== undefined) {
+				parseRulesObject(rulesMap, value, [fsPath, joinPropertyPathSegments([propertyPath, key])]);
+				continue;
 			}
 
-			rules.push(...parseRulesObject(value, [joinPathSegments(childFsPath), childPropertyPath]));
+			if (key.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
+				if (propertyPath !== undefined) {
+					throw new Error(`invalid rule declaration: "${key}" starts a property path inside another property path`);
+				}
+
+				const [fsSubpath, propertySubpath] = key.split('#', 2);
+
+				parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, fsSubpath]), propertySubpath]);
+				continue;
+			}
+
+			parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, key]), undefined]);
 			continue;
 		}
 
-		throw new Error(`invalid rule configuration: "${key}"`);
+		throw new Error(`invalid rule declaration: "${key}"`);
 	}
 
-	return rules;
+	return rulesMap;
 }
 
-function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, parameter?: JsonValue): Array<RuleObject> {
-	return key.split(',').map(ruleDeclaration => {
+function parseRuleStatus(rawStatus: number | string): RuleStatus {
+	switch (rawStatus) {
+		case 0: case 'off':   return RuleStatus.Off;
+		case 1: case 'warn':  return RuleStatus.Warning;
+		case 2: case 'error': return RuleStatus.Error;
+
+		// Return/throw an error here?
+		default: return RuleStatus.Off;
+	}
+}
+
+function buildRuleObjects(key: string, status: RuleStatus, parameter?: JsonValue): Set<RuleObject> {
+	const ruleObjects: Set<RuleObject> = new Set();
+	for (const ruleDeclaration of key.split(',')) {
 		const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
 		if (!match || !match.groups || !match.groups.name) {
+			// TODO: don't throw an error here?
 			throw new Error(`invalid rule declaration: "${ruleDeclaration}"`);
 		}
 
-		const rule: RuleObject = { name: match.groups.name, status, target };
+		const rule: RuleObject = { name: match.groups.name, status };
 
 		if (parameter !== undefined) {
 			rule.parameter = parameter;
@@ -150,23 +143,15 @@ function buildRuleObjects(key: string, status: RuleStatus, target: RuleTarget, p
 		if (match.groups.flags.includes('?')) {
 			rule.isPermissive = true;
 		}
-		if (match.groups.not !== undefined) {
-			rule.conditionExpectedResult = false;
-		}
 		if (match.groups.condition !== undefined) {
-			rule.condition = match.groups.condition;
+			rule.condition = {
+				name:    match.groups.condition,
+				negated: match.groups.not !== undefined,
+			};
 		}
 
-		return rule;
-	});
-}
-
-function parseRuleStatus(status: number | string): RuleStatus {
-	switch (status) {
-		case 0: case 'off':   return RuleStatus.Off;
-		case 1: case 'warn':  return RuleStatus.Warning;
-		case 2: case 'error': return RuleStatus.Error;
+		ruleObjects.add(rule);
 	}
 
-	return RuleStatus.Off;
+	return ruleObjects;
 }

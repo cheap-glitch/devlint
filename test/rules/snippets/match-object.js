@@ -71,49 +71,49 @@ module.exports = {
 		'empty object and non-empty model': [[ // {{{
 			'{}', { foo: true },
 		],
-			'failed to match property ".foo"',
+			'failed to match property "foo"',
 		], // }}}
 
 		'non-matching property values': [[ // {{{
 			'{ "foo": false }', { foo: true },
 		],
-			'failed to match property ".foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
+			'failed to match property "foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
 		], // }}}
 
 		'non-matching optional property values': [[ // {{{
 			'{ "foo": false }', { 'foo?': true },
 		],
-			'failed to match property ".foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
+			'failed to match property "foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
 		], // }}}
 
 		'non-matching array values #1': [[ // {{{
 			'{ "foo": [1, 2] }', { foo: [1, 2, 3] },
 		],
-			'failed to match property ".foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 16, char: 15 },
+			'failed to match property "foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 16, char: 15 },
 		], // }}}
 
 		'non-matching array values #2': [[ // {{{
 			'{ "foo": [1, 2] }', { foo: [1] },
 		],
-			'failed to match property ".foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 16, char: 15 },
+			'failed to match property "foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 16, char: 15 },
 		], // }}}
 
 		'non-matching array values #3': [[ // {{{
 			'{ "foo": [1, 2] }', { foo: [1, 0] },
 		],
-			'failed to match property ".foo[1]"', { line: 1, column: 14, char: 13 }, { line: 1, column: 15, char: 14 },
+			'failed to match property "foo.[1]"', { line: 1, column: 14, char: 13 }, { line: 1, column: 15, char: 14 },
 		], // }}}
 
 		'non-matching string and regex #1': [[ // {{{
 			'{ "foo": "bar" }', { foo: '/^foo$/' },
 		],
-			'failed to match property ".foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
+			'failed to match property "foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
 		], // }}}
 
 		'non-matching string and regex #2': [[ // {{{
 			'{ "foo": "bar" }', { foo: '/^foo$/' },
 		],
-			'failed to match property ".foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
+			'failed to match property "foo"', { line: 1, column: 10, char: 9 }, { line: 1, column: 15, char: 14 },
 		], // }}}
 
 		'multi-line object': [[ // {{{
@@ -128,7 +128,7 @@ module.exports = {
 		`,
 			{ foo: { bar: [{ baz: false }] } },
 		],
-			'failed to match property ".foo.bar[0].baz"', { line: 4, column: 14, char: 40 }, { line: 4, column: 18, char: 44 },
+			'failed to match property "foo.bar.[0].baz"', { line: 4, column: 14, char: 40 }, { line: 4, column: 18, char: 44 },
 		], // }}}
 
 	},

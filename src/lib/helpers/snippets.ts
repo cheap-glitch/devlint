@@ -12,14 +12,14 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: R
 		return '';
 	}
 
-	const minTabIndent           = Math.min(...snippet.map(line => (line.text.match(/^\t+/)     ??     [''])[0].length));
-	const minSpaceIndent         = Math.min(...snippet.map(line => (line.text.match(/^\t*( +)/) ?? ['', ''])[1].length));
-	const lineNumbersColumnWidth = Math.max(2, snippet[snippet.length - 1].number.toString().length) + 1;
-	const highlightColor         = status === LintStatus.Error ? 'red' : 'yellow';
+	const minTabIndent       = Math.min(...snippet.map(line => (line.text.match(/^\t+/)     ??     [''])[0].length));
+	const minSpaceIndent     = Math.min(...snippet.map(line => (line.text.match(/^\t*( +)/) ?? ['', ''])[1].length));
+	const numbersColumnWidth = Math.max(2, snippet[snippet.length - 1].number.toString().length) + 1;
+	const highlightColor     = status === LintStatus.Failure ? 'red' : 'yellow';
 
 	return snippet.map(line => {
 		const lineContents      = line.text.slice(minTabIndent + minSpaceIndent);
-		const lineNumbersColumn = line.number.toString().padStart(lineNumbersColumnWidth, ' ');
+		const lineNumbersColumn = line.number.toString().padStart(numbersColumnWidth, ' ');
 
 		const isLineInError     = (start.line <= line.number && line.number <= end.line);
 		const lineColor         = isLineInError ? highlightColor : 'dim';

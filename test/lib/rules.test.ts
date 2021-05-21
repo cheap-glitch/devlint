@@ -4,33 +4,26 @@ describe('parseRules', () => {
 
 	test('invalid rule object', () => { // {{{
 
-		expect(parseRules('')).toEqual([]);
-		expect(parseRules([])).toEqual([]);
-		// eslint-disable-next-line unicorn/no-null
-		expect(parseRules(null)).toEqual([]);
+		expect(parseRules(null)).toEqual(new Map());
+		expect(parseRules('')).toEqual(new Map());
+		expect(parseRules([])).toEqual(new Map());
 
 	}); // }}}
 
 	test('invalid rule declarations', () => { // {{{
 
-		expect(() => parseRules({ 'rule name':              'warn' })).toThrow('invalid rule declaration: ');
-		expect(() => parseRules({ '?rule-name':             'warn' })).toThrow('invalid rule declaration: ');
-		expect(() => parseRules({ 'rule-name condition':    'warn' })).toThrow('invalid rule declaration: ');
-		expect(() => parseRules({ '(condition) rule-name':  'warn' })).toThrow('invalid rule declaration: ');
-		expect(() => parseRules({ 'rule-name !(condition)': 'warn' })).toThrow('invalid rule declaration: ');
-		expect(() => parseRules({ 'rule-name (condition!)': 'warn' })).toThrow('invalid rule declaration: ');
+		expect(() => parseRules({ 'rule name':              'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ '?rule-name':             'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name condition':    'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ '(condition) rule-name':  'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name !(condition)': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name (condition!)': 'warn' })).toThrow('invalid rule declaration:');
 
-	}); // }}}
-
-	test('invalid rule configurations', () => { // {{{
-
-		// eslint-disable-next-line unicorn/no-null
-		expect(() => parseRules({ 'rule-name': null            })).toThrow('invalid rule configuration: ');
-		expect(() => parseRules({ 'rule-name': true            })).toThrow('invalid rule configuration: ');
-		expect(() => parseRules({ 'rule-name': false           })).toThrow('invalid rule configuration: ');
-		// eslint-disable-next-line unicorn/no-null
-		expect(() => parseRules({ 'rule-name': [null,  'foo']  })).toThrow('invalid rule configuration: ');
-		expect(() => parseRules({ 'rule-name': [true, ['foo']] })).toThrow('invalid rule configuration: ');
+		expect(() => parseRules({ 'rule-name': null                })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': true                })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': false               })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': [null,  'foo']      })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'rule-name': [true, ['foo']]     })).toThrow('invalid rule declaration:');
 
 	}); // }}}
 
@@ -43,18 +36,42 @@ describe('parseRules', () => {
 				'third-rule':  'warn',
 			},
 		}))
-		.toEqual([
-			{
-				name:   'first-rule',
-				status: 'error',
-				target: ['filename.ext', []],
+		.toEqual(new Map([
+			['filename.ext', new Map([
+				[undefined, new Set([
+					{
+						name:   'first-rule',
+						status: 'error',
+					},
+					{
+						name:   'third-rule',
+						status: 'warn',
+					},
+				])],
+			])],
+		]));
+
+		expect(parseRules({
+			'filename.ext': {
+				'first-rule':  2,
+				'second-rule': 0,
+				'third-rule':  1,
 			},
-			{
-				name:   'third-rule',
-				status: 'warn',
-				target: ['filename.ext', []],
-			},
-		]);
+		}))
+		.toEqual(new Map([
+			['filename.ext', new Map([
+				[undefined, new Set([
+					{
+						name:   'first-rule',
+						status: 'error',
+					},
+					{
+						name:   'third-rule',
+						status: 'warn',
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -67,20 +84,22 @@ describe('parseRules', () => {
 				'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
 			},
 		}))
-		.toEqual([
-			{
-				name:      'first-rule',
-				status:    'error',
-				target:    ['filename.ext', []],
-				parameter: 'foo',
-			},
-			{
-				name:      'third-rule',
-				status:    'warn',
-				target:    ['filename.ext', []],
-				parameter: ['foo', { foo: 'bar' }],
-			},
-		]);
+		.toEqual(new Map([
+			['filename.ext', new Map([
+				[undefined, new Set([
+					{
+						name:      'first-rule',
+						status:    'error',
+						parameter: 'foo',
+					},
+					{
+						name:      'third-rule',
+						status:    'warn',
+						parameter: ['foo', { foo: 'bar' }],
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -89,13 +108,10 @@ describe('parseRules', () => {
 		expect(parseRules({
 			'filename.ext': {
 				'first-rule': 'error',
-
 				'#property': {
 					'second-rule': 'error',
-
 					'.foo.bar': {
 						'third-rule': 'error',
-
 						'[2]': {
 							'fourth-rule': 'error',
 						},
@@ -103,28 +119,34 @@ describe('parseRules', () => {
 				},
 			},
 		}))
-		.toEqual([
-			{
-				name:   'first-rule',
-				status: 'error',
-				target: ['filename.ext', []],
-			},
-			{
-				name:   'second-rule',
-				status: 'error',
-				target: ['filename.ext', ['property']],
-			},
-			{
-				name:   'third-rule',
-				status: 'error',
-				target: ['filename.ext', ['property', 'foo', 'bar']],
-			},
-			{
-				name:   'fourth-rule',
-				status: 'error',
-				target: ['filename.ext', ['property', 'foo', 'bar', 2]],
-			},
-		]);
+		.toEqual(new Map([
+			['filename.ext', new Map([
+				[undefined, new Set([
+					{
+						name:   'first-rule',
+						status: 'error',
+					},
+				])],
+				['property', new Set([
+					{
+						name:   'second-rule',
+						status: 'error',
+					},
+				])],
+				['property.foo.bar', new Set([
+					{
+						name:   'third-rule',
+						status: 'error',
+					},
+				])],
+				['property.foo.bar.[2]', new Set([
+					{
+						name:   'fourth-rule',
+						status: 'error',
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -135,20 +157,22 @@ describe('parseRules', () => {
 			'second-rule': ['off',    'foo'],
 			'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
 		}))
-		.toEqual([
-			{
-				name:      'first-rule',
-				status:    'error',
-				target:    ['.', []],
-				parameter: 'foo',
-			},
-			{
-				name:      'third-rule',
-				status:    'warn',
-				target:    ['.', []],
-				parameter: ['foo', { foo: 'bar' }],
-			},
-		]);
+		.toEqual(new Map([
+			['.', new Map([
+				[undefined, new Set([
+					{
+						name:      'first-rule',
+						status:    'error',
+						parameter: 'foo',
+					},
+					{
+						name:      'third-rule',
+						status:    'warn',
+						parameter: ['foo', { foo: 'bar' }],
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -159,21 +183,22 @@ describe('parseRules', () => {
 			'second-rule (condition)': 'off',
 			'third-rule (!condition)': 'warn',
 		}))
-		.toEqual([
-			{
-				name:      'first-rule',
-				status:    'error',
-				target:    ['.', []],
-				condition: 'condition',
-			},
-			{
-				name:      'third-rule',
-				status:    'warn',
-				target:    ['.', []],
-				condition: 'condition',
-				conditionExpectedResult: false,
-			},
-		]);
+		.toEqual(new Map([
+			['.', new Map([
+				[undefined, new Set([
+					{
+						name:      'first-rule',
+						status:    'error',
+						condition: { name: 'condition', negated: false },
+					},
+					{
+						name:      'third-rule',
+						status:    'warn',
+						condition: { name: 'condition', negated: true },
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -184,19 +209,21 @@ describe('parseRules', () => {
 			'second-rule': 'off',
 			'third-rule!': 'warn',
 		}))
-		.toEqual([
-			{
-				name:     'first-rule',
-				status:   'error',
-				target:   ['.', []],
-			},
-			{
-				name:     'third-rule',
-				status:   'warn',
-				target:   ['.', []],
-				isStrict: true,
-			},
-		]);
+		.toEqual(new Map([
+			['.', new Map([
+				[undefined, new Set([
+					{
+						name:     'first-rule',
+						status:   'error',
+					},
+					{
+						name:     'third-rule',
+						status:   'warn',
+						isStrict: true,
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -207,19 +234,21 @@ describe('parseRules', () => {
 			'second-rule': 'off',
 			'third-rule?': 'warn',
 		}))
-		.toEqual([
-			{
-				name:         'first-rule',
-				status:       'error',
-				target:       ['.', []],
-			},
-			{
-				name:         'third-rule',
-				status:       'warn',
-				target:       ['.', []],
-				isPermissive: true,
-			},
-		]);
+		.toEqual(new Map([
+			['.', new Map([
+				[undefined, new Set([
+					{
+						name:         'first-rule',
+						status:       'error',
+					},
+					{
+						name:         'third-rule',
+						status:       'warn',
+						isPermissive: true,
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 
@@ -229,20 +258,22 @@ describe('parseRules', () => {
 			'first-rule (condition), third-rule?': 'error',
 			'second-rule, fourth-rule':            'off',
 		}))
-		.toEqual([
-			{
-				name:         'first-rule',
-				status:       'error',
-				target:       ['.', []],
-				condition:    'condition',
-			},
-			{
-				name:         'third-rule',
-				status:       'error',
-				target:       ['.', []],
-				isPermissive: true,
-			},
-		]);
+		.toEqual(new Map([
+			['.', new Map([
+				[undefined, new Set([
+					{
+						name:         'first-rule',
+						status:       'error',
+						condition:    { name: 'condition', negated: false },
+					},
+					{
+						name:         'third-rule',
+						status:       'error',
+						isPermissive: true,
+					},
+				])],
+			])],
+		]));
 
 	}); // }}}
 

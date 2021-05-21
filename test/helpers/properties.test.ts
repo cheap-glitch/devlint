@@ -34,15 +34,15 @@ describe('parsePropertyPath', () => {
 	test('mutiple numeric keys', () => { // {{{
 
 		expect(parsePropertyPath('0.1.2')).toEqual([0, 1, 2]);
-		expect(parsePropertyPath('[0][1][2]')).toEqual([0, 1, 2]);
 		expect(parsePropertyPath('[0].1.[2]')).toEqual([0, 1, 2]);
+		expect(parsePropertyPath('[0].[1].[2]')).toEqual([0, 1, 2]);
 
 	}); // }}}
 
 	test('mutiple mixed keys', () => { // {{{
 
-		expect(parsePropertyPath('.foo[0].bar.2')).toEqual(['foo', 0, 'bar', 2]);
-		expect(parsePropertyPath('[0].foo..[1].bar[2]')).toEqual([0, 'foo', 1, 'bar', 2]);
+		expect(parsePropertyPath('.foo.[0].bar.2')).toEqual(['foo', 0, 'bar', 2]);
+		expect(parsePropertyPath('[0].foo..[1].bar.[2]')).toEqual([0, 'foo', 1, 'bar', 2]);
 
 	}); // }}}
 
