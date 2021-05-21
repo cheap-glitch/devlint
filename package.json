@@ -50,6 +50,15 @@
     "overrides": [
       {
         "files": [
+          "test/lib/*.ts",
+          "test/helpers/*.ts"
+        ],
+        "rules": {
+          "unicorn/no-null": "off"
+        }
+      },
+      {
+        "files": [
           "test/rules/snippets/*.js",
           "test/rules/snippets/templates/*.js"
         ],
