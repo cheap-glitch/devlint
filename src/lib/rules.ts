@@ -86,11 +86,6 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, 
 
 		// Sub-target
 		if (typeof value === 'object') {
-			if (propertyPath !== undefined) {
-				parseRulesObject(rulesMap, value, [fsPath, joinPropertyPathSegments([propertyPath, key])]);
-				continue;
-			}
-
 			if (key.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
 				if (propertyPath !== undefined) {
 					throw new Error(`invalid rule declaration: "${key}" starts a property path inside another property path`);
@@ -99,6 +94,11 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, 
 				const [fsSubpath, propertySubpath] = key.split('#', 2);
 
 				parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, fsSubpath]), propertySubpath]);
+				continue;
+			}
+
+			if (propertyPath !== undefined) {
+				parseRulesObject(rulesMap, value, [fsPath, joinPropertyPathSegments([propertyPath, key])]);
 				continue;
 			}
 
@@ -118,8 +118,7 @@ function parseRuleStatus(rawStatus: number | string): RuleStatus {
 		case 1: case 'warn':  return RuleStatus.Warning;
 		case 2: case 'error': return RuleStatus.Error;
 
-		// Return/throw an error here?
-		default: return RuleStatus.Off;
+		default: throw new Error(`invalid rule declaration: "${rawStatus}" status is invalid`);
 	}
 }
 
