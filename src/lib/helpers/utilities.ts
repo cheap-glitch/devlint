@@ -1,4 +1,9 @@
-export function insertInNestedSetMap<KeyType, ValueType>(map: Map<KeyType, Map<KeyType, Set<ValueType>>>, firstKey: KeyType, secondKey: KeyType, values: Set<ValueType>): void {
+export function insertInNestedSetMap<FirstKeyType, SecondKeyType, ValueType>(
+	map:       Map<FirstKeyType, Map<SecondKeyType, Set<ValueType>>>,
+	firstKey:  FirstKeyType,
+	secondKey: SecondKeyType,
+	values:    Set<ValueType>
+): void {
 	const subMap = map.get(firstKey);
 	if (subMap === undefined) {
 		map.set(firstKey, new Map([[secondKey, new Set(values)]]));

@@ -54,7 +54,7 @@ export async function cli(): Promise<void> {
 		}
 	}
 
-	let directoriesToLint: Array<string> = [];
+	let directoriesToLint: Array<FsPath> = [];
 	try {
 		directoriesToLint = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
 			const directory = normalizePath(arg.toString());
@@ -92,7 +92,7 @@ export async function cli(): Promise<void> {
 			}
 		}
 
-		let currentTarget: [FsPath, PropertyPath] = ['', undefined];
+		let currentTarget = ['' as FsPath, undefined as PropertyPath];
 		for (const result of results) {
 			const report = parseLintResult(result, totals, verbosityLevel, options.skipped);
 			if (report === undefined) {

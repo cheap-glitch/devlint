@@ -1,8 +1,9 @@
 import { posix } from 'path';
+import { Opaque } from 'type-fest';
 import { Stats as FsStats, Dirent as DirectoryEntry } from 'fs';
 import { readFile as fsReadFile, readdir as fsReadDirectory, stat as fsGetStats } from 'fs/promises';
 
-export type FsPath         = string;
+export type FsPath         = Opaque<string, 'FsPath'>;
 export type FsPathSegments = Array<string>;
 
 export async function tryGettingDirectoryEntries(path: FsPathSegments): Promise<Array<DirectoryEntry> | undefined> {
@@ -52,14 +53,14 @@ export function getPathHierarchy(path: FsPathSegments): Array<FsPathSegments> {
 	return ['/', ...getAbsolutePath(path).split('/').filter(Boolean)].map((_, index, pathSegments) => pathSegments.slice(0, pathSegments.length - index));
 }
 
-export function getAbsolutePath(pathSegments: Array<string>): string {
-	return posix.resolve(joinPathSegments(pathSegments));
+export function getAbsolutePath(pathSegments: Array<string>): FsPath {
+	return posix.resolve(joinPathSegments(pathSegments)) as FsPath;
 }
 
-export function normalizePath(path: string): string {
-	return posix.normalize(path);
+export function joinPathSegments(pathSegments: Array<string>): FsPath {
+	return posix.join(...pathSegments) as FsPath;
 }
 
-export function joinPathSegments(pathSegments: Array<string>): string {
-	return posix.join(...pathSegments);
+export function normalizePath(path: string): FsPath {
+	return posix.normalize(path) as FsPath;
 }

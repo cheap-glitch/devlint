@@ -55,10 +55,10 @@ export function parseRules(rulesObject: JsonValue): RulesMap {
 	}
 
 	// TODO: try/catch block here?
-	return parseRulesObject(new Map(), rulesObject, ['.', undefined]);
+	return parseRulesObject(new Map(), rulesObject, '.' as FsPath, undefined as PropertyPath);
 }
 
-function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, propertyPath]: [FsPath, PropertyPath]): RulesMap {
+function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: FsPath, propertyPath: PropertyPath): RulesMap {
 	for (const [key, value] of Object.entries(rulesObject)) {
 		if (value === null) {
 			throw new Error(`invalid rule declaration: "${key}" has a value of \`null\``);
@@ -95,16 +95,16 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, 
 
 				const [fsSubpath, propertySubpath] = target.split('#', 2);
 
-				parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, fsSubpath]), propertySubpath]);
+				parseRulesObject(rulesMap, value, joinPathSegments([fsPath, fsSubpath]), propertySubpath as PropertyPath);
 				continue;
 			}
 
 			if (propertyPath !== undefined) {
-				parseRulesObject(rulesMap, value, [fsPath, joinPropertyPathSegments([propertyPath, target])]);
+				parseRulesObject(rulesMap, value, fsPath, joinPropertyPathSegments([propertyPath, target]));
 				continue;
 			}
 
-			parseRulesObject(rulesMap, value, [joinPathSegments([fsPath, target]), undefined]);
+			parseRulesObject(rulesMap, value, joinPathSegments([fsPath, target]), propertyPath);
 			continue;
 		}
 

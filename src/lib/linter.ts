@@ -30,7 +30,7 @@ export enum LintStatus {
 const BUILTIN_RULE_PLUGINS_DIR_PATH  = [__dirname, 'rules'];
 const BUILTIN_RULE_PLUGINS_FILENAMES = mem(() => getFilenamesInDirectory(BUILTIN_RULE_PLUGINS_DIR_PATH));
 
-export async function lintDirectory(workingDirectory: string, rulesObject: JsonValue, conditions?: Map<string, boolean>, selectedRules?: Array<string>): Promise<Array<LintResult>> {
+export async function lintDirectory(workingDirectory: FsPath, rulesObject: JsonValue, conditions?: Map<string, boolean>, selectedRules?: Array<string>): Promise<Array<LintResult>> {
 	const pluginsFilenames = await BUILTIN_RULE_PLUGINS_FILENAMES();
 	const rules = parseRules(rulesObject);
 	const results: Array<LintResult> = [];
@@ -178,7 +178,7 @@ async function executeRuleValidator(
 		return new RuleError(RuleErrorType.InvalidTargetType);
 	}
 
-	const propertyPathSegments = propertyPath !== undefined ? parsePropertyPath(propertyPath) : [];
+	const propertyPathSegments = parsePropertyPath(propertyPath);
 	const propertyValue        = tryGettingJsonObjectProperty(jsonValue, propertyPathSegments);
 	const propertyAst          = tryGettingJsonAstProperty(jsonAst,      propertyPathSegments);
 

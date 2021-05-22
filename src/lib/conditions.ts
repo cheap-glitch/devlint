@@ -1,12 +1,13 @@
 import { JsonValue } from 'type-fest';
 
+import { FsPath } from './helpers/fs';
 import { wrapInArray } from './helpers/utilities';
 import { isJsonObject } from './helpers/json';
 
 import { LintStatus, lintDirectory } from './linter';
 
 // TODO: merge with main linter function
-export async function testConditions(workingDirectory: string, conditionsObject: JsonValue): Promise<Map<string, boolean>> {
+export async function testConditions(workingDirectory: FsPath, conditionsObject: JsonValue): Promise<Map<string, boolean>> {
 	const conditionsResults: Map<string, boolean> = new Map();
 
 	if (!isJsonObject(conditionsObject)) {
