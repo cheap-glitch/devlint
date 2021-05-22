@@ -4,11 +4,11 @@ import { JsonValue } from 'type-fest';
 import { JsonValue as JsonAst } from 'jsonast';
 
 import { Line, getLines } from './helpers/text';
-import { PropertyPath, parsePropertyPath } from './helpers/properties';
 import { isGlobPattern, insertInNestedSetMap } from './helpers/utilities';
+import { PropertyPath, parsePropertyPath, normalizePropertyPath } from './helpers/properties';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst } from './helpers/json';
-import { FsPath, joinPathSegments, getAbsolutePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
 import { tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
+import { FsPath, joinPathSegments, getAbsolutePath, normalizePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
 
 import { RuleResult, RuleError, RuleErrorType } from './errors';
 import { RuleTargetType, RuleObject, RuleContext, parseRules } from './rules';
@@ -48,7 +48,7 @@ export async function lintDirectory(workingDirectory: string, rulesObject: JsonV
 		});
 		for (const path of paths) {
 			for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
-				insertInNestedSetMap(rules, path, propertyPath, propertyTargetRules);
+				insertInNestedSetMap(rules, normalizePath(path), normalizePropertyPath(propertyPath), propertyTargetRules);
 			}
 		}
 	}));

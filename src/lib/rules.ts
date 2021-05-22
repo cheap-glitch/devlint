@@ -4,8 +4,8 @@ import { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArr
 import { Line } from './helpers/text';
 import { isJsonObject } from './helpers/json';
 import { insertInNestedSetMap } from './helpers/utilities';
-import { FsPath, joinPathSegments } from './helpers/fs';
-import { PROPERTY_PATH_STARTING_CHARACTER, PropertyPath, joinPropertyPathSegments } from './helpers/properties';
+import { FsPath, joinPathSegments, normalizePath } from './helpers/fs';
+import { PROPERTY_PATH_STARTING_CHARACTER, PropertyPath, joinPropertyPathSegments, normalizePropertyPath } from './helpers/properties';
 
 export { RuleResult, RuleError, RuleErrorType } from './errors';
 
@@ -81,8 +81,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, [fsPath, 
 				continue;
 			}
 
-			// TODO: normalize paths ↓
-			insertInNestedSetMap(rulesMap, fsPath, propertyPath, buildRuleObjects(ruleName, status, Array.isArray(value) ? value[1] : undefined));
+			insertInNestedSetMap(rulesMap, normalizePath(fsPath), normalizePropertyPath(propertyPath), buildRuleObjects(ruleName, status, Array.isArray(value) ? value[1] : undefined));
 			continue;
 		}
 

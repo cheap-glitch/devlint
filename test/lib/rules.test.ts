@@ -29,21 +29,21 @@ describe('parseRules', () => {
 		expect(() => parseRules({ 'rule-name': [true, ['foo']]             })).toThrow('invalid rule declaration:');
 		expect(() => parseRules({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('invalid rule declaration:');
 
-		expect(() => parseRules({ 'filename.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('invalid rule declaration:');
+		expect(() => parseRules({ 'file.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('invalid rule declaration:');
 
 	}); // }}}
 
 	test('rule status', () => { // {{{
 
 		expect(parseRules({
-			'filename.ext': {
+			'file.ext': {
 				'first-rule':  'error',
 				'second-rule': 'off',
 				'third-rule':  'warn',
 			},
 		}))
 		.toEqual(new Map([
-			['filename.ext', new Map([
+			['file.ext', new Map([
 				[undefined, new Set([
 					{
 						name:   'first-rule',
@@ -58,14 +58,14 @@ describe('parseRules', () => {
 		]));
 
 		expect(parseRules({
-			'filename.ext': {
+			'file.ext': {
 				'first-rule':  2,
 				'second-rule': 0,
 				'third-rule':  1,
 			},
 		}))
 		.toEqual(new Map([
-			['filename.ext', new Map([
+			['file.ext', new Map([
 				[undefined, new Set([
 					{
 						name:   'first-rule',
@@ -84,14 +84,14 @@ describe('parseRules', () => {
 	test('rule status & parameter', () => { // {{{
 
 		expect(parseRules({
-			'filename.ext': {
+			'file.ext': {
 				'first-rule':  ['error',  'foo'],
 				'second-rule': ['off',    'foo'],
 				'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
 			},
 		}))
 		.toEqual(new Map([
-			['filename.ext', new Map([
+			['file.ext', new Map([
 				[undefined, new Set([
 					{
 						name:      'first-rule',
@@ -112,7 +112,7 @@ describe('parseRules', () => {
 	test('nested targets', () => { // {{{
 
 		expect(parseRules({
-			'filename.ext': {
+			'file.ext': {
 				'first-rule': 'error',
 				'#property': {
 					'second-rule': 'error',
@@ -126,7 +126,7 @@ describe('parseRules', () => {
 			},
 		}))
 		.toEqual(new Map([
-			['filename.ext', new Map([
+			['file.ext', new Map([
 				[undefined, new Set([
 					{
 						name:   'first-rule',
@@ -276,6 +276,62 @@ describe('parseRules', () => {
 						name:         'third-rule',
 						status:       'error',
 						isPermissive: true,
+					},
+				])],
+			])],
+		]));
+
+	}); // }}}
+
+	test('normalized paths', () => { // {{{
+
+		expect(parseRules({
+			'foo///bar/baz/../../bar': {
+				'./file.ext': {
+					'first-rule': 'error',
+					'#property..foo': {
+						'second-rule': 'error',
+						'..bar.': {
+							'third-rule': 'error',
+							'[2].': {
+								'fourth-rule': 'error',
+							},
+						},
+						'bar.[2]': {
+							'fifth-rule': 'error',
+						},
+					},
+				},
+			},
+		}))
+		.toEqual(new Map([
+			['foo/bar/file.ext', new Map([
+				[undefined, new Set([
+					{
+						name:   'first-rule',
+						status: 'error',
+					},
+				])],
+				['property.foo', new Set([
+					{
+						name:   'second-rule',
+						status: 'error',
+					},
+				])],
+				['property.foo.bar', new Set([
+					{
+						name:   'third-rule',
+						status: 'error',
+					},
+				])],
+				['property.foo.bar.[2]', new Set([
+					{
+						name:   'fourth-rule',
+						status: 'error',
+					},
+					{
+						name:   'fifth-rule',
+						status: 'error',
 					},
 				])],
 			])],

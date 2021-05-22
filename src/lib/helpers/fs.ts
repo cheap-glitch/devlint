@@ -56,6 +56,10 @@ export function getAbsolutePath(pathSegments: Array<string>): string {
 	return posix.resolve(joinPathSegments(pathSegments));
 }
 
+export function normalizePath(path: string): string {
+	return posix.normalize(path);
+}
+
 export function joinPathSegments(pathSegments: Array<string>): string {
 	return posix.join(...pathSegments);
 }

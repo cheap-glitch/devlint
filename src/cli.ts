@@ -2,14 +2,13 @@ import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import cliquish, { getVerbosityLevel } from 'cliquish';
 import { access as testDirectoryAccess } from 'fs/promises';
-const { isAbsolute: isAbsolutePath, normalize: normalizePath, relative: getRelativePath } = posix;
+const { isAbsolute: isAbsolutePath, relative: getRelativePath } = posix;
 
 import { PropertyPath } from './lib/helpers/properties';
 import { findGitRepoRoot } from './lib/helpers/git';
-import { FsPath, joinPathSegments, getAbsolutePath } from './lib/helpers/fs';
+import { FsPath, joinPathSegments, getAbsolutePath, normalizePath } from './lib/helpers/fs';
 
 import { loadConfig } from './lib/config';
-// Import { depreciations } from './lib/depreciations';
 import { testConditions } from './lib/conditions';
 import { RuleStatus, RuleErrorType } from './lib/rules';
 import { LintResult, LintStatus, lintDirectory } from './lib/linter';
