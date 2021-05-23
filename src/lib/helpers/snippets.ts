@@ -1,13 +1,15 @@
-import chalk from 'chalk';
+import * as c from 'colorette';
 
-import { Line, capitalize } from './text';
+import { Line } from './text';
 
-import { LintStatus } from '../linter';
+import { RuleStatus } from '../rules';
 import { RuleErrorPosition } from '../errors';
+
+const COLUMNS: number | undefined = process.stdout.columns;
 
 export type Snippet = Array<Line>;
 
-export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: RuleErrorPosition, status: LintStatus): string {
+export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: RuleErrorPosition, status: RuleStatus): string {
 	if (snippet.length === 0) {
 		return '';
 	}
@@ -15,18 +17,28 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: R
 	const minTabIndent       = Math.min(...snippet.map(line => (line.text.match(/^\t+/)     ??     [''])[0].length));
 	const minSpaceIndent     = Math.min(...snippet.map(line => (line.text.match(/^\t*( +)/) ?? ['', ''])[1].length));
 	const numbersColumnWidth = Math.max(2, snippet[snippet.length - 1].number.toString().length) + 1;
-	const highlightColor     = status === LintStatus.Failure ? 'red' : 'yellow';
+	const highlightColor     = status === RuleStatus.Error ? c.red   : c.yellow;
+	const highlightBgColor   = status === RuleStatus.Error ? c.bgRed : c.bgYellow;
+	const horizontalBoxLine  = COLUMNS ? '━'.repeat(COLUMNS - 6) : '';
 
-	return snippet.map(line => {
-		const lineContents      = line.text.slice(minTabIndent + minSpaceIndent);
-		const lineNumbersColumn = line.number.toString().padStart(numbersColumnWidth, ' ');
+	return (COLUMNS ? c.dim(c.black('  ┏' + horizontalBoxLine + '┓')) : '\n')
+		+ '\n'
+		+ snippet.map(line => {
+			const lineContents      = line.text.slice(minTabIndent + minSpaceIndent);
+			const lineNumbersColumn = line.number.toString().padStart(numbersColumnWidth, ' ');
 
-		const isLineInError     = (start.line <= line.number && line.number <= end.line);
-		const lineColor         = isLineInError ? highlightColor : 'dim';
-		const lineNumberColor   = isLineInError ? 'bg' + capitalize(highlightColor) : 'bgGray';
+			const isLineInError     = start.line <= line.number && line.number <= end.line;
+			const lineColor         = isLineInError ? highlightColor   : c.dim;
+			const numbersColumnBg   = isLineInError ? highlightBgColor : c.bgBlack;
 
-		return chalk`  {inverse.${lineNumberColor}.dim.${isLineInError ? 'bold.' : ''}black ${lineNumbersColumn} } {${isLineInError ? 'bold.' : ''}${lineColor} ${lineContents}}`;
-	}).join('\n');
+			return (COLUMNS ? c.dim(c.black('  ┃')) : '  ')
+				+ c.dim(numbersColumnBg(c.black(isLineInError ? c.bold(lineNumbersColumn) : lineNumbersColumn)))
+				+ ' '
+				+ lineColor(isLineInError ? c.bold(lineContents) : lineContents)
+				+ (COLUMNS ? c.dim(c.black(' '.repeat(COLUMNS - lineContents.length - 10) + '┃')) : '');
+		}).join('\n')
+		+ '\n'
+		+ (COLUMNS ? c.dim(c.black('  ┗' + horizontalBoxLine + '┛')) : '\n');
 }
 
 export function cutSnippet(lines: Array<Line>, start: RuleErrorPosition, end: RuleErrorPosition): Snippet {
