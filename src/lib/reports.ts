@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import * as c from 'colorette';
 
 import { FsPath } from './helpers/fs';
 import { PropertyPath } from './helpers/properties';
@@ -11,9 +11,9 @@ import { depreciations } from './depreciations';
 import { RuleStatus, RuleError } from './rules';
 
 const labels: Record<RuleStatus, string> = {
-	[RuleStatus.Off]:     chalk.black('disabled'),
-	[RuleStatus.Warning]: chalk.yellow('warning') + ' ',
-	[RuleStatus.Error]:   chalk.red('error') + '   ',
+	[RuleStatus.Off]:     c.black('disabled'),
+	[RuleStatus.Warning]: c.yellow('warning') + ' ',
+	[RuleStatus.Error]:   c.red('error') + '   ',
 };
 
 export function getDisabledRuleReport(result: LintResult, message: string): string {
@@ -21,22 +21,22 @@ export function getDisabledRuleReport(result: LintResult, message: string): stri
 }
 
 export function getSkippedRuleReport(result: LintResult, message: string): string {
-	return getReport(result, chalk.gray('skipped '), message);
+	return getReport(result, c.gray('skipped') + ' ', message);
 }
 
 export function getErrorReport(result: LintResult, error: RuleError, verbosityLevel: number): string {
 	const location = error.start ? (error.start.line + ':' + error.start.column) : '';
-	const snippet  = verbosityLevel >= 1 && error.snippet && error.start && error.end ? formatSnippet(error.snippet, error.start, error.end, result.status) : '';
+	const snippet  = verbosityLevel >= 1 && error.snippet && error.start && error.end ? formatSnippet(error.snippet, error.start, error.end, result.rule.status) : '';
 
 	return getReport(result, labels[result.rule.status], error.message, location, snippet);
 }
 
 export function getSuccessReport(result: LintResult): string {
-	return getReport(result, chalk.green('success') + ' ', 'rule passed');
+	return getReport(result, c.green('success') + ' ', 'rule passed');
 }
 
 function getReport(result: LintResult, label: string, message: string, location = '', snippet = ''): string {
-	return '  ' + chalk.dim.white(location.padEnd(5, ' ')) + '  ' + label + '  ' + capitalize(message) + '  ' + chalk.dim.white(result.rule.name) + (snippet.length > 0 ? ('\n\n' + snippet) : '');
+	return '  ' + c.dim(location.padEnd(5, ' ')) + '  ' + label + '  ' + capitalize(message) + '  ' + c.dim(result.rule.name) + (snippet.length > 0 ? '\n' + snippet : '');
 }
 
 export function getTotalsReport(errors: number, warnings: number, skipped: number): string {
@@ -44,32 +44,34 @@ export function getTotalsReport(errors: number, warnings: number, skipped: numbe
 		? 'Skipped ' + countWord(skipped, 'rule')
 		: countWord(errors + warnings, 'problem') + ' (' + [countWord(errors, 'error'), countWord(warnings, 'warning'), skipped + ' skipped'].join(', ') + ')';
 
-	return chalk.bold(errors ? '❌ ' + chalk.red(message) : warnings ? '✖  ' + chalk.yellow(message) : 'ℹ️  ' + message);
+	return c.bold(errors ? '❌ ' + c.red(message) : warnings ? '✖  ' + c.yellow(message) : 'ℹ️  ' + message);
 }
 
 export function getConditionsStatusReport(name: string, status: boolean): string {
-	return '  ' + (status ? (chalk.green.bold('✓') + ' ' + chalk.green(name)) : (chalk.red.bold('✗') + ' ' + chalk.red(name)));
+	return '  ' + (status ? (c.bold(c.green('✓')) + ' ' + c.green(name)) : (c.bold(c.red('✗')) + ' ' + c.red(name)));
 }
 
 export function getDepreciatedRulesReport(depreciatedRules: Array<string>): string {
-	return chalk.yellow(chalk.bold(pluralize('⚠️  depreciation warning', depreciatedRules.length).toUpperCase()) + '\n' + depreciatedRules.map(ruleName => {
-		let message = '    • ' + ruleName + ' is depreciated';
+	return c.yellow(c.bold(pluralize('⚠️  depreciation warning', depreciatedRules.length).toUpperCase()))
+		+ '\n'
+		+ depreciatedRules.map(ruleName => {
+			let message = '    • ' + ruleName + ' is depreciated';
 
-		const infos = depreciations.get(ruleName);
-		if (infos === undefined) {
-			return message;
-		}
-		if (infos === true) {
-			return message + ' and will be removed in a future release';
-		}
+			const infos = depreciations.get(ruleName);
+			if (infos === undefined) {
+				return message;
+			}
+			if (infos === true) {
+				return message + ' and will be removed in a future release';
+			}
 
-		message += ' and will be removed in ' + (infos.version !== undefined ? 'v' + infos.version : 'a future release');
-		if (infos.replacement !== undefined) {
-			message += `, you should start using "${infos.replacement}" instead (see ${getRuleDocumentationUrl(infos.replacement)})`;
-		}
+			message += ' and will be removed in ' + (infos.version !== undefined ? 'v' + infos.version : 'a future release');
+			if (infos.replacement !== undefined) {
+				message += `, you should start using "${infos.replacement}" instead (see ${getRuleDocumentationUrl(infos.replacement)})`;
+			}
 
-		return message;
-	}).join('\n'));
+			return c.yellow(c.bold(message));
+		}).join('\n');
 }
 
 export function getRuleDocumentationUrl(ruleName: string): string {
@@ -77,5 +79,5 @@ export function getRuleDocumentationUrl(ruleName: string): string {
 }
 
 export function getTargetHeader(fsPath: FsPath, propertyPath: PropertyPath): string {
-	return '\n' + chalk.underline(fsPath + (propertyPath ? (chalk.bold(PROPERTY_PATH_STARTING_CHARACTER) + propertyPath) : '')) + '\n';
+	return '\n' + c.underline(fsPath + (propertyPath ? (c.bold(PROPERTY_PATH_STARTING_CHARACTER) + propertyPath) : '')) + '\n';
 }
