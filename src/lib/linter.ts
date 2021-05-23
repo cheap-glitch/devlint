@@ -10,8 +10,13 @@ import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst } from './he
 import { tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 import { FsPath, joinPathSegments, getAbsolutePath, normalizePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
 
+import { loadConfig } from './config';
+import { testConditions } from './conditions';
 import { RuleResult, RuleError, RuleErrorType } from './errors';
 import { RuleTargetType, RuleObject, RuleContext, parseRules } from './rules';
+
+const BUILTIN_RULE_PLUGINS_DIR_PATH  = [__dirname, 'rules'];
+const BUILTIN_RULE_PLUGINS_FILENAMES = mem(() => getFilenamesInDirectory(BUILTIN_RULE_PLUGINS_DIR_PATH));
 
 export interface LintResult {
 	rule:   RuleObject,
@@ -27,10 +32,19 @@ export enum LintStatus {
 	SkippedForUnfulfilledCondition,
 }
 
-const BUILTIN_RULE_PLUGINS_DIR_PATH  = [__dirname, 'rules'];
-const BUILTIN_RULE_PLUGINS_FILENAMES = mem(() => getFilenamesInDirectory(BUILTIN_RULE_PLUGINS_DIR_PATH));
+export async function lint(directories: Array<FsPath>, selectedRules?: Array<string>): Promise<Map<FsPath, { conditions: Map<string, boolean>, results: Array<LintResult> }>> {
+	const results: Map<FsPath, { conditions: Map<string, boolean>, results: Array<LintResult> }> = new Map();
+	for (const directory of directories) {
+		const config     = await loadConfig();
+		const conditions = await testConditions(directory, config.conditions ?? {});
 
-export async function lintDirectory(workingDirectory: FsPath, rulesObject: JsonValue, conditions?: Map<string, boolean>, selectedRules?: Array<string>): Promise<Array<LintResult>> {
+		results.set(directory, { conditions, results: await lintDirectory(directory, config.rules ?? {}, conditions, selectedRules) });
+	}
+
+	return results;
+}
+
+export async function lintDirectory(directory: FsPath, rulesObject: JsonValue, conditions?: Map<string, boolean>, selectedRules?: Array<string>): Promise<Array<LintResult>> {
 	const pluginsFilenames = await BUILTIN_RULE_PLUGINS_FILENAMES();
 	const rules = parseRules(rulesObject);
 	const results: Array<LintResult> = [];
@@ -43,7 +57,7 @@ export async function lintDirectory(workingDirectory: FsPath, rulesObject: JsonV
 
 		const paths = await expandGlob(fsPath, {
 			dot:       true,
-			cwd:       workingDirectory,
+			cwd:       directory,
 			filesOnly: !fsPath.endsWith('/'),
 		});
 		for (const path of paths) {
@@ -58,7 +72,7 @@ export async function lintDirectory(workingDirectory: FsPath, rulesObject: JsonV
 			return;
 		}
 
-		const fileContents = await tryReadingFileContents([workingDirectory, fsPath]);
+		const fileContents = await tryReadingFileContents([directory, fsPath]);
 
 		// TODO: don't try parsing files that don't need to be parsed
 		const lines     = fileContents !== undefined ? getLines(fileContents)            : [];
@@ -102,7 +116,7 @@ export async function lintDirectory(workingDirectory: FsPath, rulesObject: JsonV
 				}
 
 				// eslint-ignore-next-line unicorn/no-await-in-loop
-				const result = await executeRuleValidator(workingDirectory, rule, fsPath, propertyPath, targetType, validator, fileContents, lines, jsonValue, jsonAst);
+				const result = await executeRuleValidator(directory, rule, fsPath, propertyPath, targetType, validator, fileContents, lines, jsonValue, jsonAst);
 				if (result instanceof RuleError) {
 					results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.Failure, error: result });
 					continue;

@@ -8,17 +8,15 @@ import { PropertyPath } from './lib/helpers/properties';
 import { findGitRepoRoot } from './lib/helpers/git';
 import { FsPath, joinPathSegments, getAbsolutePath, normalizePath } from './lib/helpers/fs';
 
-import { loadConfig } from './lib/config';
-import { testConditions } from './lib/conditions';
 import { RuleStatus, RuleErrorType } from './lib/rules';
-import { LintResult, LintStatus, lintDirectory } from './lib/linter';
+import { LintResult, LintStatus, lint } from './lib/linter';
 import { getRuleDocumentationUrl, getTargetHeader } from './lib/reports';
 import { getSuccessReport, getErrorReport, getDisabledRuleReport, getSkippedRuleReport, getTotalsReport, getConditionsStatusReport } from './lib/reports';
 
 export async function cli(): Promise<void> {
 	const options =
 		cliquish({
-			synopsis: '$0 [<option>]... [<dir>]...',
+			synopsis: '$0 [OPTION] [DIR...]',
 			arguments: {
 				dir: [
 					'Path to a directory or git repo (if no paths are specified,',
@@ -46,33 +44,28 @@ export async function cli(): Promise<void> {
 
 	const verbosityLevel = getVerbosityLevel(options);
 
-	let currentWorkingDirectory = process.cwd();
+	let workingDirectory = process.cwd();
 	if (options.gitRoot) {
-		const gitRepoRoot = await findGitRepoRoot([currentWorkingDirectory]);
+		const gitRepoRoot = await findGitRepoRoot([workingDirectory]);
 		if (gitRepoRoot !== undefined) {
-			currentWorkingDirectory = gitRepoRoot;
+			workingDirectory = gitRepoRoot;
 		}
 	}
 
-	let directoriesToLint: Array<FsPath> = [];
+	let directories: Array<FsPath> = [];
 	try {
-		directoriesToLint = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
+		directories = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
 			const directory = normalizePath(arg.toString());
 			await testDirectoryAccess(directory, fsConstants.R_OK);
 
-			return isAbsolutePath(directory) ? directory : joinPathSegments([currentWorkingDirectory, directory]);
+			return isAbsolutePath(directory) ? directory : joinPathSegments([workingDirectory, directory]);
 		}));
 	} catch (error) {
 		console.error(error.message);
 		process.exitCode = 1;
 	}
 
-	const selectedRules = options.rules === '*' ? undefined : options.rules.split(',');
-
-	// TODO: check depreciations in `parseRules` instead?
-	// const depreciatedRules = [...depreciations.keys()];
-	// const depreciatedRulesUsed: Array<string> = [];
-	// depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
+	const results = await lint(directories, options.rules === '*' ? undefined : options.rules.split(','));
 
 	const reports: Array<string> = [];
 	const totals = {
@@ -80,20 +73,16 @@ export async function cli(): Promise<void> {
 		warnings: 0,
 		skipped:  0,
 	};
-	for (const directory of directoriesToLint) {
-		const config     = await loadConfig();
-		const conditions = await testConditions(directory, config.conditions ?? {});
-		const results    = await lintDirectory(directory, config.rules ?? {}, conditions, selectedRules);
-
-		if (verbosityLevel >= 2) {
-			const conditionsStatusReport = [...conditions.entries()].map(([name, status]) => getConditionsStatusReport(name, status)).join('\n');
-			if (conditionsStatusReport.length > 0) {
-				console.log(`\nConditions status in "${getAbsolutePath([directory])}":\n${conditionsStatusReport}`);
+	for (const [directory, { conditions, results: directoryResults }] of results) {
+		if (verbosityLevel >= 2 && conditions.size > 0) {
+			console.log('\nConditions status in "' + getAbsolutePath([directory]) + '":\n');
+			for (const [name, status] of conditions.entries()) {
+				console.log(getConditionsStatusReport(name, status));
 			}
 		}
 
 		let currentTarget = ['' as FsPath, undefined as PropertyPath];
-		for (const result of results) {
+		for (const result of directoryResults) {
 			const report = parseLintResult(result, totals, verbosityLevel, options.skipped);
 			if (report === undefined) {
 				continue;
@@ -102,7 +91,7 @@ export async function cli(): Promise<void> {
 			const [fsPath, propertyPath] = result.target;
 			if (currentTarget[0] !== fsPath || currentTarget[1] !== propertyPath) {
 				reports.push(getTargetHeader(
-					options.absolutePaths ? getAbsolutePath([directory, fsPath]) : joinPathSegments([getRelativePath(currentWorkingDirectory, directory), fsPath]),
+					options.absolutePaths ? getAbsolutePath([directory, fsPath]) : joinPathSegments([getRelativePath(workingDirectory, directory), fsPath]),
 					propertyPath
 				));
 				currentTarget = result.target;
@@ -116,17 +105,24 @@ export async function cli(): Promise<void> {
 		process.exitCode = 1;
 	}
 
-	if (!options.quiet) {
-		if (reports.length > 0) {
-			console.log(reports.join('\n'));
-		}
-
-		if (Object.values(totals).some(Boolean)) {
-			console.log('\n' + getTotalsReport(totals.errors, totals.warnings, totals.skipped) + '\n');
-		}
+	if (options.quiet) {
+		return;
 	}
 
-	// TODO
+	if (reports.length > 0) {
+		console.log(reports.join('\n'));
+	}
+
+	if (Object.values(totals).some(Boolean)) {
+		console.log('\n' + getTotalsReport(totals.errors, totals.warnings, totals.skipped) + '\n');
+	} else if (reports.length > 0) {
+		console.log();
+	}
+
+	// TODO: check depreciations in `parseRules` instead?
+	// const depreciatedRules = [...depreciations.keys()];
+	// const depreciatedRulesUsed: Array<string> = [];
+	// depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
 	// if (depreciatedRulesUsed.length > 0) {
 	// 	console.log('\n' + getDepreciatedRulesReport([...new Set(depreciatedRulesUsed)]) + '\n');
 	// }

@@ -22,6 +22,5 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-export * from './lib/rules';
-export { lintDirectory } from './lib/linter';
+export * from './lib/linter';
 export { depreciations } from './lib/depreciations';
