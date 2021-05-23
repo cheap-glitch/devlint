@@ -60,7 +60,7 @@ module.exports = {
 		'object not matching allowed model #1': [[ // {{{
 			'{ "foo": true }', [{ foo: Number }],
 		],
-			'value "{"foo":true}" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 16, char: 15 },
+			'value "{ "foo": true }" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 16, char: 15 },
 		], // }}}
 
 		'object not matching allowed model #2': [[ // {{{
@@ -73,7 +73,7 @@ module.exports = {
 		`,
 			[{ foo: [{ bar: 'baz', 'baz?': false }] }],
 		],
-			'value "{"foo":[{"baz":false}]}" is not allowed', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 39 },
+			'value "{ "foo": [ { "baz": false } ] }" is not allowed', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 39 },
 		], // }}}
 
 	},

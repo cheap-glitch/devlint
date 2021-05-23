@@ -67,7 +67,7 @@ module.exports = {
 		'object matching forbidden model #1': [[ // {{{
 			'{ "foo": true }', [{ foo: Boolean }],
 		],
-			'value "{"foo":true}" is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 16, char: 15 },
+			'value "{ "foo": true }" is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 16, char: 15 },
 		], // }}}
 
 		'object matching forbidden model #2': [[ // {{{
@@ -80,7 +80,7 @@ module.exports = {
 		`,
 			[{ foo: [{ bar: 'baz', 'baz?': false }] }],
 		],
-			'value "{"foo":[{"bar":"baz"}]}" is forbidden', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 39 },
+			'value "{ "foo": [ { "bar": "baz" } ] }" is forbidden', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 39 },
 		], // }}}
 
 	},

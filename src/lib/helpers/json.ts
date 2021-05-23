@@ -6,14 +6,12 @@ import { PropertyPathSegments } from './properties';
 
 type TypeFunction = typeof Boolean | typeof Number | typeof String;
 
-export const jsonTypes = [
-	'null',
-	'boolean',
-	'number',
-	'string',
-	'object',
-	'array',
-];
+export function formatJsonValue(jsonValue: JsonValue): string {
+	// TODO: parse string to remove double spaces NOT INSIDE QUOTES + write tests
+	const jsonString = JSON.stringify(jsonValue, undefined, 1).replaceAll(/\s+/g, ' ');
+
+	return (jsonString.startsWith('"') ? '' : '"') + jsonString + (jsonString.endsWith('"') ? '' : '"');
+}
 
 export function matchJsonValues(
 	model: Record<string, JsonValue | TypeFunction> | JsonValue | TypeFunction | undefined,
@@ -128,6 +126,15 @@ export function tryParsingJsonValue(json: string): JsonValue | SyntaxError {
 
 	return jsonValue;
 }
+
+export const jsonTypes = [
+	'null',
+	'boolean',
+	'number',
+	'string',
+	'object',
+	'array',
+];
 
 export function getJsonValueType(value: JsonValue): (typeof jsonTypes)[number] {
 	const type = typeof value;

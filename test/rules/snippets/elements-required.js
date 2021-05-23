@@ -74,7 +74,7 @@ module.exports = {
 		`,
 			[{}, { foo: [1, 2, 3] }],
 		],
-			'required element "{"foo":[1,2,3]}" is missing', { line: 1, column: 1, char: 0 }, { line: 6, column: 2, char: 38 },
+			'required element "{ "foo": [ 1, 2, 3 ] }" is missing', { line: 1, column: 1, char: 0 }, { line: 6, column: 2, char: 38 },
 		], // }}}
 
 	},

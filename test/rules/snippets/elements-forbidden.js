@@ -84,7 +84,7 @@ module.exports = {
 		`,
 			[[false]],
 		],
-			'element "[false]" is forbidden', { line: 3, column: 3, char: 14 }, { line: 3, column: 10, char: 21 },
+			'element "[ false ]" is forbidden', { line: 3, column: 3, char: 14 }, { line: 3, column: 10, char: 21 },
 		], // }}}
 
 		'forbidden nested array element': [[ // {{{
@@ -95,7 +95,7 @@ module.exports = {
 		`,
 			[[0, [1, [2]]]],
 		],
-			'element "[0,[1,[2]]]" is forbidden', { line: 2, column: 3, char: 4 }, { line: 2, column: 16, char: 17 },
+			'element "[ 0, [ 1, [ 2 ] ] ]" is forbidden', { line: 2, column: 3, char: 4 }, { line: 2, column: 16, char: 17 },
 		], // }}}
 
 		'forbidden object element': [[ // {{{
@@ -112,7 +112,7 @@ module.exports = {
 		`,
 			[{ foo: 2 }],
 		],
-			'element "{"foo":2}" is forbidden', { line: 3, column: 3, char: 10 }, { line: 5, column: 4, char: 28 },
+			'element "{ "foo": 2 }" is forbidden', { line: 3, column: 3, char: 10 }, { line: 5, column: 4, char: 28 },
 		], // }}}
 
 	},

@@ -1,5 +1,4 @@
-import { quoteJsonString } from '../helpers/text';
-import { matchJsonValues } from '../helpers/json';
+import { matchJsonValues, formatJsonValue } from '../helpers/json';
 import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
 
 export const targetType = RuleTargetType.JsonValue;
@@ -13,5 +12,5 @@ export function validator({ lines, jsonValue, jsonAst, parameter: allowedValues 
 		return true;
 	}
 
-	return new RuleError(`value ${quoteJsonString(JSON.stringify(jsonValue))} is not allowed`, jsonAst.pos, lines);
+	return new RuleError(`value ${formatJsonValue(jsonValue)} is not allowed`, jsonAst.pos, lines);
 }
