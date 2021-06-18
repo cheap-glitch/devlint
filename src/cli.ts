@@ -2,7 +2,6 @@ import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
 import cliquish, { getVerbosityLevel } from 'cliquish';
 import { access as testDirectoryAccess } from 'fs/promises';
-const { isAbsolute: isAbsolutePath, relative: getRelativePath } = posix;
 
 import { PropertyPath } from './lib/helpers/properties';
 import { findGitRepoRoot } from './lib/helpers/git';
@@ -58,7 +57,7 @@ export async function cli(): Promise<void> {
 			const directory = normalizePath(arg.toString());
 			await testDirectoryAccess(directory, fsConstants.R_OK);
 
-			return isAbsolutePath(directory) ? directory : joinPathSegments([workingDirectory, directory]);
+			return posix.isAbsolute(directory) ? directory : joinPathSegments([workingDirectory, directory]);
 		}));
 	} catch (error) {
 		console.error(error.message);
@@ -68,6 +67,7 @@ export async function cli(): Promise<void> {
 	const results = await lint(directories, options.rules === '*' ? undefined : options.rules.split(','));
 
 	const reports: Array<string> = [];
+	/*! const jsonReports: Record<FsPath, Record<PropertyPath, Array<JsonObject>>> = []; */
 	const totals = {
 		errors:   0,
 		warnings: 0,
@@ -91,7 +91,7 @@ export async function cli(): Promise<void> {
 			const [fsPath, propertyPath] = result.target;
 			if (currentTarget[0] !== fsPath || currentTarget[1] !== propertyPath) {
 				reports.push(getTargetHeader(
-					options.absolutePaths ? getAbsolutePath([directory, fsPath]) : joinPathSegments([getRelativePath(workingDirectory, directory), fsPath]),
+					options.absolutePaths ? getAbsolutePath([directory, fsPath]) : joinPathSegments([posix.relative(workingDirectory, directory), fsPath]),
 					propertyPath
 				));
 				currentTarget = result.target;
@@ -120,12 +120,14 @@ export async function cli(): Promise<void> {
 	}
 
 	// TODO: check depreciations in `parseRules` instead?
-	// const depreciatedRules = [...depreciations.keys()];
-	// const depreciatedRulesUsed: Array<string> = [];
-	// depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
-	// if (depreciatedRulesUsed.length > 0) {
-	// 	console.log('\n' + getDepreciatedRulesReport([...new Set(depreciatedRulesUsed)]) + '\n');
-	// }
+	/*!
+	const depreciatedRules = [...depreciations.keys()];
+	const depreciatedRulesUsed: Array<string> = [];
+	depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
+	if (depreciatedRulesUsed.length > 0) {
+		console.log('\n' + getDepreciatedRulesReport([...new Set(depreciatedRulesUsed)]) + '\n');
+	}
+	*/
 }
 
 function parseLintResult(result: LintResult, totals: Record<string, number>, verbosityLevel: number, reportSkippedRules: boolean): string | undefined {

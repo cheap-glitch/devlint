@@ -1,19 +1,18 @@
 import mem from 'mem';
 import expandGlob from 'tiny-glob';
-import { JsonValue } from 'type-fest';
 import { JsonValue as JsonAst } from 'jsonast';
+import { JsonValue, JsonObject } from 'type-fest';
 
 import { Line, getLines } from './helpers/text';
-import { isGlobPattern, insertInNestedSetMap } from './helpers/utilities';
 import { PropertyPath, parsePropertyPath, normalizePropertyPath } from './helpers/properties';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst } from './helpers/json';
+import { NestedSetMap, isGlobPattern, wrapInArray, insertInNestedSetMap } from './helpers/utilities';
 import { tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 import { FsPath, joinPathSegments, getAbsolutePath, normalizePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
 
 import { loadConfig } from './config';
-import { testConditions } from './conditions';
 import { RuleResult, RuleError, RuleErrorType } from './errors';
-import { RuleTargetType, RuleObject, RuleContext, parseRules } from './rules';
+import { RuleTargetType, RuleObject, RuleContext, RulesMap, parseRules } from './rules';
 
 const BUILTIN_RULE_PLUGINS_DIR_PATH  = [__dirname, 'rules'];
 const BUILTIN_RULE_PLUGINS_FILENAMES = mem(() => getFilenamesInDirectory(BUILTIN_RULE_PLUGINS_DIR_PATH));
@@ -35,61 +34,108 @@ export enum LintStatus {
 export async function lint(directories: Array<FsPath>, selectedRules?: Array<string>): Promise<Map<FsPath, { conditions: Map<string, boolean>, results: Array<LintResult> }>> {
 	const results: Map<FsPath, { conditions: Map<string, boolean>, results: Array<LintResult> }> = new Map();
 	for (const directory of directories) {
-		const config     = await loadConfig();
-		const conditions = await testConditions(directory, config.conditions ?? {});
+		// TODO: avoid loading the config for every directory
+		const config = await loadConfig();
+		if (!isJsonObject(config.rules) || !isJsonObject(config.conditions)) {
+			throw new Error('invalid config: conditions & rules definitions must be objects');
+		}
 
-		results.set(directory, { conditions, results: await lintDirectory(directory, config.rules ?? {}, conditions, selectedRules) });
+		results.set(directory, await lintDirectory(directory, config.rules ?? {}, config.conditions ?? {}, selectedRules));
 	}
 
 	return results;
 }
 
-export async function lintDirectory(directory: FsPath, rulesObject: JsonValue, conditions?: Map<string, boolean>, selectedRules?: Array<string>): Promise<Array<LintResult>> {
+export async function lintDirectory(directory: FsPath, rulesObject: JsonObject, conditionsObject: JsonObject, selectedRules?: Array<string>): Promise<{ conditions: Map<string, boolean>, results: Array<LintResult> }> {
 	const pluginsFilenames = await BUILTIN_RULE_PLUGINS_FILENAMES();
-	const rules = parseRules(rulesObject);
-	const results: Array<LintResult> = [];
 
-	// Expand file-system globs
-	await Promise.allSettled([...rules.entries()].map(async ([fsPath, fsTargetRules]) => {
-		if (!isGlobPattern(fsPath)) {
-			return;
-		}
+	const conditionsMap: Map<string, Array<boolean>> = new Map();
+	const conditionsRules: NestedSetMap<FsPath, PropertyPath, RuleObject & { conditionName?: string, subConditionIndex?: number }> = new Map();
+	for (const [conditionName, conditionRulesObjects] of Object.entries(conditionsObject)) {
+		conditionsMap.set(conditionName, []);
 
-		const paths = await expandGlob(fsPath, {
-			dot:       true,
-			cwd:       directory,
-			filesOnly: !fsPath.endsWith('/'),
-		});
-		for (const path of paths) {
-			for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
-				insertInNestedSetMap(rules, normalizePath(path), normalizePropertyPath(propertyPath), propertyTargetRules);
+		for (const [subConditionIndex, subConditionRulesObject] of wrapInArray(conditionRulesObjects).entries()) {
+			if (!isJsonObject(subConditionRulesObject)) {
+				// TODO: error message
+				throw new Error('TODO');
+			}
+
+			const addedRules: Array<RuleObject & { conditionName?: string, subConditionIndex?: number }> = parseRules(conditionsRules, subConditionRulesObject);
+			for (const rule of addedRules) {
+				rule.conditionName     = conditionName;
+				rule.subConditionIndex = subConditionIndex;
 			}
 		}
-	}));
+	}
+	expandFsGlobs(directory, conditionsRules);
 
-	await Promise.allSettled([...rules.entries()].map(async ([fsPath, fsTargetRules]) => {
+	// TODO: deduplicate following code
+	await Promise.allSettled([...conditionsRules.entries()].map(async ([fsPath, fsTargetRules]) => {
 		if (isGlobPattern(fsPath)) {
 			return;
 		}
 
 		const fileContents = await tryReadingFileContents([directory, fsPath]);
+		const lines        = fileContents !== undefined ? getLines(fileContents)            : [];
+		const jsonValue    = fileContents !== undefined ? tryParsingJsonValue(fileContents) : new SyntaxError();
+		const jsonAst      = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError();
 
-		// TODO: don't try parsing files that don't need to be parsed
-		const lines     = fileContents !== undefined ? getLines(fileContents)            : [];
-		const jsonValue = fileContents !== undefined ? tryParsingJsonValue(fileContents) : new SyntaxError();
-		const jsonAst   = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError();
-
-		// TODO: expand property-path globs here?
-
-		// TODO: rewrite using Promise.allSettled()? (seems like it can cause race conditions)
-		// await Promise.allSettled([...fsTargetRules.entries()].flatMap(async ([, propertyTargetRules]) => [...propertyTargetRules].map(async (lint) => {
 		for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
 			for (const rule of propertyTargetRules) {
-				// TODO: filter some rules with wrong target type here? (e.g.: file-based rule targeting a directory)
+				if (rule.conditionName === undefined || rule.subConditionIndex === undefined) {
+					continue;
+				}
+
+				const subConditionsResults = conditionsMap.get(rule.conditionName);
+				if (subConditionsResults === undefined) {
+					continue;
+				}
+				if (subConditionsResults[rule.subConditionIndex] === false) {
+					// For a sub-condition to be true, all of its rules must pass
+					continue;
+				}
+
+				if (!pluginsFilenames.includes(rule.name + '.js')) {
+					subConditionsResults[rule.subConditionIndex] = false;
+					continue;
+				}
+				const { targetType, validator } = loadRulePlugin(rule.name);
+
+				const result = await executeRuleValidator(directory, rule, fsPath, propertyPath, targetType, validator, fileContents, lines, jsonValue, jsonAst);
+				subConditionsResults[rule.subConditionIndex] = result === true;
+			}
+		}
+	}));
+	const conditions: Map<string, boolean> = new Map();
+	for (const [conditionName, subConditionsResults] of conditionsMap.entries()) {
+		conditions.set(conditionName, subConditionsResults.includes(true));
+	}
+
+	const rules: RulesMap = new Map();
+	parseRules(rules, rulesObject);
+	expandFsGlobs(directory, rules);
+
+	const results: Array<LintResult> = [];
+	await Promise.allSettled([...rules.entries()].map(async ([fsPath, fsTargetRules]) => {
+		if (isGlobPattern(fsPath)) {
+			return;
+		}
+
+		// TODO: expand property-path globs
+		// TODO: don't try parsing files that don't need to be parsed
+		const fileContents = await tryReadingFileContents([directory, fsPath]);
+		const lines        = fileContents !== undefined ? getLines(fileContents)            : [];
+		const jsonValue    = fileContents !== undefined ? tryParsingJsonValue(fileContents) : new SyntaxError();
+		const jsonAst      = fileContents !== undefined ? tryParsingJsonAst(fileContents)   : new SyntaxError();
+
+		for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
+			// TODO: filter some rules with wrong target type here? (e.g.: file-based rule targeting a directory)
+			for (const rule of propertyTargetRules) {
 				if (selectedRules !== undefined && !selectedRules.includes(rule.name)) {
 					continue;
 				}
-				if (conditions !== undefined && rule.condition !== undefined) {
+
+				if (conditions.size > 0 && rule.condition !== undefined) {
 					const conditionState = conditions.get(rule.condition.name);
 					if (conditionState === undefined) {
 						// TODO: return a failure result instead of throwing
@@ -101,19 +147,12 @@ export async function lintDirectory(directory: FsPath, rulesObject: JsonValue, c
 						continue;
 					}
 				}
+
 				if (!pluginsFilenames.includes(rule.name + '.js')) {
 					results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.Failure, error: new RuleError(RuleErrorType.UnknownRule) });
 					continue;
 				}
-
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
-				const { targetType, validator } = require(getAbsolutePath([...BUILTIN_RULE_PLUGINS_DIR_PATH, rule.name + '.js']));
-				if (targetType === undefined) {
-					throw new Error(`missing target type for rule "${rule.name}"`);
-				}
-				if (validator === undefined) {
-					throw new Error(`missing validator function for rule "${rule.name}"`);
-				}
+				const { targetType, validator } = loadRulePlugin(rule.name);
 
 				// eslint-ignore-next-line unicorn/no-await-in-loop
 				const result = await executeRuleValidator(directory, rule, fsPath, propertyPath, targetType, validator, fileContents, lines, jsonValue, jsonAst);
@@ -126,7 +165,7 @@ export async function lintDirectory(directory: FsPath, rulesObject: JsonValue, c
 		}
 	}));
 
-	return results;
+	return { conditions, results };
 }
 
 async function executeRuleValidator(
@@ -238,6 +277,38 @@ async function executeRuleValidator(
 	}
 
 	return validator(context);
+}
+
+function loadRulePlugin(pluginName: string): { targetType: RuleTargetType, validator: (context: RuleContext) => RuleResult } {
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	const plugin = require(getAbsolutePath([...BUILTIN_RULE_PLUGINS_DIR_PATH, pluginName + '.js']));
+	if (plugin.targetType === undefined) {
+		throw new Error(`missing target type for rule "${pluginName}"`);
+	}
+	if (plugin.validator === undefined) {
+		throw new Error(`missing validator function for rule "${pluginName}"`);
+	}
+
+	return plugin;
+}
+
+async function expandFsGlobs(workingDirectory: FsPath, rules: RulesMap): Promise<void> {
+	await Promise.allSettled([...rules.entries()].map(async ([fsPath, fsTargetRules]) => {
+		if (!isGlobPattern(fsPath)) {
+			return;
+		}
+
+		const paths = await expandGlob(fsPath, {
+			dot:       true,
+			cwd:       workingDirectory,
+			filesOnly: !fsPath.endsWith('/'),
+		});
+		for (const path of paths) {
+			for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
+				insertInNestedSetMap(rules, normalizePath(path), normalizePropertyPath(propertyPath), propertyTargetRules);
+			}
+		}
+	}));
 }
 
 export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
