@@ -64,7 +64,7 @@ export function extendConfig(config: JsonObject): JsonObject {
 
 function resolveExtendPath(path: string): JsonValue | undefined {
 	if (path.startsWith('devlint:')) {
-		return require(joinPathSegments([__dirname, '..', '..', '..', 'configs', path.replace('devlint:', '') + '.json']));
+		return require(joinPathSegments([__dirname, '../../../src/configs', path.replace('devlint:', '') + '.json']));
 	}
 
 	return require(joinPathSegments([__dirname, path]));
