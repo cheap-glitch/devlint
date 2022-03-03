@@ -48,14 +48,22 @@
   "eslintConfig": {
     "root": true,
     "extends": "@cheap-glitch/typescript",
-    "plugins": [
-      "tsdoc"
-    ],
     "env": {
       "es6": true,
       "node": true
     },
+    "rules": {
+      "max-params": "off"
+    },
     "overrides": [
+      {
+        "files": [
+          "*.test.ts"
+        ],
+        "rules": {
+          "padded-blocks": "off"
+        }
+      },
       {
         "files": [
           "test/lib/*.ts",
@@ -67,17 +75,25 @@
       },
       {
         "files": [
+          "test/rules/index.test.ts"
+        ],
+        "rules": {
+          "jest/valid-title": "off"
+        }
+      },
+      {
+        "files": [
           "test/rules/snippets/*.js",
           "test/rules/snippets/templates/*.js"
         ],
         "rules": {
-          "capitalized-comments": "off",
-          "unicorn/no-null": "off"
+          "unicorn/no-null": "off",
+          "array-bracket-newline": "off",
+          "array-element-newline": "off",
+          "object-property-newline": "off",
+          "capitalized-comments": "off"
         }
       }
-    ],
-    "ignorePatterns": [
-      "build"
     ]
   },
   "jest": {
