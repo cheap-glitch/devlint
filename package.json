@@ -104,6 +104,10 @@
       "dist/src/lib/rules/*.js"
     ]
   },
+  "git-grapnel": {
+    "commitMessageFormat": "conventional-commits",
+    "addEmojis": true
+  },
   "dependencies": {
     "cliquish": "^0.8.2",
     "colorette": "^1.2.2",
