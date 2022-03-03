@@ -1,20 +1,29 @@
 {
   "name": "devlint",
-  "description": "A meta-linter for configuration files, directory structures and git repositories.",
   "version": "0.3.0",
+  "description": "A meta-linter for configuration files, directory structures and git repositories.",
   "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cheap-glitch/devlint.git"
-  },
-  "bugs": {
-    "url": "https://github.com/cheap-glitch/devlint/issues"
-  },
   "author": "cheap glitch <cheap.glitch@gmail.com> (https://github.com/cheap-glitch)",
+  "repository": "cheap-glitch/devlint",
   "homepage": "https://github.com/cheap-glitch/devlint#readme",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
-  "bin": "build/bin/devlint.js",
+  "bugs": "https://github.com/cheap-glitch/devlint/issues",
+  "funding": "https://github.com/sponsors/cheap-glitch",
+  "keywords": [
+    "check",
+    "config",
+    "configuration",
+    "directories",
+    "folders",
+    "json",
+    "lint",
+    "linter",
+    "projects",
+    "tree",
+    "yaml"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": "dist/bin/devlint.js",
   "files": [
     "build",
     "!build/scripts",
