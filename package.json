@@ -33,16 +33,16 @@
   },
   "scripts": {
     "build": "tsc",
-    "build:clean": "rimraf build && npm run build",
+    "build:clean": "empty-dir dist && npm run build",
     "build:watch": "tsc --watch",
     "coverage": "npm test -- --collectCoverage",
     "coverage:upload": "coveralls < .coverage/lcov.info",
     "docs:build": "vitepress build docs",
+    "docs:parse": "ts-node-dev --respawn --exit-child --rs docs/parse.ts",
     "docs:serve": "vitepress serve docs",
+    "docs:watch": "run-p --print-name --race docs:parse docs:serve",
     "lint": "eslint . --ext .js,.ts --ignore-path .gitignore",
-    "prepublishOnly": "npm run test && npm run build:clean",
     "test": "jest --runInBand",
-    "test:install": "npm run build:clean && sudo npm uninstall -g devlint && sudo npm link",
     "test:watch": "npm test -- --watch"
   },
   "eslintConfig": {
