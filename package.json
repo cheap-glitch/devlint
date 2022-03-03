@@ -25,9 +25,8 @@
   "types": "dist/index.d.ts",
   "bin": "dist/bin/devlint.js",
   "files": [
-    "build",
-    "!build/scripts",
-    "configs/*.json"
+    "dist",
+    "src/configs/*.json"
   ],
   "directories": {
     "test": "test"
