@@ -45,8 +45,8 @@ module.exports = {
 
 		// invalid parameters {{{
 		'invalid parameter #1': [['[]', null], 2],
-		'invalid parameter #2': [['[]', 1],    2],
-		'invalid parameter #3': [['[]', {}],   2],
+		'invalid parameter #2': [['[]', 1], 2],
+		'invalid parameter #3': [['[]', {}], 2],
 		// }}}
 
 		'forbidden number element': [[ // {{{

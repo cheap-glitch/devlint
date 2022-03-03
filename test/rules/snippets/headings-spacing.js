@@ -176,9 +176,9 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['', [1, 2, 1]],               2],
-		'invalid parameter #2': [['', { above: '3' }],          2],
-		'invalid parameter #3': [['', { after: 1 }],            2],
+		'invalid parameter #1': [['', [1, 2, 1]], 2],
+		'invalid parameter #2': [['', { above: '3' }], 2],
+		'invalid parameter #3': [['', { after: 1 }], 2],
 		'invalid parameter #4': [['', { before: 1, below: 3 }], 2],
 		// }}}
 

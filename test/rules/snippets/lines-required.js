@@ -28,9 +28,9 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['', null],     2],
+		'invalid parameter #1': [['', null], 2],
 		'invalid parameter #2': [['', 'foobar'], 2],
-		'invalid parameter #3': [['', [44]],     2],
+		'invalid parameter #3': [['', [44]], 2],
 		// }}}
 
 		'empty text and non-empty list': [[ // {{{

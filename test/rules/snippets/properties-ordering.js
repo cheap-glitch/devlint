@@ -119,9 +119,9 @@ module.exports = {
 		/* ----- Alphabetical ----- */
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['{}', ['alphabetical']],       2],
+		'invalid parameter #1': [['{}', ['alphabetical']], 2],
 		'invalid parameter #2': [['{}', { alphabetical: true }], 2],
-		'invalid parameter #3': [['{}', 'alphabet'],             2],
+		'invalid parameter #3': [['{}', 'alphabet'], 2],
 		// }}}
 
 		'properties with single-character keys': [[ // {{{

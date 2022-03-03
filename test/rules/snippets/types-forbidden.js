@@ -25,15 +25,13 @@ module.exports = {
 			'{ "foo": [] }', ['array'],
 		], // }}}
 
-	},
-
-	failing: {
+	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['true', true],          2],
+		'invalid parameter #1': [['true', true], 2],
 		'invalid parameter #2': [['true', { foo: true }], 2],
-		'invalid parameter #3': [['true', ['function']],  2],
-		'invalid parameter #4': [['true', [Function]],    2],
+		'invalid parameter #3': [['true', ['function']], 2],
+		'invalid parameter #4': [['true', [Function]], 2],
 		// }}}
 
 		'boolean': [[ // {{{

@@ -1,33 +1,33 @@
 module.exports = {
 	passing: {
 
-		'boolean': [ // {{{
+		boolean: [ // {{{
 			'true', ['boolean'],
 		], // }}}
 
-		'number': [ // {{{
+		number: [ // {{{
 			'55', ['string', 'number', 'array'],
 		], // }}}
 
-		'string': [ // {{{
+		string: [ // {{{
 			'"foo"', ['string'],
 		], // }}}
 
-		'array': [ // {{{
+		array: [ // {{{
 			'[]', ['array', 'null'],
 		], // }}}
 
-		'object': [ // {{{
+		object: [ // {{{
 			'{ "foo": [] }', ['array', 'object'],
 		], // }}}
 
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['true', true],          2],
+		'invalid parameter #1': [['true', true], 2],
 		'invalid parameter #2': [['true', { foo: true }], 2],
-		'invalid parameter #3': [['true', ['function']],  2],
-		'invalid parameter #4': [['true', [Function]],    2],
+		'invalid parameter #3': [['true', ['function']], 2],
+		'invalid parameter #4': [['true', [Function]], 2],
 		// }}}
 
 		'boolean': [[ // {{{

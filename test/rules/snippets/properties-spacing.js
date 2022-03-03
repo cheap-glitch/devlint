@@ -12,7 +12,7 @@ module.exports = {
 		], // }}}
 
 		'single property with primitive value and spacing around': [ // {{{
-		/* eslint-disable smarter-tabs/smarter-tabs */
+		/* eslint-disable smarter-tabs/smarter-tabs -- JSON start */
 		`
 			{
 
@@ -21,7 +21,7 @@ module.exports = {
 			}
 		`,
 			'around',
-		/* eslint-enable smarter-tabs/smarter-tabs */
+		/* eslint-enable smarter-tabs/smarter-tabs -- JSON end */
 		], // }}}
 
 		'single property with array value and spacing around': [ // {{{
@@ -40,7 +40,7 @@ module.exports = {
 		], // }}}
 
 		'two properties and spacing around': [ // {{{
-		/* eslint-disable smarter-tabs/smarter-tabs */
+		/* eslint-disable smarter-tabs/smarter-tabs -- JSON start */
 		`
 			{
 
@@ -53,7 +53,7 @@ module.exports = {
 			}
 		`,
 			'around',
-		/* eslint-enable smarter-tabs/smarter-tabs */
+		/* eslint-enable smarter-tabs/smarter-tabs -- JSON end */
 		], // }}}
 
 		/* ----- Between ----- */
@@ -130,9 +130,9 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['{}', true],      2],
-		'invalid parameter #2': [['{}', false],     2],
-		'invalid parameter #3': [['{}', 2],         2],
+		'invalid parameter #1': [['{}', true], 2],
+		'invalid parameter #2': [['{}', false], 2],
+		'invalid parameter #3': [['{}', 2], 2],
 		'invalid parameter #4': [['{}', 'betwixt'], 2],
 		// }}}
 

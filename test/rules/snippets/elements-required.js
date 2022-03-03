@@ -34,9 +34,9 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['[]', null],             2],
-		'invalid parameter #2': [['[]', false],            2],
-		'invalid parameter #3': [['[]', { 'foo': false }], 2],
+		'invalid parameter #1': [['[]', null], 2],
+		'invalid parameter #2': [['[]', false], 2],
+		'invalid parameter #3': [['[]', { foo: false }], 2],
 		// }}}
 
 		'empty array and non-empty list': [[ // {{{

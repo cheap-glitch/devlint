@@ -48,7 +48,7 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['{}', 'foo'],          2],
+		'invalid parameter #1': [['{}', 'foo'], 2],
 		'invalid parameter #2': [['{}', { foo: false }], 2],
 		// }}}
 

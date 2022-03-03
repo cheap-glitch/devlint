@@ -42,7 +42,7 @@ module.exports = {
 		], // }}}
 
 		'matching object with one property and model with one extra optional property': [ // {{{
-			'{ "foo": true }', { foo: true, 'bar?': false },
+			'{ "foo": true }', { 'foo': true, 'bar?': false },
 		], // }}}
 
 		'matching object with empty object value and model with one nested optional property': [ // {{{
@@ -64,7 +64,7 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['{}', null],   2],
+		'invalid parameter #1': [['{}', null], 2],
 		'invalid parameter #2': [['{}', [true]], 2],
 		// }}}
 

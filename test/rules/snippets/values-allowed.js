@@ -22,7 +22,7 @@ module.exports = {
 		], // }}}
 
 		'object matching allowed model #2': [ // {{{
-			'{ "foo": [{ "bar": "baz" }] }', [{ foo: [{ bar: 'baz', 'baz?': false }] }],
+			'{ "foo": [{ "bar": "baz" }] }', [{ foo: [{ 'bar': 'baz', 'baz?': false }] }],
 		], // }}}
 
 	}, failing: {
@@ -30,7 +30,7 @@ module.exports = {
 		// invalid parameters {{{
 		'invalid parameter #1': [['""', false], 2],
 		'invalid parameter #2': [['""', 1000], 2],
-		'invalid parameter #3': [['""',  null], 2],
+		'invalid parameter #3': [['""', null], 2],
 		// }}}
 
 		'empty list': [[ // {{{
@@ -71,7 +71,7 @@ module.exports = {
 			  ]
 			}
 		`,
-			[{ foo: [{ bar: 'baz', 'baz?': false }] }],
+			[{ foo: [{ 'bar': 'baz', 'baz?': false }] }],
 		],
 			'value "{ "foo": [ { "baz": false } ] }" is not allowed', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 39 },
 		], // }}}

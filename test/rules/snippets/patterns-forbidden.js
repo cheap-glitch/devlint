@@ -38,7 +38,7 @@ module.exports = {
 		// invalid parameters {{{
 		'invalid parameter #1': [['', false], 2],
 		'invalid parameter #2': [['', 'foo'], 2],
-		'invalid parameter #3': [['', [33]],  2],
+		'invalid parameter #3': [['', [33]], 2],
 		// }}}
 
 		'matching literal pattern': [[ // {{{

@@ -29,7 +29,7 @@ module.exports = {
 			  ]
 			}
 		`,
-			[{ foo: [{ bar: 'baz', 'baz?': false }] }],
+			[{ foo: [{ 'bar': 'baz', 'baz?': false }] }],
 		], // }}}
 
 	}, failing: {
@@ -37,7 +37,7 @@ module.exports = {
 		// invalid parameters {{{
 		'invalid parameter #1': [['""', false], 2],
 		'invalid parameter #2': [['""', 1000], 2],
-		'invalid parameter #3': [['""',  null], 2],
+		'invalid parameter #3': [['""', null], 2],
 		// }}}
 
 		'forbidden primitive value #1': [[ // {{{
@@ -78,7 +78,7 @@ module.exports = {
 			  ]
 			}
 		`,
-			[{ foo: [{ bar: 'baz', 'baz?': false }] }],
+			[{ foo: [{ 'bar': 'baz', 'baz?': false }] }],
 		],
 			'value "{ "foo": [ { "bar": "baz" } ] }" is forbidden', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 39 },
 		], // }}}

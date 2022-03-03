@@ -20,7 +20,7 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['""', 0],   2],
+		'invalid parameter #1': [['""', 0], 2],
 		'invalid parameter #2': [['""', '.'], 2],
 		// }}}
 

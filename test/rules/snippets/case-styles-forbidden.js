@@ -24,10 +24,10 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['""', true],               2],
-		'invalid parameter #2': [['""', ''],                 2],
-		'invalid parameter #3': [['""', [14]],               2],
-		'invalid parameter #4': [['""', ['foo']],            2],
+		'invalid parameter #1': [['""', true], 2],
+		'invalid parameter #2': [['""', ''], 2],
+		'invalid parameter #3': [['""', [14]], 2],
+		'invalid parameter #4': [['""', ['foo']], 2],
 		'invalid parameter #5': [['""', ['zozan', 'kebab']], 2],
 		// }}}
 

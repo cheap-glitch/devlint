@@ -68,9 +68,9 @@ module.exports = {
 	}, failing: {
 
 		// invalid parameters {{{
-		'invalid parameter #1': [['{}', 'foo'],                     2],
+		'invalid parameter #1': [['{}', 'foo'], 2],
 		'invalid parameter #2': [['{}', { foo: true, bar: false }], 2],
-		'invalid parameter #3': [['{}', ['foo', 2, 'bar']],         2],
+		'invalid parameter #3': [['{}', ['foo', 2, 'bar']], 2],
 		// }}}
 
 		'two disordered properties #1': [[ // {{{
