@@ -98,12 +98,10 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "node",
-    "coverageDirectory": ".coverage",
     "collectCoverageFrom": [
       "src/lib/**/*.ts",
       "!src/lib/rules/*.ts",
-      "build/src/lib/rules/*.js"
+      "dist/src/lib/rules/*.js"
     ]
   },
   "dependencies": {
