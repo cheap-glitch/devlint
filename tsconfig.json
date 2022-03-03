@@ -1,16 +1,16 @@
 {
-  "extends": "@cheap-glitch/typescript-config/index.json",
-
+  "extends": "@cheap-glitch/tsconfig/index.json",
   "include": [
     "bin/devlint.ts",
     "src/*.ts",
     "src/lib/rules/*.ts"
   ],
-
   "compilerOptions": {
-    "lib":    ["esnext"],
+    "esModuleInterop": true,
+    "useUnknownInCatchVariables": false,
+    "lib": ["es2021"],
     "target": "es2018",
     "module": "commonjs",
-    "outDir": "build"
+    "outDir": "dist"
   }
 }
