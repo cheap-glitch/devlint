@@ -269,6 +269,20 @@ function executeRuleValidator(
 
 		case RuleTargetType.JsonArray:
 			if (!isJsonArray(propertyValue) || !isJsonArrayAst(propertyAst)) {
+				/*
+				 * Allow rules targeting arrays to also work on primitive values (i.e. consider primitive values as arrays containing a single element)
+				 * TODO [>=0.4.0]: is this behavior always useful/wanted?
+				 */
+				if (!isJsonObject(propertyValue) && !isJsonObjectAst(propertyAst)) {
+					context.jsonArray = [propertyValue];
+					context.jsonArrayAst = {
+						type: 'array',
+						pos: propertyAst.pos,
+						elements: [propertyAst],
+					};
+					break;
+				}
+
 				return isRulePermissive ? LintStatus.SkippedForWrongTargetType : new RuleError(RuleErrorType.InvalidTargetType);
 			}
 			context.jsonArray = propertyValue;
