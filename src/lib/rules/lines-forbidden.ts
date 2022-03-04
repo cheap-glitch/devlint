@@ -1,5 +1,7 @@
 import { matchStrings, trimLineOverflow } from '../helpers/text';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
 
@@ -19,8 +21,8 @@ export function validator({ lines, parameter: forbiddenLines }: RuleContext): Ru
 		}
 
 		return new RuleError(`line "${trimLineOverflow(lines[index].text)}" is forbidden`, {
-			start: { line: index + 1, column: 1,                            char: lines[index].char                            },
-			end:   { line: index + 1, column: lines[index].text.length + 1, char: lines[index].char + lines[index].text.length },
+			start: { line: index + 1, column: 1, char: lines[index].char },
+			end: { line: index + 1, column: lines[index].text.length + 1, char: lines[index].char + lines[index].text.length },
 		});
 	}
 

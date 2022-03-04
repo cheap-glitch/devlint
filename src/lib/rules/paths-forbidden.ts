@@ -1,5 +1,7 @@
 import { tryGettingPathStats } from '../helpers/fs';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.DirectoryListing;
 
@@ -13,14 +15,21 @@ export async function validator({ workingDirectory, parameter: forbiddenPaths }:
 			return new RuleError(RuleErrorType.InvalidParameter);
 		}
 
-		const isDirPath  =  path.endsWith('/');
 		const isFilePath = !path.endsWith('/');
+		const isDirectoryPath = path.endsWith('/');
 
-		// TODO: normalize the path?
-		// TODO: expand globs here?
+		/*
+		 * TODO [>=0.4.0]: normalize the path?
+		 * TODO [>=0.5.0]: expand globs here?
+		 */
 		const stats = await tryGettingPathStats([workingDirectory, path]);
-		if (stats !== undefined && ((isDirPath && stats.isDirectory()) || (isFilePath && stats.isFile()))) {
-			return new RuleError(`${isDirPath ? 'directory' : 'file'} "${path}" is forbidden`);
+		if (stats === undefined) {
+			// TODO [>=0.4.0]: Throw an error here?
+			continue;
+		}
+
+		if (isDirectoryPath && stats.isDirectory() || isFilePath && stats.isFile()) {
+			return new RuleError(`${isDirectoryPath ? 'directory' : 'file'} "${path}" is forbidden`);
 		}
 	}
 

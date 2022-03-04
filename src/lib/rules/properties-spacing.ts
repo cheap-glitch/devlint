@@ -1,4 +1,6 @@
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
@@ -10,8 +12,8 @@ export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleCont
 		return true;
 	}
 
-	for (const [propertyIndex, { key, value }] of jsonObjectAst.members.entries()) {
-		let errorMessage: string | undefined = undefined;
+	for (const [propertyIndex, { key, value: jsonObjectAstValue }] of jsonObjectAst.members.entries()) {
+		let errorMessage: string | undefined;
 
 		const lineAbove = lines[key.pos.start.line - 2]?.text;
 		if (spacing === 'between' && propertyIndex === 0) {
@@ -26,7 +28,7 @@ export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleCont
 			return new RuleError(errorMessage, { start: key.pos.start, end: key.pos.start }, lines);
 		}
 
-		const lineBelow = lines[value.pos.end.line].text;
+		const lineBelow = lines[jsonObjectAstValue.pos.end.line].text;
 		if (spacing === 'between' && propertyIndex === jsonObjectAst.members.length - 1) {
 			if (lineBelow === '') {
 				errorMessage = 'extra empty line below property value';
@@ -36,7 +38,7 @@ export function validator({ lines, jsonObjectAst, parameter: spacing }: RuleCont
 		}
 
 		if (errorMessage !== undefined) {
-			return new RuleError(errorMessage, { start: value.pos.end, end: value.pos.end }, lines);
+			return new RuleError(errorMessage, { start: jsonObjectAstValue.pos.end, end: jsonObjectAstValue.pos.end }, lines);
 		}
 	}
 

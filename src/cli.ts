@@ -3,18 +3,19 @@ import { constants as fsConstants } from 'fs';
 import cliquish, { getVerbosityLevel } from 'cliquish';
 import { access as testDirectoryAccess } from 'fs/promises';
 
-import { PropertyPath } from './lib/helpers/properties';
 import { findGitRepoRoot } from './lib/helpers/git';
-import { FsPath, joinPathSegments, getAbsolutePath, normalizePath } from './lib/helpers/fs';
-
+import { LintStatus, lint } from './lib/linter';
 import { RuleStatus, RuleErrorType } from './lib/rules';
-import { LintResult, LintStatus, lint } from './lib/linter';
-import { getRuleDocumentationUrl, getTargetHeader } from './lib/reports';
-import { getSuccessReport, getErrorReport, getDisabledRuleReport, getSkippedRuleReport, getTotalsReport, getConditionsStatusReport } from './lib/reports';
+import { getWorkingDirectory, joinPathSegments, getAbsolutePath, normalizePath } from './lib/helpers/fs';
+import { getRuleDocumentationUrl, getTargetHeader, getSuccessReport, getErrorReport, getDisabledRuleReport, getSkippedRuleReport, getTotalsReport, getConditionsStatusReport } from './lib/reports';
+
+import type { FsPath } from './lib/helpers/fs';
+import type { LintResult } from './lib/linter';
+import type { PropertyPath } from './lib/helpers/properties';
 
 export async function cli(): Promise<void> {
-	const options =
-		cliquish({
+	const options
+		= cliquish({
 			synopsis: '$0 [OPTION] [DIR...]',
 			arguments: {
 				dir: [
@@ -22,22 +23,22 @@ export async function cli(): Promise<void> {
 					'defaults to the current working directory)',
 				],
 			},
-			websiteUrl:           'https://devlint.org',
-			enableCompletion:     true,
+			websiteUrl: 'https://devlint.org',
+			enableCompletion: true,
 			advancedVerboseFlags: true,
 		})
 		.options({
-			// FIXME: https://github.com/yargs/yargs/issues/1679
-			'absolute-paths': { type: 'boolean', default: false, desc: 'Use absolute paths in the results summary'                                          },
-			'git-root':       { type: 'boolean', default: true,  desc: 'Lint from the root of the current git repo (disable with --no-git-root)'            },
-			rules:            { type: 'string',  default: '*',   desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
-			skipped:          { type: 'boolean', default: true,  desc: 'Print a report for skipped rules (disable with --no-skipped)'                       },
+			// FIXME [>=0.9.0]: https://github.com/yargs/yargs/issues/1679
+			'absolute-paths': { type: 'boolean', default: false, desc: 'Use absolute paths in the results summary' },
+			'git-root': { type: 'boolean', default: true, desc: 'Lint from the root of the current git repo (disable with --no-git-root)' },
+			'rules': { type: 'string', default: '*', desc: 'Specify exactly which rules to use by passing a comma-separated list of rule names' },
+			'skipped': { type: 'boolean', default: true, desc: 'Print a report for skipped rules (disable with --no-skipped)' },
 		})
 		.example([
-			['$0',               'Lint in the current directory'],
+			['$0', 'Lint in the current directory'],
 			['$0 /a/b/c ../d/e', 'Lint in the specified directories'],
 			['$0 --rules a,b,c', 'Lint using only the listed rules'],
-			['$0 -vv',           'Set the verbosity level to 2'],
+			['$0 -vv', 'Set the verbosity level to 2'],
 		])
 		.parse();
 
@@ -51,10 +52,10 @@ export async function cli(): Promise<void> {
 		}
 	}
 
-	let directories: Array<FsPath> = [];
+	let directories: FsPath[] = [];
 	try {
-		directories = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async arg => {
-			const directory = normalizePath(arg.toString());
+		directories = await Promise.all((options._.length > 0 ? options._ : ['.']).map(async argument => {
+			const directory = normalizePath(String(argument));
 			await testDirectoryAccess(directory, fsConstants.R_OK);
 
 			return posix.isAbsolute(directory) ? directory : joinPathSegments([workingDirectory, directory]);
@@ -66,15 +67,16 @@ export async function cli(): Promise<void> {
 
 	const results = await lint(directories, options.rules === '*' ? undefined : options.rules.split(','));
 
-	const reports: Array<string> = [];
+	const reports: string[] = [];
 	/*! const jsonReports: Record<FsPath, Record<PropertyPath, Array<JsonObject>>> = []; */
 	const totals = {
-		errors:   0,
+		errors: 0,
 		warnings: 0,
-		skipped:  0,
+		skipped: 0,
 	};
 	for (const [directory, { conditions, results: directoryResults }] of results) {
 		if (verbosityLevel >= 2 && conditions.size > 0) {
+			// TODO [2022-03-01]: move this in `reports.ts`
 			console.log('\nConditions status in "' + getAbsolutePath([directory]) + '":\n');
 			for (const [name, status] of conditions.entries()) {
 				console.log(getConditionsStatusReport(name, status));
@@ -83,7 +85,11 @@ export async function cli(): Promise<void> {
 
 		let currentTarget = ['' as FsPath, undefined as PropertyPath];
 		for (const result of directoryResults) {
-			const report = parseLintResult(result, totals, verbosityLevel, options.skipped);
+			const report = parseLintResult(result, totals, {
+				verbosityLevel,
+				reportSkippedRules: options.skipped,
+			});
+
 			if (report === undefined) {
 				continue;
 			}
@@ -92,7 +98,7 @@ export async function cli(): Promise<void> {
 			if (currentTarget[0] !== fsPath || currentTarget[1] !== propertyPath) {
 				reports.push(getTargetHeader(
 					options.absolutePaths ? getAbsolutePath([directory, fsPath]) : joinPathSegments([posix.relative(workingDirectory, directory), fsPath]),
-					propertyPath
+					propertyPath,
 				));
 				currentTarget = result.target;
 			}
@@ -119,18 +125,19 @@ export async function cli(): Promise<void> {
 		console.log();
 	}
 
-	// TODO: check depreciations in `parseRules` instead?
-	/*!
-	const depreciatedRules = [...depreciations.keys()];
-	const depreciatedRulesUsed: Array<string> = [];
-	depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
-	if (depreciatedRulesUsed.length > 0) {
-		console.log('\n' + getDepreciatedRulesReport([...new Set(depreciatedRulesUsed)]) + '\n');
-	}
-	*/
+	// TODO [>=4.0.0]: check depreciations in `parseRules` instead?
+	/*
+	 *!
+	 *const depreciatedRules = [...depreciations.keys()];
+	 *const depreciatedRulesUsed: Array<string> = [];
+	 *depreciatedRulesUsed.push(...rules.map(rule => rule.name).filter(ruleName => depreciatedRules.includes(ruleName)));
+	 *if (depreciatedRulesUsed.length > 0) {
+	 *console.log('\n' + getDepreciatedRulesReport([...new Set(depreciatedRulesUsed)]) + '\n');
+	 *}
+	 */
 }
 
-function parseLintResult(result: LintResult, totals: Record<string, number>, verbosityLevel: number, reportSkippedRules: boolean): string | undefined {
+function parseLintResult(result: LintResult, totals: Record<string, number>, { verbosityLevel, reportSkippedRules }: { verbosityLevel: number; reportSkippedRules: boolean }): string | undefined {
 	switch (result.status) {
 		case LintStatus.Success:
 			return verbosityLevel >= 3 ? getSuccessReport(result) : undefined;
@@ -144,32 +151,49 @@ function parseLintResult(result: LintResult, totals: Record<string, number>, ver
 		case LintStatus.Failure: switch (result.error?.type) {
 			case RuleErrorType.UnknownRule:
 				totals.skipped++;
+
 				return reportSkippedRules ? getSkippedRuleReport(result, 'unknown rule') : undefined;
 
 			case RuleErrorType.InvalidJson:
 				totals.skipped++;
+
 				return reportSkippedRules ? getSkippedRuleReport(result, 'invalid JSON encountered') : undefined;
 
 			case RuleErrorType.InvalidTargetType:
-				// TODO: return an error report here?
+				// TODO [>0.5.0]: return an error report here?
 				totals.skipped++;
+
 				return reportSkippedRules ? getSkippedRuleReport(result, 'invalid data or rule does not apply to target') : undefined;
 
 			case RuleErrorType.InvalidParameter:
 				totals.skipped++;
+
 				return reportSkippedRules ? getSkippedRuleReport(result, `invalid parameter (see ${getRuleDocumentationUrl(result.rule.name)})`) : undefined;
 
 			case RuleErrorType.Failed: {
 				if (result.error === undefined) {
 					return undefined;
 				}
+
 				switch (result.rule.status) {
-					case RuleStatus.Error:   totals.errors++;   break;
-					case RuleStatus.Warning: totals.warnings++; break;
+					case RuleStatus.Error:
+						totals.errors++;
+						break;
+
+					case RuleStatus.Warning:
+						totals.warnings++;
+						break;
+
+					default: break;
 				}
+
 				return getErrorReport(result, result.error, verbosityLevel);
 			}
+
+			default: throw new Error('Unknown rule error type');
 		}
+
+		default: throw new Error('Unknown lint result status');
 	}
 
 	return undefined;

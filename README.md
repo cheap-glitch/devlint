@@ -7,9 +7,7 @@
 ## Features
 
  * Enforce a coherent and predictable structure across multiple projects
-
  * A single place to lint and verify all your configuration and meta files
-
  * Precise and familiar reports modeled after those of ESLint
 
 ## Installation

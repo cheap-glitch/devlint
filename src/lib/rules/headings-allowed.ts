@@ -1,6 +1,8 @@
 import { findMatchLocation } from '../helpers/text';
 import { parseMarkdownHeadings, getMarkdownHeadings, isMatchingHeading } from '../helpers/markdown';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
 
@@ -14,10 +16,9 @@ export function validator({ contents, lines, parameter: rawHeadings }: RuleConte
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const checkedLevels = [...new Set(allowedHeadings.map(({ level }) => level))];
-
+	const checkedLevels = new Set(allowedHeadings.map(({ level }) => level));
 	for (const heading of getMarkdownHeadings(contents)) {
-		if (!checkedLevels.includes(0) && !checkedLevels.includes(heading.level)) {
+		if (!checkedLevels.has(0) && !checkedLevels.has(heading.level)) {
 			continue;
 		}
 

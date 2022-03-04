@@ -1,9 +1,11 @@
-import { RuleError, RuleErrorType, RuleErrorLocation } from '../errors';
+import { RuleError, RuleErrorType } from '../errors';
+
+import type { RuleErrorLocation } from '../errors';
 
 export interface Line {
-	char:   number,
-	number: number,
-	text:   string,
+	char: number;
+	number: number;
+	text: string;
 }
 
 export function checkStringCase(testedString: string, caseStyle: string): boolean | RuleError {
@@ -19,62 +21,71 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 				return /^[a-z](?:-?[a-z\d]+)*$/u.test(testedString);
 
 			case 'kebab-extended':
-				return /^@?[\da-z](?:[/-]?[\da-z]+)*$/.test(testedString);
+				return /^@?[\da-z](?:[/-]?[\da-z]+)*$/u.test(testedString);
 
 			case 'snake':
-				return /^[a-z](?:_?[\da-z]+)*$/.test(testedString);
+				return /^[a-z](?:_?[\da-z]+)*$/u.test(testedString);
 
 			case 'camel':
-				return /^[a-z][\da-z]+(?:[A-Z][\da-z]+)*$/.test(testedString);
+				return /^[a-z][\da-z]+(?:[A-Z][\da-z]+)*$/u.test(testedString);
 
 			case 'pascal':
-				return /^(?:[A-Z][\da-z]+)+$/.test(testedString);
+				return /^(?:[A-Z][\da-z]+)+$/u.test(testedString);
 
 			case 'sentence':
 				return testedString.length > 0 && testedString.slice(0, 1)[0].toLocaleUpperCase() === testedString.slice(0, 1)[0];
 
 			case 'title':
-				return !/(^|\P{Letter})\p{Lowercase_Letter}/u.test(testedString);
+				return !/(?:^|\P{Letter})\p{Lowercase_Letter}/u.test(testedString);
 
 			default: return new RuleError(RuleErrorType.InvalidParameter);
 		}
 	})() || testedString === '';
 }
 
-export function matchStrings(model: string, value: string): boolean {
-	return isRegex(model) ? new RegExp(model.slice(1, -1)).test(value) : model === value;
+export function matchStrings(model: string, testedString: string): boolean {
+	if (isRegex(model)) {
+		return new RegExp(model.slice(1, -1), 'u').test(testedString);
+	}
+
+	return model === testedString;
 }
 
 export function isRegex(model: string): boolean {
 	return model.startsWith('/') && model.endsWith('/');
 }
 
-export function findMatchLocation(lines: Array<Line>, matchText: string, matchIndex: number): RuleErrorLocation {
+export function findMatchLocation(lines: Line[], matchText: string, matchIndex: number): RuleErrorLocation {
 	const matchLineStart = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex);
-	const matchLineEnd   = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex + matchText.length - 1);
+	const matchLineEnd = lines.findIndex(line => line.char + line.text.length - 1 >= matchIndex + matchText.length - 1);
 
 	return {
-		start: matchLineStart !== -1 ? {
-			line:   matchLineStart + 1,
+		start: matchLineStart === -1
+		? undefined
+		: {
+			line: matchLineStart + 1,
 			column: matchIndex - lines[matchLineStart].char + 1,
-			char:   matchIndex,
-		} : undefined,
+			char: matchIndex,
+		},
 
-		end: matchLineEnd !== -1 ? {
-			line:   matchLineEnd + 1,
+		end: matchLineEnd === -1
+		? undefined
+		: {
+			line: matchLineEnd + 1,
 			column: matchIndex - lines[matchLineEnd].char + matchText.length,
-			char:   matchIndex + matchText.length - 1,
-		} : undefined,
+			char: matchIndex + matchText.length - 1,
+		},
 	};
 }
 
-export function getLines(text: string): Array<Line> {
-	const lines: Array<Line> = [];
+export function getLines(text: string): Line[] {
+	const lines: Line[] = [];
 
-	let char   = 0;
+	let char = 0;
 	let number = 1;
 
-	for (const line of text.split(/(\r?\n)/)) {
+	// eslint-disable-next-line prefer-named-capture-group -- The capturing group is needed to keep the EOL delimiters
+	for (const line of text.split(/(\r?\n)/u)) {
 		if (line === '\n' || line === '\r\n') {
 			char += line.length;
 			continue;
@@ -83,15 +94,14 @@ export function getLines(text: string): Array<Line> {
 		lines.push({ char, number, text: line });
 
 		char += line.length;
-		number ++;
+		number++;
 	}
 
 	return lines;
 }
 
+const ellipsis = ' […]';
 export function trimLineOverflow(line: string, maxLength = 30): string {
-	const ellipsis = ' […]';
-
 	if (line.length <= maxLength) {
 		return line;
 	}
@@ -99,7 +109,7 @@ export function trimLineOverflow(line: string, maxLength = 30): string {
 	// Find the first space before the maximum length
 	let index = maxLength - ellipsis.length;
 	while (index >= 0 && line[index] !== ' ') {
-		index --;
+		index--;
 	}
 
 	return (index === -1 ? line.slice(0, maxLength - ellipsis.length) : line.slice(0, index)) + ellipsis;
@@ -110,7 +120,7 @@ export function countWord(count: number, word: string, plural?: string): string 
 }
 
 export function pluralize(word: string, count: number, plural?: string): string {
-	return count > 1 ? (plural ?? (word + 's')) : word;
+	return count > 1 ? plural ?? word + 's' : word;
 }
 
 export function capitalize(message: string): string {

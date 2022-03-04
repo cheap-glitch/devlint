@@ -1,27 +1,31 @@
-import { Line, countWord } from '../helpers/text';
+import { countWord } from '../helpers/text';
 import { isMarkdownHeading } from '../helpers/markdown';
 import { isJsonObject, matchJsonValues } from '../helpers/json';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
+import type { Line } from '../helpers/text';
 
 export const targetType = RuleTargetType.FileContents;
 
 export function validator({ lines, parameter: optionsObject }: RuleContext): RuleResult {
-	if (!isJsonObject(optionsObject) ||
-	    Object.keys(optionsObject).some(key => !['above', 'below', 'collapse', 'ignoreAboveFirst'].includes(key)) ||
-	    !matchJsonValues({ 'above?': Number, 'below?': Number, 'collapse?': Boolean, 'ignoreAboveFirst?': Boolean }, optionsObject)
+	if (
+		!isJsonObject(optionsObject)
+		|| Object.keys(optionsObject).some(key => !['above', 'below', 'collapse', 'ignoreAboveFirst'].includes(key))
+		|| !matchJsonValues({ 'above?': Number, 'below?': Number, 'collapse?': Boolean, 'ignoreAboveFirst?': Boolean }, optionsObject)
 	) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const spacingAbove    = typeof optionsObject.above === 'number' ? Math.max(0, optionsObject.above) : undefined;
-	const spacingBelow    = typeof optionsObject.below === 'number' ? Math.max(0, optionsObject.below) : undefined;
-	const collapseSpacing = optionsObject.below !== undefined ? (optionsObject.collapse ?? true) : false;
+	const spacingAbove = typeof optionsObject.above === 'number' ? Math.max(0, optionsObject.above) : undefined;
+	const spacingBelow = typeof optionsObject.below === 'number' ? Math.max(0, optionsObject.below) : undefined;
+	const collapseSpacing = optionsObject.below === undefined ? false : optionsObject.collapse ?? true;
 
 	let currentSpacing = 0;
 	let lastNonEmptyLine: Line | undefined;
 	for (const line of lines) {
 		if (line.text.length === 0) {
-			currentSpacing ++;
+			currentSpacing++;
 			continue;
 		}
 
@@ -32,7 +36,7 @@ export function validator({ lines, parameter: optionsObject }: RuleContext): Rul
 			}
 		}
 
-		const isCurrentLineHeading      = isMarkdownHeading(line.text);
+		const isCurrentLineHeading = isMarkdownHeading(line.text);
 		const isLastNonEmptyLineHeading = isMarkdownHeading(lastNonEmptyLine.text);
 
 		if (spacingAbove !== undefined && isCurrentLineHeading) {
@@ -45,14 +49,21 @@ export function validator({ lines, parameter: optionsObject }: RuleContext): Rul
 			}
 
 			if (requiredSpacing !== undefined) {
-				return new RuleError(`heading must have ${countWord(requiredSpacing, 'empty line')} above it`, { start: { line: line.number, column: 1, char: line.char } }, lines);
+				return new RuleError(
+					`heading must have ${countWord(requiredSpacing, 'empty line')} above it`, { start: { line: line.number, column: 1, char: line.char } }, lines);
 			}
 		}
 		if (spacingBelow !== undefined && !isCurrentLineHeading && isLastNonEmptyLineHeading && currentSpacing !== spacingBelow) {
-			return new RuleError(`heading must have ${countWord(spacingBelow, 'empty line')} below it`, { start: { line: lastNonEmptyLine.number, column: 1, char: lastNonEmptyLine.char } }, lines);
+			const start = {
+				char: lastNonEmptyLine.char,
+				line: lastNonEmptyLine.number,
+				column: 1,
+			};
+
+			return new RuleError(`heading must have ${countWord(spacingBelow, 'empty line')} below it`, { start }, lines);
 		}
 
-		currentSpacing   = 0;
+		currentSpacing = 0;
 		lastNonEmptyLine = line;
 	}
 

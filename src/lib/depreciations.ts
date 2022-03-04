@@ -6,6 +6,6 @@
  * property to indicate the future version in which the rule will be dropped
  * (as a semver string), and the name of an eventual replacement rule
  */
-export const depreciations: Map<string, true | { version?: string, replacement?: string }> = new Map([
+export const depreciations: Map<string, true | { version?: string; replacement?: string }> = new Map([
 	['match-object', { version: '1.0.0', replacement: 'values-allowed' }],
 ]);

@@ -1,4 +1,6 @@
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
@@ -21,10 +23,20 @@ export function validator({ lines, jsonObjectAst, parameter: properties }: RuleC
 			continue;
 		}
 
-		const jsonObjectProperties = jsonObjectAst.members.map(({ key }) => key.value);
-		const propertyBefore = properties.slice(0, index).reverse().find(property => jsonObjectProperties.includes(String(property)));
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const propertyAfter  = properties.slice(index + 1).find(property => jsonObjectProperties.includes(String(property)))!;
+		const jsonObjectProperties = new Set(jsonObjectAst
+			.members
+			.map(({ key: jsonAstObjectKey }) => jsonAstObjectKey.value),
+		);
+
+		const propertyBefore = properties
+			.slice(0, index)
+			.reverse()
+			.find(property => jsonObjectProperties.has(String(property)));
+
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- In this case, there always will be at least one property after the current one
+		const propertyAfter = properties
+			.slice(index + 1)
+			.find(property => jsonObjectProperties.has(String(property)))!;
 
 		if (propertyBefore !== undefined) {
 			return new RuleError(`property "${key.value}" should be placed between "${propertyBefore}" and "${propertyAfter}"`, key.pos, lines);

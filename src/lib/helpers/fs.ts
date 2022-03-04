@@ -1,12 +1,13 @@
 import { posix } from 'path';
-import { Opaque } from 'type-fest';
-import { Stats as FsStats, Dirent as DirectoryEntry } from 'fs';
 import { readFile as fsReadFile, readdir as fsReadDirectory, stat as fsGetStats } from 'fs/promises';
 
-export type FsPath         = Opaque<string, 'FsPath'>;
-export type FsPathSegments = Array<string>;
+import type { Opaque } from 'type-fest';
+import type { Stats as FsStats, Dirent as DirectoryEntry } from 'fs';
 
-export async function tryGettingDirectoryEntries(path: FsPathSegments): Promise<Array<DirectoryEntry> | undefined> {
+export type FsPath = Opaque<string, 'FsPath'>;
+export type FsPathSegments = string[];
+
+export async function tryGettingDirectoryEntries(path: FsPathSegments): Promise<DirectoryEntry[] | undefined> {
 	let entries;
 	try {
 		entries = await fsReadDirectory(getAbsolutePath(path), { encoding: 'utf8', withFileTypes: true });
@@ -39,25 +40,30 @@ export async function tryGettingPathStats(path: FsPathSegments): Promise<FsStats
 	return stats;
 }
 
-export async function getFilenamesInDirectory(path: FsPathSegments, filter?: (file: DirectoryEntry) => boolean): Promise<Array<string>> {
-	return (await fsReadDirectory(getAbsolutePath(path), { encoding: 'utf8', withFileTypes: true }))
+export async function getFilenamesInDirectory(path: FsPathSegments, filter?: (file: DirectoryEntry) => boolean): Promise<string[]> {
+	const directoryEntries = await fsReadDirectory(getAbsolutePath(path), {
+		encoding: 'utf8',
+		withFileTypes: true,
+	});
+
+	return directoryEntries
 		.filter(directoryEntry => directoryEntry.isFile() && (filter === undefined || filter(directoryEntry)))
 		.map(directoryEntry => directoryEntry.name);
 }
 
-export async function readFileContents(path: FsPathSegments): Promise<string> {
+export function readFileContents(path: FsPathSegments): string {
 	return fsReadFile(getAbsolutePath(path), { encoding: 'utf8' });
 }
 
-export function getPathHierarchy(path: FsPathSegments): Array<FsPathSegments> {
+export function getPathHierarchy(path: FsPathSegments): FsPathSegments[] {
 	return ['/', ...getAbsolutePath(path).split('/').filter(Boolean)].map((_, index, pathSegments) => pathSegments.slice(0, pathSegments.length - index));
 }
 
-export function getAbsolutePath(pathSegments: Array<string>): FsPath {
+export function getAbsolutePath(pathSegments: string[]): FsPath {
 	return posix.resolve(joinPathSegments(pathSegments)) as FsPath;
 }
 
-export function joinPathSegments(pathSegments: Array<string>): FsPath {
+export function joinPathSegments(pathSegments: string[]): FsPath {
 	return posix.join(...pathSegments) as FsPath;
 }
 

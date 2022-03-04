@@ -1,18 +1,21 @@
 import { countWord } from '../helpers/text';
 import { isJsonObject, matchJsonValues } from '../helpers/json';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
 export function validator({ jsonObject, parameter: optionsObject }: RuleContext): RuleResult {
-	if (!isJsonObject(optionsObject) ||
-	    Object.keys(optionsObject).some(key => !['min', 'max'].includes(key)) ||
-	    !matchJsonValues({ 'min?': Number, 'max?': Number }, optionsObject)
+	if (
+		!isJsonObject(optionsObject)
+		|| Object.keys(optionsObject).some(key => !['min', 'max'].includes(key))
+		|| !matchJsonValues({ 'min?': Number, 'max?': Number }, optionsObject)
 	) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const propertiesCount    = Object.keys(jsonObject).length;
+	const propertiesCount = Object.keys(jsonObject).length;
 	const minPropertiesCount = typeof optionsObject.min === 'number' ? optionsObject.min : 0;
 	const maxPropertiesCount = typeof optionsObject.max === 'number' ? optionsObject.max : Number.POSITIVE_INFINITY;
 

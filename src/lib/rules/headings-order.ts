@@ -1,6 +1,8 @@
 import { findMatchLocation } from '../helpers/text';
 import { parseMarkdownHeadings, getMarkdownHeadings, isMatchingHeading } from '../helpers/markdown';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
 
@@ -27,22 +29,28 @@ export function validator({ contents, lines, parameter: rawHeadings }: RuleConte
 			continue;
 		}
 
-		const headingBefore = headings.slice(0, index).reverse().find(heading => textHeadings.some(textHeading => isMatchingHeading(textHeading, heading)));
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const headingAfter  = headings.slice(index + 1).find(heading => textHeadings.some(textHeading => isMatchingHeading(textHeading, heading)))!;
+		const headingBefore = headings
+			.slice(0, index)
+			.reverse()
+			.find(previousHeading => textHeadings.some(heading => isMatchingHeading(previousHeading, heading)));
+
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- In this case, there's always at least one heading after the current one
+		const headingAfter = headings
+			.slice(index + 1)
+			.find(nextHeading => textHeadings.some(heading => isMatchingHeading(nextHeading, heading)))!;
 
 		if (headingBefore !== undefined) {
 			return new RuleError(
 				`heading "${textHeading.text}" should be placed between "${headingBefore.text}" and "${headingAfter.text}"`,
 				findMatchLocation(lines, textHeading.fullMatch, textHeading.char),
-				lines
+				lines,
 			);
 		}
 
 		return new RuleError(
 			`heading "${textHeading.text}" should be placed before "${headingAfter.text}"`,
 			findMatchLocation(lines, textHeading.fullMatch, textHeading.char),
-			lines
+			lines,
 		);
 	}
 

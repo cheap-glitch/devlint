@@ -1,5 +1,7 @@
 import { isRegex, findMatchLocation } from '../helpers/text';
-import { RuleTargetType, RuleContext, RuleResult, RuleError, RuleErrorType } from '../rules';
+import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
+
+import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.FileContents;
 
@@ -13,13 +15,14 @@ export function validator({ contents, lines, parameter: forbiddenPatterns }: Rul
 			return new RuleError(RuleErrorType.InvalidParameter);
 		}
 
-		let match = undefined;
+		let match;
 		let matchIndex = -1;
 		if (isRegex(pattern)) {
-			const results = contents.match(new RegExp(pattern.slice(1, -1)));
+			// TODO [>0.3.0]: Wrap in a try/catch block and report useful error messages
+			const results = contents.match(new RegExp(pattern.slice(1, -1), 'u'));
 			if (results) {
 				match = results[0];
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- If there's a result, it also has an index
 				matchIndex = results.index!;
 			}
 		} else {
