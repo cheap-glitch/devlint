@@ -1,44 +1,48 @@
-import { JsonValue, JsonObject, JsonArray } from 'type-fest';
-import parseJsonAst, { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
+import parseJsonAst from 'jsonast';
 
 import { matchStrings } from './text';
-import { PropertyPathSegments } from './properties';
+
+import type { JsonValue, JsonObject, JsonArray } from 'type-fest';
+import type { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
+import type { PropertyPathSegments } from './properties';
 
 type TypeFunction = typeof Boolean | typeof Number | typeof String;
 
 export function formatJsonValue(jsonValue: JsonValue): string {
-	// TODO: parse string to remove double spaces NOT INSIDE QUOTES + write tests
-	const jsonString = JSON.stringify(jsonValue, undefined, 1).replaceAll(/\s+/g, ' ');
+	// TODO [>=0.4.0]: parse string to remove double spaces NOT INSIDE QUOTES + write tests
+	const jsonString = JSON.stringify(jsonValue, undefined, 1).replaceAll(/\s+/ug, ' ');
 
 	return (jsonString.startsWith('"') ? '' : '"') + jsonString + (jsonString.endsWith('"') ? '' : '"');
 }
 
 export function matchJsonValues(
 	model: Record<string, JsonValue | TypeFunction> | JsonValue | TypeFunction | undefined,
-	value: JsonValue | undefined,
-	propertyPath?: PropertyPathSegments
+	jsonValue: JsonValue | undefined,
+	propertyPath?: PropertyPathSegments,
 ): boolean | PropertyPathSegments {
-	if (typeof model === 'string' && typeof value === 'string') {
-		return matchStrings(model, value) || (propertyPath ?? false);
+	if (typeof model === 'string' && typeof jsonValue === 'string') {
+		return matchStrings(model, jsonValue) || (propertyPath ?? false);
 	}
 
 	switch (model) {
-		case Boolean: return (typeof value === 'boolean') || (propertyPath ?? false);
-		case Number:  return (typeof value === 'number')  || (propertyPath ?? false);
-		case String:  return (typeof value === 'string')  || (propertyPath ?? false);
+		case Boolean: return typeof jsonValue === 'boolean' || (propertyPath ?? false);
+		case Number: return typeof jsonValue === 'number' || (propertyPath ?? false);
+		case String: return typeof jsonValue === 'string' || (propertyPath ?? false);
+
+		default: break;
 	}
 
-	if (model === null || value === null || typeof model !== 'object' || typeof value !== 'object') {
-		return (model === value) || (propertyPath ?? false);
+	if (model === null || jsonValue === null || typeof model !== 'object' || typeof jsonValue !== 'object') {
+		return model === jsonValue || (propertyPath ?? false);
 	}
 
-	if (Array.isArray(model) || Array.isArray(value)) {
-		if (!Array.isArray(model) || !Array.isArray(value) || model.length !== value.length) {
+	if (Array.isArray(model) || Array.isArray(jsonValue)) {
+		if (!Array.isArray(model) || !Array.isArray(jsonValue) || model.length !== jsonValue.length) {
 			return propertyPath ?? false;
 		}
 
 		for (const [index, item] of model.entries()) {
-			const result = matchJsonValues(item, value[index], propertyPath ? [...propertyPath, index] : undefined);
+			const result = matchJsonValues(item, jsonValue[index], propertyPath ? [...propertyPath, index] : undefined);
 			if (result !== true) {
 				return result;
 			}
@@ -48,12 +52,12 @@ export function matchJsonValues(
 	}
 
 	for (const keySelector of Object.keys(model)) {
-		const key = keySelector.replace(/\?$/, '');
-		if (keySelector.endsWith('?') && value[key] === undefined) {
+		const key = keySelector.replace(/\?$/u, '');
+		if (keySelector.endsWith('?') && jsonValue[key] === undefined) {
 			continue;
 		}
 
-		const result = matchJsonValues(model[keySelector], value[key], propertyPath ? [...propertyPath, key] : undefined);
+		const result = matchJsonValues(model[keySelector], jsonValue[key], propertyPath ? [...propertyPath, key] : undefined);
 		if (result !== true) {
 			return result;
 		}
@@ -136,8 +140,9 @@ export const jsonTypes = [
 	'array',
 ];
 
-export function getJsonValueType(value: JsonValue): (typeof jsonTypes)[number] {
-	const type = typeof value;
+export function getJsonValueType(jsonValue: JsonValue): (typeof jsonTypes)[number] {
+	const type = typeof jsonValue;
+
 	switch (type) {
 		case 'boolean':
 		case 'number':
@@ -145,7 +150,11 @@ export function getJsonValueType(value: JsonValue): (typeof jsonTypes)[number] {
 			return type;
 
 		default:
-			return Array.isArray(value) ? 'array' : value === null ? 'null' : 'object';
+			if (Array.isArray(jsonValue)) {
+				return 'array';
+			}
+
+			return jsonValue === null ? 'null' : 'object';
 	}
 }
 

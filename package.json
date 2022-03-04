@@ -58,10 +58,10 @@
     "overrides": [
       {
         "files": [
-          "*.test.ts"
+          "src/index.ts"
         ],
         "rules": {
-          "padded-blocks": "off"
+          "multiline-comment-style": "off"
         }
       },
       {

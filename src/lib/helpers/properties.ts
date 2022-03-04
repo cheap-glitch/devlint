@@ -40,7 +40,6 @@ export function normalizePropertyPath(path: PropertyPath): PropertyPath {
 		return undefined;
 	}
 
-	// TODO [>=0.4.0]: Can this be replaced with `trim('.')`?
 	const normalizedPath = path
 		.replaceAll(/\.+/ug, '.')
 		.replaceAll(/^\.|\.$/ug, '');

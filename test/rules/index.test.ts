@@ -1,39 +1,38 @@
-/* eslint-disable jest/valid-title, @typescript-eslint/no-var-requires */
-
-import { JsonValue } from 'type-fest';
-import { tmpdir as getOsTempDir } from 'os';
-import { readdirSync as getDirListing, writeFileSync as createFile, mkdirSync as createDir, mkdtempSync as createTempDir, rmSync as removeDir } from 'fs';
-
-import { JsonValue as JsonAst } from 'jsonast';
+import { tmpdir as getOsTemporaryDirectory } from 'os';
+import { readdirSync as getDirectoryListing, writeFileSync as createFile, mkdirSync as createDirectory, mkdtempSync as createTemporaryDirectory, rmSync as removeDirectory } from 'fs';
 
 import { getLines } from '../../src/lib/helpers/text';
+import { RuleError } from '../../src/lib/errors';
+import { RuleTargetType } from '../../src/lib/rules';
+import { buildRuleContext } from '../../src/lib/linter';
 import { joinPathSegments, getAbsolutePath } from '../../src/lib/helpers/fs';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonAstProperty } from '../../src/lib/helpers/json';
 
-import { buildRuleContext } from '../../src/lib/linter';
-import { RuleTargetType, RuleContext } from '../../src/lib/rules';
-import { RuleError, RuleErrorType, RuleErrorPosition } from '../../src/lib/errors';
+import type { RuleErrorType, RuleErrorPosition } from '../../src/lib/errors';
+import type { RuleContext } from '../../src/lib/rules';
+import type { JsonValue as JsonAst } from 'jsonast';
+import type { JsonValue } from 'type-fest';
 
 type TestSnippet = string | [string, JsonValue];
 
 interface TestSnippetsCollection {
-	passing: Record<string, TestSnippet>,
-	failing: Record<string, [TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>,
+	passing: Record<string, TestSnippet>;
+	failing: Record<string, [TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>;
 }
 
-const pathToRulePlugins   = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
-const pathToTestSnippets  = [__dirname, 'snippets'];
-const selectedRules       = (process.env.RULE || process.env.RULES || '').split(/[ ,]/).filter(Boolean);
-const testSnippetsEntries = getDirListing(getAbsolutePath(pathToTestSnippets), { withFileTypes: true });
+const pathToRulePlugins = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
+const pathToTestSnippets = [__dirname, 'snippets'];
+const selectedRules = (process.env.RULE || process.env.RULES || '').split(/[ ,]/u).filter(Boolean);
+const testSnippetsEntries = getDirectoryListing(getAbsolutePath(pathToTestSnippets), { withFileTypes: true });
 
-let testsTempDir: string;
+let testTemporaryDirectory: string;
 beforeAll(() => {
-	testsTempDir = createTempDir(joinPathSegments([getOsTempDir(), 'devlint-']));
+	testTemporaryDirectory = createTemporaryDirectory(joinPathSegments([getOsTemporaryDirectory(), 'devlint-']));
 });
 afterAll(() => {
-	removeDir(testsTempDir, {
-		force:      true,
-		recursive:  true,
+	removeDirectory(testTemporaryDirectory, {
+		force: true,
+		recursive: true,
 		maxRetries: 3,
 	});
 });
@@ -44,12 +43,14 @@ for (const entry of testSnippetsEntries) {
 	}
 
 	const filename = entry.name;
-	const ruleName = filename.replace(/\.js$/, '');
+	const ruleName = filename.replace(/\.js$/u, '');
 	if (selectedRules.length > 0 && !selectedRules.some(selectedRuleName => ruleName.startsWith(selectedRuleName))) {
 		continue;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-var-requires -- Only load the necessary rules
 	const { targetType, validator } = require(getAbsolutePath([pathToRulePlugins, filename]));
+	// eslint-disable-next-line @typescript-eslint/no-var-requires -- Only load the necessary test snippets
 	const { passing: passingSnippets, failing: failingSnippets }: TestSnippetsCollection = require(getAbsolutePath([...pathToTestSnippets, filename]));
 
 	describe(ruleName, () => {
@@ -64,7 +65,7 @@ for (const entry of testSnippetsEntries) {
 		describe('failing', () => {
 			for (const [title, [snippet, errorTypeOrMessage, errorStart, errorEnd]] of Object.entries(failingSnippets)) {
 				test(title, async () => {
-					const context   = buildSnippetContext(ruleName, targetType, snippet);
+					const context = buildSnippetContext(ruleName, targetType, snippet);
 					const jsonValue = tryParsingJsonValue(context.contents);
 
 					const error = typeof errorTypeOrMessage === 'number'
@@ -90,16 +91,16 @@ for (const entry of testSnippetsEntries) {
 }
 
 function buildSnippetContext(ruleName: string, targetType: RuleTargetType, snippet: TestSnippet): RuleContext {
-	const [rawContents, parameter] = (typeof snippet === 'string') ? [snippet, undefined] : snippet;
+	const [rawContents, parameter] = typeof snippet === 'string' ? [snippet, undefined] : snippet;
 
-	const contents  = rawContents.replace(/^\n/, '').replace(/^\t{3}/gm, '').replaceAll('\\n', '\n');
-	const lines     = getLines(contents);
+	const contents = rawContents.replace(/^\n/u, '').replace(/^\t{3}/ugm, '').replaceAll('\\n', '\n');
+	const lines = getLines(contents);
 	const jsonValue = tryParsingJsonValue(contents);
 	let jsonAst: JsonAst | SyntaxError | undefined = tryParsingJsonAst(contents);
 
 	switch (targetType) {
 		case RuleTargetType.DirectoryListing: {
-			const ruleTempDir = createTempDir(joinPathSegments([testsTempDir, ruleName + '-']));
+			const ruleTemporaryDirectory = createTemporaryDirectory(joinPathSegments([testTemporaryDirectory, ruleName + '-']));
 
 			// Treat each line of the snippet as a path to create in the temp dir
 			for (const path of contents.trim().split('\n')) {
@@ -108,13 +109,13 @@ function buildSnippetContext(ruleName: string, targetType: RuleTargetType, snipp
 				}
 
 				if (path.endsWith('/')) {
-					createDir(joinPathSegments([ruleTempDir, path.slice(0, -1)]), { recursive: true });
+					createDirectory(joinPathSegments([ruleTemporaryDirectory, path.slice(0, -1)]), { recursive: true });
 				} else {
-					createFile(joinPathSegments([ruleTempDir, path]), '');
+					createFile(joinPathSegments([ruleTemporaryDirectory, path]), '');
 				}
 			}
 
-			return buildRuleContext({ workingDirectory: ruleTempDir, parameter });
+			return buildRuleContext({ workingDirectory: ruleTemporaryDirectory, parameter });
 		}
 
 		case RuleTargetType.FileContents:
@@ -122,37 +123,42 @@ function buildSnippetContext(ruleName: string, targetType: RuleTargetType, snipp
 
 		default:
 			if ((jsonAst instanceof SyntaxError || jsonAst === undefined) && !(jsonValue instanceof SyntaxError) && typeof jsonValue !== 'object') {
-				// FIXME: primitives & arrays need to be wrapped in an object, otherwise `jsonast` throws an error
+				// FIXME [>=1.0.0]: Primitives & arrays need to be wrapped in an object, otherwise `jsonast` throws an error
 				jsonAst = tryParsingJsonAst(`{"prop":${contents}}`);
 				if (!(jsonAst instanceof SyntaxError) && jsonAst !== undefined) {
 					jsonAst = tryGettingJsonAstProperty(jsonAst, ['prop']);
 				}
 			}
 			if (jsonValue instanceof SyntaxError || jsonAst instanceof SyntaxError || jsonAst === undefined) {
-				throw new TypeError();
+				throw new TypeError('invalid JSON value or AST');
 			}
 
-			switch(targetType) {
+			switch (targetType) {
 				case RuleTargetType.JsonValue:
 					return buildRuleContext({ contents, lines, jsonValue, jsonAst, parameter });
 
 				case RuleTargetType.JsonObject:
 					if (!isJsonObject(jsonValue) || !isJsonObjectAst(jsonAst)) {
-						throw new TypeError();
+						throw new TypeError('invalid JSON value or AST');
 					}
+
 					return buildRuleContext({ contents, lines, jsonObject: jsonValue, jsonObjectAst: jsonAst, parameter });
 
 				case RuleTargetType.JsonArray:
 					if (!isJsonArray(jsonValue) || !isJsonArrayAst(jsonAst)) {
-						throw new TypeError();
+						throw new TypeError('invalid JSON value or AST');
 					}
+
 					return buildRuleContext({ contents, lines, jsonArray: jsonValue, jsonArrayAst: jsonAst, parameter });
 
 				case RuleTargetType.JsonString:
 					if (typeof jsonValue !== 'string') {
-						throw new TypeError();
+						throw new TypeError('invalid JSON value or AST');
 					}
-					return buildRuleContext({ contents, lines, jsonString: jsonValue, jsonAst: jsonAst, parameter });
+
+					return buildRuleContext({ contents, lines, jsonString: jsonValue, jsonAst, parameter });
+
+				default: throw new Error('unknown rule target type');
 			}
 	}
 

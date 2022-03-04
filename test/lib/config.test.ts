@@ -1,7 +1,9 @@
 import { extendConfig } from '../../src/lib/config';
 
 describe('extendConfig', () => {
+
 	test('extending a base config', () => { // {{{
+
 		expect(extendConfig({
 			extends: '../../test/assets/configs/base.json',
 			rules: {
@@ -25,9 +27,11 @@ describe('extendConfig', () => {
 				},
 			},
 		});
+
 	}); // }}}
 
 	test('extending configs recursively', () => { // {{{
+
 		expect(extendConfig({
 			extends: '../../test/assets/configs/recursive.json',
 		}))
@@ -42,5 +46,7 @@ describe('extendConfig', () => {
 				},
 			},
 		});
+
 	}); // }}}
+
 });

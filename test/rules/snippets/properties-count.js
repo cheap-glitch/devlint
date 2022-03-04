@@ -68,12 +68,12 @@ module.exports = {
 			  "a": {
 			    "foo": [],
 			    "bar": []
-			   },
-			   "b": {
+			  },
+			  "b": {
 			    "foo": [],
 			    "bar": [],
 			    "baz": []
-			   }
+			  }
 			}
 		`,
 			{ min: 2, max: 3 },

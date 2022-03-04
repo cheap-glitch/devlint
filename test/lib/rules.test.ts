@@ -1,78 +1,80 @@
 import { parseRules } from '../../src/lib/rules';
 
+import type { RulesMap } from '../../src/lib/rules';
+import type { JsonObject } from 'type-fest';
+
+function parseRulesMap(rulesObject: JsonObject): RulesMap {
+	const rulesMap: RulesMap = new Map();
+	parseRules(rulesMap, rulesObject);
+
+	return rulesMap;
+}
+
 describe('parseRules', () => {
-
-	test('invalid rule object', () => { // {{{
-
-		expect(parseRules(null)).toEqual(new Map());
-		expect(parseRules('')).toEqual(new Map());
-		expect(parseRules([])).toEqual(new Map());
-
-	}); // }}}
 
 	test('invalid rule declarations', () => { // {{{
 
-		expect(() => parseRules({ 'rule name':              'warn'         })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name':              'nope'         })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name':              '1'            })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name':              3              })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ '?rule-name':             'warn'         })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name condition':    'warn'         })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ '(condition) rule-name':  'warn'         })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name !(condition)': 'warn'         })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name (condition!)': 'warn'         })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule name': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': 'nope' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': '1' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': 3 })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ '?rule-name': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name condition': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ '(condition) rule-name': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name !(condition)': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name (condition!)': 'warn' })).toThrow('invalid rule declaration:');
 
-		expect(() => parseRules({ 'rule-name': null                        })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': true                        })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': false                       })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': [null,  'foo']              })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': [true, ['foo']]             })).toThrow('invalid rule declaration:');
-		expect(() => parseRules({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': null })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': true })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': false })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': [null, 'foo'] })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': [true, ['foo']] })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('invalid rule declaration:');
 
-		expect(() => parseRules({ 'file.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'file.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('invalid rule declaration:');
 
 	}); // }}}
 
 	test('rule status', () => { // {{{
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'file.ext': {
-				'first-rule':  'error',
+				'first-rule': 'error',
 				'second-rule': 'off',
-				'third-rule':  'warn',
+				'third-rule': 'warn',
 			},
 		}))
 		.toEqual(new Map([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
-						name:   'first-rule',
+						name: 'first-rule',
 						status: 'error',
 					},
 					{
-						name:   'third-rule',
+						name: 'third-rule',
 						status: 'warn',
 					},
 				])],
 			])],
 		]));
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'file.ext': {
-				'first-rule':  2,
+				'first-rule': 2,
 				'second-rule': 0,
-				'third-rule':  1,
+				'third-rule': 1,
 			},
 		}))
 		.toEqual(new Map([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
-						name:   'first-rule',
+						name: 'first-rule',
 						status: 'error',
 					},
 					{
-						name:   'third-rule',
+						name: 'third-rule',
 						status: 'warn',
 					},
 				])],
@@ -83,24 +85,24 @@ describe('parseRules', () => {
 
 	test('rule status & parameter', () => { // {{{
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'file.ext': {
-				'first-rule':  ['error',  'foo'],
-				'second-rule': ['off',    'foo'],
-				'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
+				'first-rule': ['error', 'foo'],
+				'second-rule': ['off', 'foo'],
+				'third-rule': ['warn', ['foo', { foo: 'bar' }]],
 			},
 		}))
 		.toEqual(new Map([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
-						name:      'first-rule',
-						status:    'error',
+						name: 'first-rule',
+						status: 'error',
 						parameter: 'foo',
 					},
 					{
-						name:      'third-rule',
-						status:    'warn',
+						name: 'third-rule',
+						status: 'warn',
 						parameter: ['foo', { foo: 'bar' }],
 					},
 				])],
@@ -111,7 +113,7 @@ describe('parseRules', () => {
 
 	test('nested targets', () => { // {{{
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'file.ext': {
 				'first-rule': 'error',
 				'#property': {
@@ -129,25 +131,25 @@ describe('parseRules', () => {
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
-						name:   'first-rule',
+						name: 'first-rule',
 						status: 'error',
 					},
 				])],
 				['property', new Set([
 					{
-						name:   'second-rule',
+						name: 'second-rule',
 						status: 'error',
 					},
 				])],
 				['property.foo.bar', new Set([
 					{
-						name:   'third-rule',
+						name: 'third-rule',
 						status: 'error',
 					},
 				])],
 				['property.foo.bar.[2]', new Set([
 					{
-						name:   'fourth-rule',
+						name: 'fourth-rule',
 						status: 'error',
 					},
 				])],
@@ -158,22 +160,22 @@ describe('parseRules', () => {
 
 	test('top-level rules', () => { // {{{
 
-		expect(parseRules({
-			'first-rule':  ['error',  'foo'],
-			'second-rule': ['off',    'foo'],
-			'third-rule':  ['warn',  ['foo', { foo: 'bar' }]],
+		expect(parseRulesMap({
+			'first-rule': ['error', 'foo'],
+			'second-rule': ['off', 'foo'],
+			'third-rule': ['warn', ['foo', { foo: 'bar' }]],
 		}))
 		.toEqual(new Map([
 			['.', new Map([
 				[undefined, new Set([
 					{
-						name:      'first-rule',
-						status:    'error',
+						name: 'first-rule',
+						status: 'error',
 						parameter: 'foo',
 					},
 					{
-						name:      'third-rule',
-						status:    'warn',
+						name: 'third-rule',
+						status: 'warn',
 						parameter: ['foo', { foo: 'bar' }],
 					},
 				])],
@@ -184,23 +186,23 @@ describe('parseRules', () => {
 
 	test('conditional rules', () => { // {{{
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'first-rule  (condition)': 'error',
 			'second-rule (condition)': 'off',
-			'third-rule (!condition)': 'warn',
+			'third-rule  (!condition)': 'warn',
 		}))
 		.toEqual(new Map([
 			['.', new Map([
 				[undefined, new Set([
 					{
-						name:      'first-rule',
-						status:    'error',
-						condition: { name: 'condition', isNegated: false },
+						name: 'first-rule',
+						status: 'error',
+						condition: 'condition',
 					},
 					{
-						name:      'third-rule',
-						status:    'warn',
-						condition: { name: 'condition', isNegated: true },
+						name: 'third-rule',
+						status: 'warn',
+						condition: '!condition',
 					},
 				])],
 			])],
@@ -237,8 +239,8 @@ describe('parseRules', () => {
 
 	test('strict rule', () => { // {{{
 
-		expect(parseRules({
-			'first-rule':  'error',
+		expect(parseRulesMap({
+			'first-rule': 'error',
 			'second-rule': 'off',
 			'third-rule!': 'warn',
 		}))
@@ -246,12 +248,12 @@ describe('parseRules', () => {
 			['.', new Map([
 				[undefined, new Set([
 					{
-						name:     'first-rule',
-						status:   'error',
+						name: 'first-rule',
+						status: 'error',
 					},
 					{
-						name:     'third-rule',
-						status:   'warn',
+						name: 'third-rule',
+						status: 'warn',
 						isStrict: true,
 					},
 				])],
@@ -262,8 +264,8 @@ describe('parseRules', () => {
 
 	test('permissive rule', () => { // {{{
 
-		expect(parseRules({
-			'first-rule':  'error',
+		expect(parseRulesMap({
+			'first-rule': 'error',
 			'second-rule': 'off',
 			'third-rule?': 'warn',
 		}))
@@ -271,12 +273,12 @@ describe('parseRules', () => {
 			['.', new Map([
 				[undefined, new Set([
 					{
-						name:         'first-rule',
-						status:       'error',
+						name: 'first-rule',
+						status: 'error',
 					},
 					{
-						name:         'third-rule',
-						status:       'warn',
+						name: 'third-rule',
+						status: 'warn',
 						isPermissive: true,
 					},
 				])],
@@ -287,21 +289,21 @@ describe('parseRules', () => {
 
 	test('single declaration with multiple rules', () => { // {{{
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'first-rule (condition), third-rule?': 'error',
-			'second-rule, fourth-rule':            'off',
+			'second-rule, fourth-rule': 'off',
 		}))
 		.toEqual(new Map([
 			['.', new Map([
 				[undefined, new Set([
 					{
-						name:         'first-rule',
-						status:       'error',
-						condition:    { name: 'condition', isNegated: false },
+						name: 'first-rule',
+						status: 'error',
+						condition: 'condition',
 					},
 					{
-						name:         'third-rule',
-						status:       'error',
+						name: 'third-rule',
+						status: 'error',
 						isPermissive: true,
 					},
 				])],
@@ -312,7 +314,7 @@ describe('parseRules', () => {
 
 	test('normalized paths', () => { // {{{
 
-		expect(parseRules({
+		expect(parseRulesMap({
 			'foo///bar/baz/../../bar': {
 				'./file.ext': {
 					'first-rule': 'error',
@@ -335,29 +337,29 @@ describe('parseRules', () => {
 			['foo/bar/file.ext', new Map([
 				[undefined, new Set([
 					{
-						name:   'first-rule',
+						name: 'first-rule',
 						status: 'error',
 					},
 				])],
 				['property.foo', new Set([
 					{
-						name:   'second-rule',
+						name: 'second-rule',
 						status: 'error',
 					},
 				])],
 				['property.foo.bar', new Set([
 					{
-						name:   'third-rule',
+						name: 'third-rule',
 						status: 'error',
 					},
 				])],
 				['property.foo.bar.[2]', new Set([
 					{
-						name:   'fourth-rule',
+						name: 'fourth-rule',
 						status: 'error',
 					},
 					{
-						name:   'fifth-rule',
+						name: 'fifth-rule',
 						status: 'error',
 					},
 				])],
