@@ -135,17 +135,9 @@ export async function lintDirectory(directory: FsPath, rulesObject: JsonObject, 
 					continue;
 				}
 
-				if (conditions.size > 0 && rule.condition !== undefined) {
-					const conditionState = conditions.get(rule.condition.name);
-					if (conditionState === undefined) {
-						// TODO: return a failure result instead of throwing
-						throw new Error(`unknown condition "${rule.condition.name}"`);
-					}
-
-					if (conditionState === rule.condition.isNegated) {
-						results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.SkippedForUnfulfilledCondition });
-						continue;
-					}
+				if (conditions.size > 0 && rule.condition !== undefined && !validateConditionalExpression(conditions, rule.condition)) {
+					results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.SkippedForUnfulfilledCondition });
+					continue;
 				}
 
 				if (!pluginsFilenames.includes(rule.name + '.js')) {

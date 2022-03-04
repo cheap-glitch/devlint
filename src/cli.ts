@@ -138,7 +138,7 @@ function parseLintResult(result: LintResult, totals: Record<string, number>, { v
 			return verbosityLevel >= 1 ? getDisabledRuleReport(result, 'rule does not apply to target') : undefined;
 
 		case LintStatus.SkippedForUnfulfilledCondition:
-			return verbosityLevel >= 2 ? getDisabledRuleReport(result, `condition "${result.rule.condition?.name ?? ''}" is not fulfilled`) : undefined;
+			return verbosityLevel >= 2 ? getDisabledRuleReport(result, `condition "${result.rule.condition}" is not fulfilled`) : undefined;
 
 		case LintStatus.Failure: switch (result.error?.type) {
 			case RuleErrorType.UnknownRule:

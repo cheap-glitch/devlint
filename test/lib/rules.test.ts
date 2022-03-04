@@ -206,6 +206,33 @@ describe('parseRules', () => {
 			])],
 		]));
 
+		expect(parseRulesMap({
+			'first-rule  (a && b)': 'error',
+			'second-rule (a && !b  &&  c)': 'error',
+			'third-rule  ( a || b || !c )': 'warn',
+		}))
+		.toEqual(new Map([
+			['.', new Map([
+				[undefined, new Set([
+					{
+						name: 'first-rule',
+						status: 'error',
+						condition: 'a && b',
+					},
+					{
+						name: 'second-rule',
+						status: 'error',
+						condition: 'a && !b && c',
+					},
+					{
+						name: 'third-rule',
+						status: 'warn',
+						condition: 'a || b || !c',
+					},
+				])],
+			])],
+		]));
+
 	}); // }}}
 
 	test('strict rule', () => { // {{{

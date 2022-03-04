@@ -81,7 +81,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: Array<RuleObject>, rule
 
 			const parameter = Array.isArray(value) ? value[1] : undefined;
 			for (const ruleDeclaration of ruleName.split(',')) {
-				const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?: *\((?<not>!)?(?<condition>\w+)\))?$/);
+				const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?: *\((?<condition>(?: *!?\w+)(?: +(?:&&|\|\|) +(?:!?\w+) *)*)\))?$/u);
 				if (!match || !match.groups || !match.groups.name) {
 					// TODO: don't throw an error here?
 					throw new Error(`invalid rule declaration: "${ruleDeclaration}"`);
@@ -98,10 +98,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: Array<RuleObject>, rule
 					ruleObject.isPermissive = true;
 				}
 				if (match.groups.condition !== undefined) {
-					ruleObject.condition = {
-						name:      match.groups.condition,
-						isNegated: match.groups.not !== undefined,
-					};
+					ruleObject.condition = match.groups.condition.replaceAll(/ {2,}/ug, ' ').trim();
 				}
 
 				rulesList.push(ruleObject);
