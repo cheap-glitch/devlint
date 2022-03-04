@@ -1,6 +1,6 @@
 import { posix } from 'path';
 import { constants as fsConstants } from 'fs';
-import cliquish, { getVerbosityLevel } from 'cliquish';
+import { cliquish, getVerbosityLevel } from 'cliquish';
 import { access as testDirectoryAccess } from 'fs/promises';
 
 import { findGitRepoRoot } from './lib/helpers/git';
