@@ -1,11 +1,24 @@
 import { posix } from 'path';
 import { readFile as fsReadFile, readdir as fsReadDirectory, stat as fsGetStats } from 'fs/promises';
 
+import { findGitRepoRoot } from './lib/helpers/git';
+
 import type { Opaque } from 'type-fest';
 import type { Stats as FsStats, Dirent as DirectoryEntry } from 'fs';
 
 export type FsPath = Opaque<string, 'FsPath'>;
 export type FsPathSegments = string[];
+
+export async function getWorkingDirectory(): Promise<string> {
+	const cwd = process.cwd();
+	if (!options.gitRoot) {
+		return cwd;
+	}
+
+	const gitRepoRoot = await findGitRepoRoot([cwd]);
+
+	return gitRepoRoot ?? cwd;
+}
 
 export async function tryGettingDirectoryEntries(path: FsPathSegments): Promise<DirectoryEntry[] | undefined> {
 	let entries;

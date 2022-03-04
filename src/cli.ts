@@ -3,7 +3,6 @@ import { constants as fsConstants } from 'fs';
 import { cliquish, getVerbosityLevel } from 'cliquish';
 import { access as testDirectoryAccess } from 'fs/promises';
 
-import { findGitRepoRoot } from './lib/helpers/git';
 import { LintStatus, lint } from './lib/linter';
 import { RuleStatus, RuleErrorType } from './lib/rules';
 import { getWorkingDirectory, joinPathSegments, getAbsolutePath, normalizePath } from './lib/helpers/fs';
@@ -43,14 +42,7 @@ export async function cli(): Promise<void> {
 		.parse();
 
 	const verbosityLevel = getVerbosityLevel(options);
-
-	let workingDirectory = process.cwd();
-	if (options.gitRoot) {
-		const gitRepoRoot = await findGitRepoRoot([workingDirectory]);
-		if (gitRepoRoot !== undefined) {
-			workingDirectory = gitRepoRoot;
-		}
-	}
+	const workingDirectory = await getWorkingDirectory();
 
 	let directories: FsPath[] = [];
 	try {
