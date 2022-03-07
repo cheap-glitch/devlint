@@ -13,23 +13,23 @@ export function parsePropertyPath(path: PropertyPath): PropertyPathSegments {
 	return path
 		.split('.')
 		.filter(Boolean)
-		.map(pathSegment => {
-			if (/^\d+|\[\d+]$/u.test(pathSegment)) {
-				return Number.parseInt(pathSegment.replaceAll(/^\[|]$/ug, ''));
+		.map(segment => {
+			if (/^\d+|\[\d+]$/u.test(segment)) {
+				return Number.parseInt(segment.replaceAll(/^\[|]$/ug, ''));
 			}
 
-			return pathSegment;
+			return segment;
 		});
 }
 
 export function joinPropertyPathSegments(segments: PropertyPathSegments): PropertyPath {
 	const path: string[] = [];
-	for (segment of segments) {
+	for (const segment of segments) {
 		if (typeof segment === 'number') {
-			path.push(`[${pathSegment}]`);
+			path.push(`[${segment}]`);
 		}
 
-		path.push(segment);
+		path.push(segment as string);
 	}
 
 	return path.join('.') as PropertyPath;

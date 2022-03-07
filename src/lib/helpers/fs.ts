@@ -1,7 +1,7 @@
 import { posix } from 'path';
 import { readFile as fsReadFile, readdir as fsReadDirectory, stat as fsGetStats } from 'fs/promises';
 
-import { findGitRepoRoot } from './lib/helpers/git';
+import { findGitRepoRoot } from './git';
 
 import type { Opaque } from 'type-fest';
 import type { Stats as FsStats, Dirent as DirectoryEntry } from 'fs';
@@ -9,9 +9,9 @@ import type { Stats as FsStats, Dirent as DirectoryEntry } from 'fs';
 export type FsPath = Opaque<string, 'FsPath'>;
 export type FsPathSegments = string[];
 
-export async function getWorkingDirectory(): Promise<string> {
+export async function getWorkingDirectory(gitRoot: boolean): Promise<string> {
 	const cwd = process.cwd();
-	if (!options.gitRoot) {
+	if (!gitRoot) {
 		return cwd;
 	}
 
@@ -64,7 +64,7 @@ export async function getFilenamesInDirectory(path: FsPathSegments, filter?: (fi
 		.map(directoryEntry => directoryEntry.name);
 }
 
-export function readFileContents(path: FsPathSegments): string {
+export function readFileContents(path: FsPathSegments): Promise<string> {
 	return fsReadFile(getAbsolutePath(path), { encoding: 'utf8' });
 }
 

@@ -15,7 +15,7 @@ export function formatSnippet(snippet: Snippet, start: RuleErrorPosition, end: R
 	}
 
 	const minTabIndent = Math.min(...snippet.map(line => line.text.match(/^\t+/u)?.length ?? 0));
-	const minSpaceIndent = Math.min(...snippet.map(line => line.text.match(/^\t*(?<indent> +)/u)?.groups.indent?.length ?? 0));
+	const minSpaceIndent = Math.min(...snippet.map(line => line.text.match(/^\t*(?<indent> +)/u)?.groups?.indent?.length ?? 0));
 	const numbersColumnWidth = Math.max(2, String(snippet[snippet.length - 1].number).length) + 1;
 	const highlightColor = status === RuleStatus.Error ? c.red : c.yellow;
 	const highlightBgColor = status === RuleStatus.Error ? c.bgRed : c.bgYellow;

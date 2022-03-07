@@ -14,7 +14,7 @@ import type { PropertyPath } from './lib/helpers/properties';
 
 export async function cli(): Promise<void> {
 	const options
-		= cliquish({
+		= await cliquish({
 			synopsis: '$0 [OPTION] [DIR...]',
 			arguments: {
 				dir: [
@@ -42,7 +42,7 @@ export async function cli(): Promise<void> {
 		.parse();
 
 	const verbosityLevel = getVerbosityLevel(options);
-	const workingDirectory = await getWorkingDirectory();
+	const workingDirectory = await getWorkingDirectory(options.gitRoot);
 
 	let directories: FsPath[] = [];
 	try {
