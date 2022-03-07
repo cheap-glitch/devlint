@@ -14,8 +14,8 @@ export function parsePropertyPath(path: PropertyPath): PropertyPathSegments {
 		.split('.')
 		.filter(Boolean)
 		.map(segment => {
-			if (/^\d+|\[\d+]$/u.test(segment)) {
-				return Number.parseInt(segment.replaceAll(/^\[|]$/ug, ''));
+			if (/^\d+|\[\d+\]$/u.test(segment)) {
+				return Number.parseInt(segment.replaceAll(/^\[|\]$/ug, ''));
 			}
 
 			return segment;
