@@ -35,8 +35,8 @@ export function getMarkdownHeadings(text: string): MarkdownHeading[] {
 	}));
 }
 
-export function isMatchingHeading({ text, level }: MarkdownHeading, baseHeading: MarkdownHeading): boolean {
-	return text === baseHeading.text && (level === baseHeading.level || baseHeading.level === 0);
+export function isMatchingHeading({ text, level }: MarkdownHeading, modelHeading: MarkdownHeading): boolean {
+	return text === modelHeading.text && (level === modelHeading.level || modelHeading.level === 0);
 }
 
 export function isMarkdownHeading(line: string): boolean {

@@ -11,8 +11,8 @@ export function validator({ contents, lines, parameter: rawHeadings }: RuleConte
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const headings = parseMarkdownHeadings(rawHeadings);
-	if (headings instanceof Error) {
+	const modelHeadings = parseMarkdownHeadings(rawHeadings);
+	if (modelHeadings instanceof Error) {
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
@@ -20,7 +20,7 @@ export function validator({ contents, lines, parameter: rawHeadings }: RuleConte
 
 	let lastIndex = -1;
 	for (const textHeading of textHeadings) {
-		const index = headings.findIndex(heading => isMatchingHeading(textHeading, heading));
+		const index = modelHeadings.findIndex(modelHeading => isMatchingHeading(textHeading, modelHeading));
 		if (index === -1) {
 			continue;
 		}
@@ -29,15 +29,15 @@ export function validator({ contents, lines, parameter: rawHeadings }: RuleConte
 			continue;
 		}
 
-		const headingBefore = headings
+		const headingBefore = modelHeadings
 			.slice(0, index)
 			.reverse()
-			.find(previousHeading => textHeadings.some(heading => isMatchingHeading(previousHeading, heading)));
+			.find(previousModelHeading => textHeadings.some(heading => isMatchingHeading(heading, previousModelHeading)));
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- In this case, there's always at least one heading after the current one
-		const headingAfter = headings
+		const headingAfter = modelHeadings
 			.slice(index + 1)
-			.find(nextHeading => textHeadings.some(heading => isMatchingHeading(nextHeading, heading)))!;
+			.find(nextModuleHeading => textHeadings.some(heading => isMatchingHeading(heading, nextModuleHeading)))!;
 
 		if (headingBefore !== undefined) {
 			return new RuleError(
