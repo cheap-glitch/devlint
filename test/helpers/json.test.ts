@@ -4,7 +4,8 @@ describe('matchJsonValues', () => {
 
 	test('primitives', () => { // {{{
 
-		expect(matchJsonValues()).toBe(true);
+		// eslint-disable-next-line unicorn/no-useless-undefined -- Test explicitly for the `undefined` value
+		expect(matchJsonValues(undefined, undefined)).toBe(true);
 		expect(matchJsonValues(null, null)).toBe(true);
 		expect(matchJsonValues(false, false)).toBe(true);
 		expect(matchJsonValues(1, 1)).toBe(true);
@@ -28,7 +29,6 @@ describe('matchJsonValues', () => {
 	test('objects', () => { // {{{
 
 		expect(matchJsonValues({}, {})).toBe(true);
-
 		expect(matchJsonValues({}, { foo: 1 })).toBe(true);
 
 	}); // }}}

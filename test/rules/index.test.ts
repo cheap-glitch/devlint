@@ -20,7 +20,7 @@ interface TestSnippetsCollection {
 	failing: Record<string, [TestSnippet, RuleErrorType | string, RuleErrorPosition | undefined, RuleErrorPosition | undefined]>;
 }
 
-const pathToRulePlugins = joinPathSegments([__dirname, '..', '..', 'build', 'src', 'lib', 'rules']);
+const pathToRulePlugins = joinPathSegments([__dirname, '..', '..', 'dist', 'src', 'lib', 'rules']);
 const pathToTestSnippets = [__dirname, 'snippets'];
 const selectedRules = (process.env.RULE || process.env.RULES || '').split(/[ ,]/u).filter(Boolean);
 const testSnippetsEntries = getDirectoryListing(getAbsolutePath(pathToTestSnippets), { withFileTypes: true });
