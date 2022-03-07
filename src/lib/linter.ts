@@ -154,23 +154,43 @@ export async function lintDirectory(
 				}
 
 				if (conditions.size > 0 && rule.condition !== undefined && !validateConditionalExpression(conditions, rule.condition)) {
-					results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.SkippedForUnfulfilledCondition });
+					results.push({
+						rule,
+						target: [fsPath, propertyPath],
+						status: LintStatus.SkippedForUnfulfilledCondition,
+					});
 					continue;
 				}
 
 				if (!pluginsFilenames.includes(rule.name + '.js')) {
-					results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.Failure, error: new RuleError(RuleErrorType.UnknownRule) });
+					results.push({
+						rule,
+						target: [fsPath, propertyPath],
+						status: LintStatus.Failure,
+						error: new RuleError(RuleErrorType.UnknownRule),
+					});
 					continue;
 				}
-				const { targetType, validator } = loadRulePlugin(rule.name);
 
+				const { targetType, validator } = loadRulePlugin(rule.name);
 				// eslint-ignore-next-line unicorn/no-await-in-loop
 				const result = executeRuleValidator(directory, rule, fsPath, propertyPath, targetType, validator, fileContents, lines, jsonValue, jsonAst);
+
 				if (result instanceof RuleError) {
-					results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.Failure, error: result });
+					results.push({
+						rule,
+						target: [fsPath, propertyPath],
+						status: LintStatus.Failure,
+						error: result,
+					});
 					continue;
 				}
-				results.push({ rule, target: [fsPath, propertyPath], status: LintStatus.Success });
+
+				results.push({
+					rule,
+					target: [fsPath, propertyPath],
+					status: LintStatus.Success,
+				});
 			}
 		}
 	}));
@@ -351,22 +371,46 @@ export function buildRuleContext(data: Partial<RuleContext>): RuleContext {
 		jsonAst: {
 			type: 'object',
 			pos: {
-				start: { line: 1, column: 1, char: 0 },
-				end: { line: 1, column: 1, char: 1 },
+				start: {
+					line: 1,
+					column: 1,
+					char: 0,
+				},
+				end: {
+					line: 1,
+					column: 1,
+					char: 1,
+				},
 			},
 		},
 		jsonObjectAst: {
 			type: 'object',
 			pos: {
-				start: { line: 1, column: 1, char: 0 },
-				end: { line: 1, column: 1, char: 1 },
+				start: {
+					line: 1,
+					column: 1,
+					char: 0,
+				},
+				end: {
+					line: 1,
+					column: 1,
+					char: 1,
+				},
 			},
 		},
 		jsonArrayAst: {
 			type: 'array',
 			pos: {
-				start: { line: 1, column: 1, char: 0 },
-				end: { line: 1, column: 1, char: 1 },
+				start: {
+					line: 1,
+					column: 1,
+					char: 0,
+				},
+				end: {
+					line: 1,
+					column: 1,
+					char: 1,
+				},
 			},
 		},
 		parameter: '',
