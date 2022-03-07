@@ -23,16 +23,10 @@ export function parsePropertyPath(path: PropertyPath): PropertyPathSegments {
 }
 
 export function joinPropertyPathSegments(segments: PropertyPathSegments): PropertyPath {
-	const path: string[] = [];
-	for (const segment of segments) {
-		if (typeof segment === 'number') {
-			path.push(`[${segment}]`);
-		}
-
-		path.push(segment as string);
-	}
-
-	return path.join('.') as PropertyPath;
+	return segments
+		// eslint-disable-next-line no-confusing-arrow -- This is much shorter than a for loop
+		.map(segment => typeof segment === 'number' ? `[${segment}]` : segment)
+		.join('.') as PropertyPath;
 }
 
 export function normalizePropertyPath(path: PropertyPath): PropertyPath {
