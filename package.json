@@ -1,7 +1,7 @@
 {
   "name": "devlint",
   "version": "0.3.0",
-  "description": "A meta-linter for configuration files, directory structures and git repositories.",
+  "description": "A meta-linter for configuration files, documentation and project setups.",
   "license": "ISC",
   "author": "cheap glitch <cheap.glitch@gmail.com> (https://github.com/cheap-glitch)",
   "repository": "cheap-glitch/devlint",
