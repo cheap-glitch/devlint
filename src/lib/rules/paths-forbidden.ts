@@ -23,12 +23,7 @@ export async function validator({ workingDirectory, parameter: forbiddenPaths }:
 		 * TODO [>=0.5.0]: expand globs here?
 		 */
 		const stats = await tryGettingPathStats([workingDirectory, path]);
-		if (stats === undefined) {
-			// TODO [>=0.4.0]: Throw an error here?
-			continue;
-		}
-
-		if (isDirectoryPath && stats.isDirectory() || isFilePath && stats.isFile()) {
+		if (isDirectoryPath && stats?.isDirectory() || isFilePath && stats?.isFile()) {
 			return new RuleError(`${isDirectoryPath ? 'directory' : 'file'} "${path}" is forbidden`);
 		}
 	}
