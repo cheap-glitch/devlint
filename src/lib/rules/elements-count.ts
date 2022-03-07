@@ -16,8 +16,8 @@ export function validator({ jsonArrayAst, parameter: optionsObject }: RuleContex
 	}
 
 	const elementsCount = jsonArrayAst.elements?.length ?? 0;
-	const minElementCount = optionsObject?.min ?? 0;
-	const maxElementCount = optionsObject?.max ?? Number.POSITIVE_INFINITY;
+	const minElementCount = optionsObject.min ?? 0;
+	const maxElementCount = optionsObject.max ?? Number.POSITIVE_INFINITY;
 
 	if (elementsCount < minElementCount) {
 		return new RuleError(

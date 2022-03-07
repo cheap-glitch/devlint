@@ -6,7 +6,7 @@ import type { RuleContext, RuleResult } from '../rules';
 
 export const targetType = RuleTargetType.JsonObject;
 
-export function validator({ jsonObject, parameter: optionsObject }: RuleContext): RuleResult {
+export function validator({ jsonObjectAst, parameter: optionsObject }: RuleContext): RuleResult {
 	if (
 		!isJsonObject(optionsObject)
 		|| Object.keys(optionsObject).some(key => !['min', 'max'].includes(key))
@@ -15,15 +15,15 @@ export function validator({ jsonObject, parameter: optionsObject }: RuleContext)
 		return new RuleError(RuleErrorType.InvalidParameter);
 	}
 
-	const propertiesCount = Object.keys(jsonObject).length;
-	const minPropertiesCount = typeof optionsObject.min === 'number' ? optionsObject.min : 0;
-	const maxPropertiesCount = typeof optionsObject.max === 'number' ? optionsObject.max : Number.POSITIVE_INFINITY;
+	const propertiesCount = jsonObjectAst.members?.length ?? 0;
+	const minPropertiesCount = optionsObject.min ?? 0;
+	const maxPropertiesCount = optionsObject.max ?? Number.POSITIVE_INFINITY;
 
 	if (propertiesCount < minPropertiesCount) {
-		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, minimum is ${optionsObject.min}`);
+		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, minimum is ${minPropertiesCount}`);
 	}
 	if (propertiesCount > maxPropertiesCount) {
-		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, maximum is ${optionsObject.max}`);
+		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, maximum is ${maxPropertiesCount}`);
 	}
 
 	return true;
