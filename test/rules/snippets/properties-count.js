@@ -96,7 +96,7 @@ module.exports = {
 		`,
 			{ min: 3 },
 		],
-			'object has 1 property, minimum is 3',
+			'object has 1 property, minimum is 3', { line: 1, column: 1, char: 0 }, { line: 3, column: 2, char: 17 },
 		], // }}}
 
 		'property count under minimum #2': [[ // {{{
@@ -108,7 +108,7 @@ module.exports = {
 		`,
 			{ min: 3 },
 		],
-			'object has 2 properties, minimum is 3',
+			'object has 2 properties, minimum is 3', { line: 1, column: 1, char: 0 }, { line: 4, column: 2, char: 33 },
 		], // }}}
 
 		'property count under minimum #3': [[ // {{{
@@ -122,7 +122,7 @@ module.exports = {
 		`,
 			{ min: 3 },
 		],
-			'object has 2 properties, minimum is 3',
+			'object has 2 properties, minimum is 3', { line: 1, column: 1, char: 0 }, { line: 6, column: 2, char: 49 },
 		], // }}}
 
 		'property count over maximum': [[ // {{{
@@ -135,7 +135,7 @@ module.exports = {
 		`,
 			{ max: 2 },
 		],
-			'object has 3 properties, maximum is 2',
+			'object has 3 properties, maximum is 2', { line: 1, column: 1, char: 0 }, { line: 5, column: 2, char: 48 },
 		], // }}}
 
 	},

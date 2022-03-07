@@ -20,10 +20,10 @@ export function validator({ jsonObjectAst, parameter: optionsObject }: RuleConte
 	const maxPropertiesCount = optionsObject.max ?? Number.POSITIVE_INFINITY;
 
 	if (propertiesCount < minPropertiesCount) {
-		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, minimum is ${minPropertiesCount}`);
+		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, minimum is ${minPropertiesCount}`, jsonObjectAst.pos);
 	}
 	if (propertiesCount > maxPropertiesCount) {
-		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, maximum is ${maxPropertiesCount}`);
+		return new RuleError(`object has ${countWord(propertiesCount, 'property', 'properties')}, maximum is ${maxPropertiesCount}`, jsonObjectAst.pos);
 	}
 
 	return true;
