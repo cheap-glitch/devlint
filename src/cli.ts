@@ -182,10 +182,10 @@ function parseLintResult(result: LintResult, totals: Record<string, number>, { v
 				return getErrorReport(result, result.error, verbosityLevel);
 			}
 
-			default: throw new Error('Unknown rule error type');
+			default: throw new Error(`Unknown rule error type "${result.error?.type}"`);
 		}
 
-		default: throw new Error('Unknown lint result status');
+		default: throw new Error(`Unknown lint result "${result.status}"`);
 	}
 
 	return undefined;

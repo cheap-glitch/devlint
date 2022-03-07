@@ -14,24 +14,24 @@ describe('parseRules', () => {
 
 	test('invalid rule declarations', () => { // {{{
 
-		expect(() => parseRulesMap({ 'rule name': 'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': 'nope' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': '1' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': 3 })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ '?rule-name': 'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name condition': 'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ '(condition) rule-name': 'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name !(condition)': 'warn' })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name (condition!)': 'warn' })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule name': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name': 'nope' })).toThrow('Rule "rule-name" has an invalid status of "nope"');
+		expect(() => parseRulesMap({ 'rule-name': '1' })).toThrow('Rule "rule-name" has an invalid status of "1"');
+		expect(() => parseRulesMap({ 'rule-name': 3 })).toThrow('Rule "rule-name" has an invalid status of 3');
+		expect(() => parseRulesMap({ '?rule-name': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name condition': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ '(condition) rule-name': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name !(condition)': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name (condition!)': 'warn' })).toThrow('Invalid rule declaration');
 
-		expect(() => parseRulesMap({ 'rule-name': null })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': true })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': false })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': [null, 'foo'] })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': [true, ['foo']] })).toThrow('invalid rule declaration:');
-		expect(() => parseRulesMap({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'rule-name': null })).toThrow('Property "rule-name" has a value of `null`');
+		expect(() => parseRulesMap({ 'rule-name': true })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name': false })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name': [null, 'foo'] })).toThrow('The status of "rule-name" must be a string or a number');
+		expect(() => parseRulesMap({ 'rule-name': [true, ['foo']] })).toThrow('The status of "rule-name" must be a string or a number');
+		expect(() => parseRulesMap({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('The value of "rule-name" must be an array of two elements');
 
-		expect(() => parseRulesMap({ 'file.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('invalid rule declaration:');
+		expect(() => parseRulesMap({ 'file.ext': { '#property': { '#foo.bar': { 'rule-name': 'error' } } } })).toThrow('"#foo.bar" starts a property path inside another property path');
 
 	}); // }}}
 

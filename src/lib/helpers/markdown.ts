@@ -11,7 +11,7 @@ export function parseMarkdownHeadings(rawHeadings: unknown[]): MarkdownHeading[]
 	const headings = [];
 	for (const rawHeading of rawHeadings) {
 		if (typeof rawHeading !== 'string') {
-			return new TypeError('Markdown heading must be a string');
+			return new TypeError('Markdown headings must be a strings');
 		}
 
 		const match = rawHeading.match(markdownHeadingRegex);

@@ -1,3 +1,4 @@
+import { quoteIfString } from './helpers/text';
 import { insertInNestedSetMap } from './helpers/utilities';
 import { joinPathSegments, normalizePath } from './helpers/fs';
 import { PROPERTY_PATH_STARTING_CHARACTER, joinPropertyPathSegments, normalizePropertyPath } from './helpers/properties';
@@ -65,19 +66,19 @@ export function parseRules(rulesMap: RulesMap, rulesObject: JsonObject): RuleObj
 function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObject: JsonObject, fsPath: FsPath, propertyPath: PropertyPath): void {
 	for (const [key, properties] of Object.entries(rulesObject)) {
 		if (properties === null) {
-			throw new Error(`invalid rule declaration: "${key}" has a value of \`null\``);
+			throw new Error(`Property "${key}" has a value of \`null\``);
 		}
 
 		// Rule definition
 		if (typeof properties === 'string' || typeof properties === 'number' || Array.isArray(properties)) {
 			const ruleName = key;
 			if (Array.isArray(properties) && properties.length !== 2) {
-				throw new TypeError(`invalid rule declaration: the value of "${ruleName}" must be an array of two elements`);
+				throw new Error(`The value of "${ruleName}" must be an array of two elements`);
 			}
 
 			const rawStatus = Array.isArray(properties) ? properties[0] : properties;
 			if (typeof rawStatus !== 'string' && typeof rawStatus !== 'number') {
-				throw new TypeError(`invalid rule declaration: the status of "${ruleName}" must be a string of a number`);
+				throw new TypeError(`The status of "${ruleName}" must be a string or a number`);
 			}
 
 			const status = parseRuleStatus(rawStatus, ruleName);
@@ -90,7 +91,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 				const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?: *\((?<condition>(?: *!?\w+)(?: +(?:&&|\|\|) +(?:!?\w+) *)*)\))?$/u);
 				if (!match || !match.groups || !match.groups.name) {
 					// TODO [>0.3.0]: don't throw an error here?
-					throw new Error(`invalid rule declaration: "${ruleDeclaration}"`);
+					throw new Error(`Invalid rule declaration "${ruleDeclaration}"`);
 				}
 
 				const ruleObject: RuleObject = { name: match.groups.name, status };
@@ -119,7 +120,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 			const target = key;
 			if (target.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
 				if (propertyPath !== undefined) {
-					throw new Error(`invalid rule declaration: "${target}" starts a property path inside another property path`);
+					throw new Error(`"${target}" starts a property path inside another property path`);
 				}
 
 				const [fsSubpath, propertySubpath] = target.split('#', 2);
@@ -137,7 +138,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 			continue;
 		}
 
-		throw new Error(`invalid rule declaration: "${key}"`);
+		throw new Error(`Invalid rule declaration "${key}"`);
 	}
 }
 
@@ -147,6 +148,6 @@ function parseRuleStatus(rawStatus: number | string, ruleName: string): RuleStat
 		case 1: case 'warn': return RuleStatus.Warning;
 		case 2: case 'error': return RuleStatus.Error;
 
-		default: throw new Error(`invalid rule declaration: "${ruleName}" has an invalid status of "${rawStatus}"`);
+		default: throw new Error(`Rule "${ruleName}" has an invalid status of ${quoteIfString(rawStatus)}`);
 	}
 }

@@ -130,7 +130,7 @@ function buildSnippetContext(ruleName: string, targetType: RuleTargetType, snipp
 				}
 			}
 			if (jsonValue instanceof SyntaxError || jsonAst instanceof SyntaxError || jsonAst === undefined) {
-				throw new TypeError('invalid JSON value or AST');
+				throw new SyntaxError('Invalid JSON value or AST');
 			}
 
 			switch (targetType) {
@@ -139,26 +139,26 @@ function buildSnippetContext(ruleName: string, targetType: RuleTargetType, snipp
 
 				case RuleTargetType.JsonObject:
 					if (!isJsonObject(jsonValue) || !isJsonObjectAst(jsonAst)) {
-						throw new TypeError('invalid JSON value or AST');
+						throw new SyntaxError('Invalid JSON value or AST');
 					}
 
 					return buildRuleContext({ contents, lines, jsonObject: jsonValue, jsonObjectAst: jsonAst, parameter });
 
 				case RuleTargetType.JsonArray:
 					if (!isJsonArray(jsonValue) || !isJsonArrayAst(jsonAst)) {
-						throw new TypeError('invalid JSON value or AST');
+						throw new SyntaxError('Invalid JSON value or AST');
 					}
 
 					return buildRuleContext({ contents, lines, jsonArray: jsonValue, jsonArrayAst: jsonAst, parameter });
 
 				case RuleTargetType.JsonString:
 					if (typeof jsonValue !== 'string') {
-						throw new TypeError('invalid JSON value or AST');
+						throw new SyntaxError('invalid JSON value or AST');
 					}
 
 					return buildRuleContext({ contents, lines, jsonString: jsonValue, jsonAst, parameter });
 
-				default: throw new Error('unknown rule target type');
+				default: throw new Error(`Unknown rule target type "${targetType}"`);
 			}
 	}
 

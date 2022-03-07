@@ -19,7 +19,8 @@ export async function loadConfig(): Promise<JsonObject> {
 	}
 
 	if (!isJsonObject(config)) {
-		throw new Error('invalid config object');
+		// TODO [>0.3.0]: Make this and similar errors ConfigError (create an "errors.ts" module)
+		throw new Error('The configuration must be a JSON object');
 	}
 
 	return extendConfig(config);

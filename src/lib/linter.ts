@@ -42,8 +42,12 @@ export async function lint(directories: FsPath[], selectedRules?: string[]): Pro
 	for (const directory of directories) {
 		// TODO [>=0.8.0]: avoid loading the config for every directory
 		const config = await loadConfig();
-		if (!isJsonObject(config.rules) || !isJsonObject(config.conditions)) {
-			throw new Error('invalid config: conditions & rules definitions must be objects');
+
+		if (!isJsonObject(config.conditions)) {
+			throw new Error('The value of "conditions" must be an object');
+		}
+		if (!isJsonObject(config.rules)) {
+			throw new Error('The value of "rules" must be an object');
 		}
 
 		results.set(directory, await lintDirectory(directory, config.rules ?? {}, config.conditions ?? {}, selectedRules));
@@ -68,8 +72,8 @@ export async function lintDirectory(
 
 		for (const [subConditionIndex, subConditionRulesObject] of wrapInArray(conditionRulesObjects).entries()) {
 			if (!isJsonObject(subConditionRulesObject)) {
-				// TODO [>=0.4.0]: Return a proper error message
-				throw new Error('TODO');
+				// TODO [>0.3.0]: replace all plain Error with custom error classes
+				throw new Error(`The value(s) of "${conditionName}" must be object(s)`);
 			}
 
 			const addedRules: Array<RuleObject & { conditionName?: string; subConditionIndex?: number }> = parseRules(conditionsRules, subConditionRulesObject);
@@ -89,8 +93,8 @@ export async function lintDirectory(
 
 		const fileContents = await tryReadingFileContents([directory, fsPath]);
 		const lines = fileContents === undefined ? [] : getLines(fileContents);
-		const jsonAst = fileContents === undefined ? new SyntaxError('invalid JSON AST') : tryParsingJsonAst(fileContents);
-		const jsonValue = fileContents === undefined ? new SyntaxError('invalid JSON value') : tryParsingJsonValue(fileContents);
+		const jsonAst = fileContents === undefined ? new SyntaxError('Invalid JSON AST') : tryParsingJsonAst(fileContents);
+		const jsonValue = fileContents === undefined ? new SyntaxError('Invalid JSON value') : tryParsingJsonValue(fileContents);
 
 		for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
 			for (const rule of propertyTargetRules) {
@@ -139,8 +143,8 @@ export async function lintDirectory(
 		 */
 		const fileContents = await tryReadingFileContents([directory, fsPath]);
 		const lines = fileContents === undefined ? [] : getLines(fileContents);
-		const jsonAst = fileContents === undefined ? new SyntaxError('invalid JSON AST') : tryParsingJsonAst(fileContents);
-		const jsonValue = fileContents === undefined ? new SyntaxError('invalid JSON value') : tryParsingJsonValue(fileContents);
+		const jsonAst = fileContents === undefined ? new SyntaxError('Invalid JSON AST') : tryParsingJsonAst(fileContents);
+		const jsonValue = fileContents === undefined ? new SyntaxError('Invalid JSON value') : tryParsingJsonValue(fileContents);
 
 		for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
 			// TODO [>=4.0.0]: filter some rules with wrong target type here? (e.g.: file-based rule targeting a directory)
@@ -297,7 +301,7 @@ function executeRuleValidator(
 			context.jsonAst = propertyAst;
 			break;
 
-		default: throw new Error('invalid rule target type');
+		default: throw new Error(`Invalid rule target type "${targetType}"`);
 	}
 
 	return validator(context);
@@ -307,10 +311,10 @@ function loadRulePlugin(pluginName: string): { targetType: RuleTargetType; valid
 	// eslint-disable-next-line @typescript-eslint/no-var-requires -- Allows loading only the necessary plugins
 	const plugin = require(getAbsolutePath([...BUILTIN_RULE_PLUGINS_DIR_PATH, pluginName + '.js']));
 	if (plugin.targetType === undefined) {
-		throw new Error(`missing target type for rule "${pluginName}"`);
+		throw new Error(`Missing target type for rule "${pluginName}"`);
 	}
 	if (plugin.validator === undefined) {
-		throw new Error(`missing validator function for rule "${pluginName}"`);
+		throw new Error(`Missing validator function for rule "${pluginName}"`);
 	}
 
 	return plugin;
