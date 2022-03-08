@@ -98,6 +98,7 @@
   },
   "jest": {
     "preset": "ts-jest",
+    "coverageDirectory": ".coverage",
     "collectCoverageFrom": [
       "src/lib/**/*.ts",
       "!src/lib/rules/*.ts",
