@@ -1,6 +1,6 @@
 import parseJsonAst from 'jsonast';
 
-import { matchStrings } from './text';
+import { isMatchingString } from './text';
 
 import type { JsonValue, JsonObject, JsonArray } from 'type-fest';
 import type { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
@@ -21,7 +21,7 @@ export function matchJsonValues(
 	propertyPath?: PropertyPathSegments,
 ): boolean | PropertyPathSegments {
 	if (typeof model === 'string' && typeof jsonValue === 'string') {
-		return matchStrings(model, jsonValue) || (propertyPath ?? false);
+		return isMatchingString(model, jsonValue) || (propertyPath ?? false);
 	}
 
 	switch (model) {

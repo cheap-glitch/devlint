@@ -22,7 +22,7 @@ export function validator({ contents, lines, parameter: rawHeadings }: RuleConte
 			continue;
 		}
 
-		if (!allowedHeadings.some(allowedHeading => isMatchingHeading(heading, allowedHeading))) {
+		if (allowedHeadings.every(allowedHeading => !isMatchingHeading(heading, allowedHeading))) {
 			return new RuleError(`heading "${heading.text}" is not allowed`, findMatchLocation(lines, heading.fullMatch, heading.char), lines);
 		}
 	}

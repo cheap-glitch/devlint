@@ -1,3 +1,5 @@
+import { isMatchingString } from './text';
+
 interface MarkdownHeading {
 	text: string;
 	level: number;
@@ -36,7 +38,7 @@ export function getMarkdownHeadings(text: string): MarkdownHeading[] {
 }
 
 export function isMatchingHeading({ text, level }: MarkdownHeading, modelHeading: MarkdownHeading): boolean {
-	return text === modelHeading.text && (level === modelHeading.level || modelHeading.level === 0);
+	return (level === modelHeading.level || modelHeading.level === 0) && isMatchingString(modelHeading.text, text);
 }
 
 export function isMarkdownHeading(line: string): boolean {

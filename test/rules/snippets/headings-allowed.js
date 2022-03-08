@@ -85,6 +85,20 @@ module.exports = {
 			['# Foo', '### Baz'],
 		], // }}}
 
+		'regex model #1': [ // {{{
+		`
+			## Lorem ipsum
+		`,
+			['## /ips/'],
+		], // }}}
+
+		'regex model #2': [ // {{{
+		`
+			## Lorem ipsum
+		`,
+			['/^Lorem *(ipsu[md]|volum)$/'],
+		], // }}}
+
 	}, failing: {
 
 		// invalid parameters {{{
@@ -142,6 +156,26 @@ module.exports = {
 			['# Foo', '### Bar'],
 		],
 			'heading "Baz" is not allowed', { line: 3, column: 1, char: 13 }, { line: 3, column: 7, char: 19 },
+		], // }}}
+
+		'regex model #1': [[ // {{{
+		`
+			## Lorem volum
+		`,
+			['## /ips/'],
+		],
+			'heading "Lorem volum" is not allowed', { line: 1, column: 1, char: 0 }, { line: 1, column: 14, char: 13 },
+		], // }}}
+
+		'regex model #2': [[ // {{{
+		`
+			## Lorem ipsum
+
+			## Dolor sit amet
+		`,
+			['/^Lorem *(ipsu[md]|volum)$/'],
+		],
+			'heading "Dolor sit amet" is not allowed', { line: 3, column: 1, char: 16 }, { line: 3, column: 17, char: 32 },
 		], // }}}
 
 	},

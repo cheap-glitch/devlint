@@ -43,7 +43,7 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 	})() || testedString === '';
 }
 
-export function matchStrings(model: string, testedString: string): boolean {
+export function isMatchingString(model: string, testedString: string): boolean {
 	if (isRegex(model)) {
 		return new RegExp(model.slice(1, -1), 'u').test(testedString);
 	}

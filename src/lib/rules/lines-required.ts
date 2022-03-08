@@ -1,4 +1,4 @@
-import { matchStrings, trimLineOverflow } from '../helpers/text';
+import { isMatchingString, trimLineOverflow } from '../helpers/text';
 import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
 
 import type { RuleContext, RuleResult } from '../rules';
@@ -15,7 +15,7 @@ export function validator({ lines, parameter: requiredLines }: RuleContext): Rul
 			return new RuleError(RuleErrorType.InvalidParameter);
 		}
 
-		const index = lines.findIndex(line => matchStrings(requiredLine, line.text));
+		const index = lines.findIndex(line => isMatchingString(requiredLine, line.text));
 		if (index === -1) {
 			return new RuleError(`required line "${trimLineOverflow(requiredLine)}" is missing`);
 		}

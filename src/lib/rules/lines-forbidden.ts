@@ -1,4 +1,4 @@
-import { matchStrings, trimLineOverflow } from '../helpers/text';
+import { isMatchingString, trimLineOverflow } from '../helpers/text';
 import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
 
 import type { RuleContext, RuleResult } from '../rules';
@@ -15,7 +15,7 @@ export function validator({ lines, parameter: forbiddenLines }: RuleContext): Ru
 			return new RuleError(RuleErrorType.InvalidParameter);
 		}
 
-		const index = lines.findIndex(line => matchStrings(forbiddenLine, line.text));
+		const index = lines.findIndex(line => isMatchingString(forbiddenLine, line.text));
 		if (index === -1) {
 			continue;
 		}

@@ -62,6 +62,20 @@ module.exports = {
 			['## Foo'],
 		], // }}}
 
+		'regex model #1': [ // {{{
+		`
+			## Lorem ipsum
+		`,
+			['## /ips/'],
+		], // }}}
+
+		'regex model #2': [ // {{{
+		`
+			## Lorem ipsum
+		`,
+			['/^Lorem *(ipsu[md]|volum)$/'],
+		], // }}}
+
 	}, failing: {
 
 		// invalid parameters {{{
@@ -111,6 +125,35 @@ module.exports = {
 			['# Foo', '### Foo'],
 		],
 			'required heading "Foo" is missing',
+		], // }}}
+
+		'regex model #1': [[ // {{{
+		`
+			## Lorem volum
+		`,
+			['## /ips/'],
+		],
+			'required heading "/ips/" is missing',
+		], // }}}
+
+		'regex model #2': [[ // {{{
+		`
+			## Dolor sit amet
+		`,
+			['/^Lorem *(ipsu[md]|volum)$/'],
+		],
+			'required heading "/^Lorem *(ipsu[md]|volum)$/" is missing',
+		], // }}}
+
+		'regex model #3': [[ // {{{
+		`
+			# Lorem ipsum
+
+			## Dolor sit amet
+		`,
+			['## /^Lorem *(ipsu[md]|volum)$/'],
+		],
+			'required heading "/^Lorem *(ipsu[md]|volum)$/" is missing',
 		], // }}}
 
 	},
