@@ -20,11 +20,11 @@ export function validator({ lines, jsonObjectAst, parameter: orderingType }: Rul
 			continue;
 		}
 
-		if (compare(previousKey.value, key.value) <= 0) {
+		if (orderingType === 'alphabetical-blocks' && previousValue.pos.end.line < key.pos.start.line - 1) {
 			continue;
 		}
 
-		if (orderingType === 'alphabetical-blocks' && previousValue.pos.end.line < key.pos.start.line - 1) {
+		if (compare(previousKey.value, key.value) <= 0) {
 			continue;
 		}
 
