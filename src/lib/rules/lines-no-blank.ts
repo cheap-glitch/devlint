@@ -6,28 +6,30 @@ export const targetType = RuleTargetType.FileContents;
 
 export function validator({ contents, lines }: RuleContext): RuleResult {
 	// Ingore empty targets
-	if (contents === '') {
+	if (contents.length === 0) {
 		return true;
 	}
 
-	const emptyLinePattern = /^\s*$/u;
-	const emptyLineIndex = lines.findIndex(({ text }) => emptyLinePattern.test(text));
+	const blankLineRegex = /^\s*$/u;
+	for (const line of lines) {
+		if (!blankLineRegex.test(line.text)) {
+			continue;
+		}
 
-	if (emptyLineIndex !== -1) {
 		// Ignore a single line terminator at the end of the file
-		if (emptyLineIndex === lines.length - 1 && /.\r?\n$/u.test(contents)) {
-			return true;
+		if (line.number === lines.length && /.\r?\n$/u.test(contents)) {
+			continue;
 		}
 
 		const start = {
-			line: emptyLineIndex + 1,
+			line: line.number,
 			column: 1,
-			char: lines[emptyLineIndex].char,
+			char: line.char,
 		};
 		const end = {
-			line: emptyLineIndex + 1,
-			column: 1 + lines[emptyLineIndex].text.length,
-			char: lines[emptyLineIndex].char + lines[emptyLineIndex].text.length,
+			line: line.number,
+			column: line.text.length + 1,
+			char: line.char + line.text.length,
 		};
 
 		// TODO [>0.3.0]: Rename "empty" to "blank"

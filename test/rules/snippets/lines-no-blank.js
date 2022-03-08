@@ -27,7 +27,7 @@ module.exports = {
 
 	}, failing: {
 
-		'just a newline character': [[ // {{{
+		'single newline character': [[ // {{{
 			'\\n',
 		],
 			'line should not be empty', { line: 1, column: 1, char: 0 }, { line: 1, column: 1, char: 0 },
