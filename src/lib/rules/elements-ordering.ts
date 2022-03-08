@@ -28,7 +28,7 @@ export function validator({ lines, jsonArrayAst, parameter: orderingType }: Rule
 		}
 
 		const previousElement = jsonArrayAst.elements[index - 1];
-		if (previousElement === undefined || (orderingType === 'alphabetical-blocks' && previousElement.pos.end.line < element.pos.start.line - 1)) {
+		if (previousElement === undefined || orderingType === 'alphabetical-blocks' && previousElement.pos.end.line < element.pos.start.line - 1) {
 			previousComparableValue = undefined;
 			continue;
 		}
