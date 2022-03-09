@@ -373,4 +373,74 @@ describe('parseRules', () => {
 
 	}); // }}}
 
+	test('@replace', () => { // {{{
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': 'error',
+				'rule (condition) @replace': 'warn',
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': 'error',
+				'rule @replace': 'off',
+				'rule (condition)': 'warn',
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': 'error',
+				'#property': {
+					'rule @replace': 'warn',
+				},
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+					},
+				])],
+				['property', new Set([
+					{
+						name: 'rule',
+						status: 'warn',
+					},
+				])],
+			])],
+		]);
+
+	}); // }}}
+
 });

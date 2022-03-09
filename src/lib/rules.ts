@@ -35,6 +35,8 @@ export interface RuleContext {
 	parameter: JsonValue;
 }
 
+type RuleDirective = 'extend' | 'replace' | undefined;
+
 /* eslint-disable @typescript-eslint/no-shadow -- Enum members are namespaced */
 export enum RuleTargetType {
 	DirectoryListing,
@@ -62,6 +64,8 @@ export function parseRules(rulesMap: RulesMap, rulesObject: JsonObject): RuleObj
 
 	return rulesList;
 }
+
+const ruleRegex = /^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?:\((?<condition>(?:!?\w+)(?:(?:&&|\|\|)(?:!?\w+))*)\))?(?:@(?<directive>extend|replace))?$/u;
 
 function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObject: JsonObject, fsPath: FsPath, propertyPath: PropertyPath): void {
 	for (const [key, properties] of Object.entries(rulesObject)) {
@@ -112,8 +116,10 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 					validateConditionalExpression(ruleObject.condition);
 				}
 
+				registerRule(rulesMap, normalizePath(fsPath), normalizePropertyPath(propertyPath), ruleObject, match.groups.directive as RuleDirective);
+
+				// TODO [>=0.3.0]: Drop `rulesList`
 				rulesList.push(ruleObject);
-				rulesMap.set(normalizePath(fsPath), normalizePropertyPath(propertyPath), ruleObject);
 			}
 
 			continue;
@@ -144,6 +150,35 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 
 		throw new Error(`Invalid rule declaration "${key}"`);
 	}
+}
+
+function registerRule(rulesMap: RulesMap, fsPath: FsPath, propertyPath: PropertyPath, rule: RuleObject, directive: RuleDirective): void {
+	switch (directive) {
+		case 'extend':
+			// TODO
+			break;
+
+		// Remove previous rules on the target that have the same name
+		case 'replace': {
+			const targetRules = rulesMap.get(fsPath, propertyPath);
+			if (!targetRules) {
+				break;
+			}
+
+			for (const targetRule of targetRules.values()) {
+				if (targetRule.name === rule.name) {
+					targetRules.delete(targetRule);
+				}
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	rulesMap.set(fsPath, propertyPath, rule);
 }
 
 function parseRuleStatus(rawStatus: number | string, ruleName: string): RuleStatus {
