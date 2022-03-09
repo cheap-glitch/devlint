@@ -1,13 +1,12 @@
 import { quoteIfString } from './helpers/text';
-import { insertInNestedSetMap } from './helpers/utilities';
 import { joinPathSegments, normalizePath } from './helpers/fs';
 import { PROPERTY_PATH_STARTING_CHARACTER, joinPropertyPathSegments, normalizePropertyPath } from './helpers/properties';
 
+import type { NestedSetMap } from './helpers/nested-set-map';
 import type { JsonValue, JsonObject, JsonArray } from 'type-fest';
 import type { JsonValue as JsonAst, JsonObject as JsonObjectAst, JsonArray as JsonArrayAst } from 'jsonast';
 import type { Line } from './helpers/text';
 import type { FsPath } from './helpers/fs';
-import type { NestedSetMap } from './helpers/utilities';
 import type { PropertyPath } from './helpers/properties';
 
 export { RuleResult, RuleError, RuleErrorType } from './errors';
@@ -109,7 +108,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 				}
 
 				rulesList.push(ruleObject);
-				insertInNestedSetMap(rulesMap, normalizePath(fsPath), normalizePropertyPath(propertyPath), ruleObject);
+				rulesMap.set(normalizePath(fsPath), normalizePropertyPath(propertyPath), ruleObject);
 			}
 
 			continue;

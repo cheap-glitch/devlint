@@ -1,13 +1,16 @@
 import { parseRules } from '../../src/lib/rules';
+import { NestedSetMap } from '../../src/lib/helpers/nested-set-map';
 
-import type { RulesMap } from '../../src/lib/rules';
+import type { FsPath } from '../../src/lib/helpers/fs';
+import type { PropertyPath } from '../../src/lib/helpers/properties';
+import type { RulesMap, RuleObject } from '../../src/lib/rules';
 import type { JsonObject } from 'type-fest';
 
-function parseRulesMap(rulesObject: JsonObject): RulesMap {
-	const rulesMap: RulesMap = new Map();
+function parseRulesMap(rulesObject: JsonObject): Array<[FsPath, Map<PropertyPath, Set<RuleObject>>]> {
+	const rulesMap: RulesMap = new NestedSetMap();
 	parseRules(rulesMap, rulesObject);
 
-	return rulesMap;
+	return rulesMap.entriesArray();
 }
 
 describe('parseRules', () => {
@@ -44,7 +47,7 @@ describe('parseRules', () => {
 				'third-rule': 'warn',
 			},
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
@@ -57,7 +60,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 		expect(parseRulesMap({
 			'file.ext': {
@@ -66,7 +69,7 @@ describe('parseRules', () => {
 				'third-rule': 1,
 			},
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
@@ -79,7 +82,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -92,7 +95,7 @@ describe('parseRules', () => {
 				'third-rule': ['warn', ['foo', { foo: 'bar' }]],
 			},
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
@@ -107,7 +110,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -127,7 +130,7 @@ describe('parseRules', () => {
 				},
 			},
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['file.ext', new Map([
 				[undefined, new Set([
 					{
@@ -154,7 +157,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -165,7 +168,7 @@ describe('parseRules', () => {
 			'second-rule': ['off', 'foo'],
 			'third-rule': ['warn', ['foo', { foo: 'bar' }]],
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['.', new Map([
 				[undefined, new Set([
 					{
@@ -180,7 +183,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -191,7 +194,7 @@ describe('parseRules', () => {
 			'second-rule (condition)': 'off',
 			'third-rule  (!condition)': 'warn',
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['.', new Map([
 				[undefined, new Set([
 					{
@@ -206,14 +209,14 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 		expect(parseRulesMap({
 			'first-rule  (a && b)': 'error',
 			'second-rule (a && !b  &&  c)': 'error',
 			'third-rule  ( a || b || !c )': 'warn',
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['.', new Map([
 				[undefined, new Set([
 					{
@@ -233,7 +236,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -244,7 +247,7 @@ describe('parseRules', () => {
 			'second-rule': 'off',
 			'third-rule!': 'warn',
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['.', new Map([
 				[undefined, new Set([
 					{
@@ -258,7 +261,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -269,7 +272,7 @@ describe('parseRules', () => {
 			'second-rule': 'off',
 			'third-rule?': 'warn',
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['.', new Map([
 				[undefined, new Set([
 					{
@@ -283,7 +286,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -293,7 +296,7 @@ describe('parseRules', () => {
 			'first-rule (condition), third-rule?': 'error',
 			'second-rule, fourth-rule': 'off',
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['.', new Map([
 				[undefined, new Set([
 					{
@@ -308,7 +311,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 
@@ -333,7 +336,7 @@ describe('parseRules', () => {
 				},
 			},
 		}))
-		.toEqual(new Map([
+		.toEqual([
 			['foo/bar/file.ext', new Map([
 				[undefined, new Set([
 					{
@@ -364,7 +367,7 @@ describe('parseRules', () => {
 					},
 				])],
 			])],
-		]));
+		]);
 
 	}); // }}}
 

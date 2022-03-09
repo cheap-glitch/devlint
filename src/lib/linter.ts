@@ -2,20 +2,20 @@ import mem from 'mem';
 import expandGlob from 'tiny-glob';
 
 import { getLines } from './helpers/text';
+import { NestedSetMap } from './helpers/nested-set-map';
+import { isGlobPattern, wrapInArray } from './helpers/utilities';
 import { parsePropertyPath, normalizePropertyPath } from './helpers/properties';
-import { isGlobPattern, wrapInArray, insertInNestedSetMap } from './helpers/utilities';
 import { joinPathSegments, getAbsolutePath, normalizePath, getFilenamesInDirectory, tryReadingFileContents } from './helpers/fs';
 import { isJsonObject, isJsonArray, isJsonObjectAst, isJsonArrayAst, tryParsingJsonValue, tryParsingJsonAst, tryGettingJsonObjectProperty, tryGettingJsonAstProperty } from './helpers/json';
 import { loadConfig } from './config';
 import { RuleError, RuleErrorType } from './errors';
 import { RuleTargetType, parseRules } from './rules';
-import { validateConditionalExpression } from './conditions';
+import { processConditionalExpression } from './conditions';
 
-import type { RuleObject, RuleContext, RulesMap } from './rules';
 import type { RuleResult } from './errors';
+import type { RuleObject, RuleContext, RulesMap } from './rules';
 import type { Line } from './helpers/text';
 import type { FsPath } from './helpers/fs';
-import type { NestedSetMap } from './helpers/utilities';
 import type { PropertyPath } from './helpers/properties';
 import type { JsonValue as JsonAst } from 'jsonast';
 import type { JsonValue, JsonObject } from 'type-fest';
@@ -65,8 +65,8 @@ export async function lintDirectory(
 	// eslint-disable-next-line new-cap -- Capitalization indicates the function will always return the same value
 	const pluginsFilenames = await BUILTIN_RULE_PLUGINS_FILENAMES();
 
-	const conditionsMap: Map<string, boolean[]> = new Map();
-	const conditionsRules: NestedSetMap<FsPath, PropertyPath, RuleObject & { conditionName?: string; subConditionIndex?: number }> = new Map();
+	const conditionsMap = new Map<string, boolean[]>();
+	const conditionsRules = new NestedSetMap<FsPath, PropertyPath, RuleObject & { conditionName?: string; subConditionIndex?: number }>();
 	for (const [conditionName, conditionRulesObjects] of Object.entries(conditionsObject)) {
 		conditionsMap.set(conditionName, []);
 
@@ -86,7 +86,7 @@ export async function lintDirectory(
 	expandFsGlobs(directory, conditionsRules);
 
 	// TODO [>=0.4.0]: Deduplicate the following code
-	await Promise.allSettled([...conditionsRules.entries()].map(async ([fsPath, fsTargetRules]) => {
+	await Promise.allSettled(conditionsRules.entriesArray().map(async ([fsPath, fsTargetRules]) => {
 		if (isGlobPattern(fsPath)) {
 			return;
 		}
@@ -127,12 +127,12 @@ export async function lintDirectory(
 		conditions.set(conditionName, subConditionsResults.includes(true));
 	}
 
-	const rules: RulesMap = new Map();
+	const rules: RulesMap = new NestedSetMap();
 	parseRules(rules, rulesObject);
 	expandFsGlobs(directory, rules);
 
 	const results: LintResult[] = [];
-	await Promise.allSettled([...rules.entries()].map(async ([fsPath, fsTargetRules]) => {
+	await Promise.allSettled(rules.entriesArray().map(async ([fsPath, fsTargetRules]) => {
 		if (isGlobPattern(fsPath)) {
 			return;
 		}
@@ -153,7 +153,7 @@ export async function lintDirectory(
 					continue;
 				}
 
-				if (conditions.size > 0 && rule.condition !== undefined && !validateConditionalExpression(conditions, rule.condition)) {
+				if (conditions.size > 0 && rule.condition !== undefined && !processConditionalExpression(conditions, rule.condition)) {
 					results.push({
 						rule,
 						target: [fsPath, propertyPath],
@@ -341,7 +341,7 @@ function loadRulePlugin(pluginName: string): { targetType: RuleTargetType; valid
 }
 
 async function expandFsGlobs(workingDirectory: FsPath, rules: RulesMap): Promise<void> {
-	await Promise.allSettled([...rules.entries()].map(async ([fsPath, fsTargetRules]) => {
+	await Promise.allSettled(rules.entriesArray().map(async ([fsPath, fsTargetRules]) => {
 		if (!isGlobPattern(fsPath)) {
 			return;
 		}
@@ -353,7 +353,7 @@ async function expandFsGlobs(workingDirectory: FsPath, rules: RulesMap): Promise
 		});
 		for (const path of paths) {
 			for (const [propertyPath, propertyTargetRules] of fsTargetRules.entries()) {
-				insertInNestedSetMap(rules, normalizePath(path), normalizePropertyPath(propertyPath), propertyTargetRules);
+				rules.set(normalizePath(path), normalizePropertyPath(propertyPath), propertyTargetRules);
 			}
 		}
 	}));
