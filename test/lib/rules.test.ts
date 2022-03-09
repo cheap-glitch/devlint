@@ -397,6 +397,175 @@ describe('parseRules', () => {
 
 	}); // }}}
 
+	test('@extend', () => { // {{{
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': 'error',
+				'rule (condition) @extend': 'warn',
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': ['error', false],
+				'rule (condition) @extend': ['warn', true],
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+						parameter: false,
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+						parameter: true,
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': ['error', false],
+				'rule (condition) @extend': 'warn',
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+						parameter: false,
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': ['error', [1, 2, 3]],
+				'rule (condition) @extend': 'warn',
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+						parameter: [1, 2, 3],
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+						parameter: [1, 2, 3],
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': ['error', [1, 2, 3]],
+				'rule (condition) @extend': ['warn', [4, 5, 6]],
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+						parameter: [1, 2, 3],
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+						parameter: [1, 2, 3, 4, 5, 6],
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': ['error', { foo: 'foo' }],
+				'rule (condition) @extend': 'warn',
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+						parameter: { foo: 'foo' },
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+						parameter: { foo: 'foo' },
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'rule': ['error', { foo: 'foo' }],
+				'rule (condition) @extend': ['warn', { bar: false }],
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'rule',
+						status: 'error',
+						parameter: { foo: 'foo' },
+					},
+					{
+						name: 'rule',
+						status: 'warn',
+						condition: 'condition',
+						parameter: { foo: 'foo', bar: false },
+					},
+				])],
+			])],
+		]);
+
+	}); // }}}
+
 	test('@replace', () => { // {{{
 
 		expect(parseRulesMap({

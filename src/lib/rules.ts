@@ -1,4 +1,7 @@
+import merge, { MergingStrategy } from 'mazeru';
+
 import { quoteIfString } from './helpers/text';
+import { isJsonArray, isJsonObject } from './helpers/json';
 import { validateConditionalExpression } from './conditions';
 import { joinPathSegments, normalizePath } from './helpers/fs';
 import { PROPERTY_PATH_STARTING_CHARACTER, joinPropertyPathSegments, normalizePropertyPath } from './helpers/properties';
@@ -153,32 +156,56 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 }
 
 function registerRule(rulesMap: RulesMap, fsPath: FsPath, propertyPath: PropertyPath, rule: RuleObject, directive: RuleDirective): void {
-	switch (directive) {
-		case 'extend':
-			// TODO
-			break;
+	rulesMap.set(fsPath, propertyPath, rule);
 
-		// Remove previous rules on the target that have the same name
-		case 'replace': {
-			const targetRules = rulesMap.get(fsPath, propertyPath);
-			if (!targetRules) {
+	if (!directive) {
+		return;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- The target has at least one rule (the one added above)
+	const targetRules = rulesMap.get(fsPath, propertyPath)!;
+	for (const targetRule of targetRules.values()) {
+		if (targetRule.name !== rule.name || targetRule === rule) {
+			continue;
+		}
+
+		// eslint-disable-next-line default-case -- There only two possible values
+		switch (directive) {
+			// Merge the rule parameter with the parameter of previous rules with the same name and target
+			case 'extend': {
+				const base = targetRule.parameter;
+				const extension = rule.parameter;
+
+				if (!isJsonArray(base) && !isJsonObject(base)) {
+					// TODO [>0.3.0]: Throw an error here?
+					break;
+				}
+
+				if (rule.parameter === undefined) {
+					rule.parameter = base;
+					break;
+				}
+
+				if (isJsonArray(base) && isJsonArray(extension)) {
+					rule.parameter = [...base, ...extension];
+					break;
+				}
+
+				if (isJsonObject(base) && isJsonObject(extension)) {
+					rule.parameter = merge(base, extension, { arrays: MergingStrategy.MergeItems });
+					break;
+				}
+
+				// TODO [>0.3.0]: Throw an error here?
 				break;
 			}
 
-			for (const targetRule of targetRules.values()) {
-				if (targetRule.name === rule.name) {
-					targetRules.delete(targetRule);
-				}
-			}
-
-			break;
+			// Remove previous rules with the same name and target
+			case 'replace':
+				targetRules.delete(targetRule);
+				break;
 		}
-
-		default:
-			break;
 	}
-
-	rulesMap.set(fsPath, propertyPath, rule);
 }
 
 function parseRuleStatus(rawStatus: number | string, ruleName: string): RuleStatus {
