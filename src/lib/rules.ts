@@ -102,7 +102,7 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 				}
 
 				const ruleObject: RuleObject = { name: match.groups.name, status };
-				if (parameter) {
+				if (parameter !== undefined) {
 					ruleObject.parameter = parameter;
 				}
 				if (match.groups.flags.includes('!')) {

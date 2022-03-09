@@ -88,7 +88,7 @@ describe('parseRules', () => {
 
 	}); // }}}
 
-	test('rule status & parameter', () => { // {{{
+	test('rule parameters', () => { // {{{
 
 		expect(parseRulesMap({
 			'file.ext': {
@@ -109,6 +109,30 @@ describe('parseRules', () => {
 						name: 'third-rule',
 						status: 'warn',
 						parameter: ['foo', { foo: 'bar' }],
+					},
+				])],
+			])],
+		]);
+
+		expect(parseRulesMap({
+			'file.ext': {
+				'first-rule': ['error', false],
+				'second-rule': ['off', {}],
+				'third-rule': ['warn', []],
+			},
+		}))
+		.toEqual([
+			['file.ext', new Map([
+				[undefined, new Set([
+					{
+						name: 'first-rule',
+						status: 'error',
+						parameter: false,
+					},
+					{
+						name: 'third-rule',
+						status: 'warn',
+						parameter: [],
 					},
 				])],
 			])],
