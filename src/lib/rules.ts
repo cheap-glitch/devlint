@@ -1,4 +1,5 @@
 import { quoteIfString } from './helpers/text';
+import { validateConditionalExpression } from './conditions';
 import { joinPathSegments, normalizePath } from './helpers/fs';
 import { PROPERTY_PATH_STARTING_CHARACTER, joinPropertyPathSegments, normalizePropertyPath } from './helpers/properties';
 
@@ -87,14 +88,17 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 
 			const parameter = Array.isArray(properties) ? properties[1] : undefined;
 			for (const ruleDeclaration of ruleName.split(',')) {
-				const match = ruleDeclaration.trim().match(/^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?: *\((?<condition>(?: *!?\w+)(?: +(?:&&|\|\|) +(?:!?\w+) *)*)\))?$/u);
+				const match = ruleDeclaration
+					.replaceAll(/\s+/ug, '')
+					.match(ruleRegex);
+
 				if (!match || !match.groups || !match.groups.name) {
 					// TODO [>0.3.0]: don't throw an error here?
 					throw new Error(`Invalid rule declaration "${ruleDeclaration}"`);
 				}
 
 				const ruleObject: RuleObject = { name: match.groups.name, status };
-				if (parameter !== undefined) {
+				if (parameter) {
 					ruleObject.parameter = parameter;
 				}
 				if (match.groups.flags.includes('!')) {
@@ -103,8 +107,9 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 				if (match.groups.flags.includes('?')) {
 					ruleObject.isPermissive = true;
 				}
-				if (match.groups.condition !== undefined) {
-					ruleObject.condition = match.groups.condition.replaceAll(/ {2,}/ug, ' ').trim();
+				if (match.groups.condition) {
+					ruleObject.condition = match.groups.condition;
+					validateConditionalExpression(ruleObject.condition);
 				}
 
 				rulesList.push(ruleObject);

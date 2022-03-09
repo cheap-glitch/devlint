@@ -17,15 +17,17 @@ describe('parseRules', () => {
 
 	test('invalid rule declarations', () => { // {{{
 
-		expect(() => parseRulesMap({ 'rule name': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule/name': 'warn' })).toThrow('Invalid rule declaration');
 		expect(() => parseRulesMap({ 'rule-name': 'nope' })).toThrow('Rule "rule-name" has an invalid status of "nope"');
 		expect(() => parseRulesMap({ 'rule-name': '1' })).toThrow('Rule "rule-name" has an invalid status of "1"');
 		expect(() => parseRulesMap({ 'rule-name': 3 })).toThrow('Rule "rule-name" has an invalid status of 3');
 		expect(() => parseRulesMap({ '?rule-name': 'warn' })).toThrow('Invalid rule declaration');
-		expect(() => parseRulesMap({ 'rule-name condition': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name (condition': 'warn' })).toThrow('Invalid rule declaration');
 		expect(() => parseRulesMap({ '(condition) rule-name': 'warn' })).toThrow('Invalid rule declaration');
-		expect(() => parseRulesMap({ 'rule-name !(condition)': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name (condition)!': 'warn' })).toThrow('Invalid rule declaration');
 		expect(() => parseRulesMap({ 'rule-name (condition!)': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name ((condition))': 'warn' })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name (condition && condition || condition)': 'warn' })).toThrow("Conditional expressions can't mix logical operators");
 
 		expect(() => parseRulesMap({ 'rule-name': null })).toThrow('Property "rule-name" has a value of `null`');
 		expect(() => parseRulesMap({ 'rule-name': true })).toThrow('Invalid rule declaration');
@@ -213,8 +215,8 @@ describe('parseRules', () => {
 
 		expect(parseRulesMap({
 			'first-rule  (a && b)': 'error',
-			'second-rule (a && !b  &&  c)': 'error',
-			'third-rule  ( a || b || !c )': 'warn',
+			'second-rule (a&& !b  &&  c)': 'error',
+			'third-rule  ( a || b ||!c )': 'warn',
 		}))
 		.toEqual([
 			['.', new Map([
@@ -222,17 +224,17 @@ describe('parseRules', () => {
 					{
 						name: 'first-rule',
 						status: 'error',
-						condition: 'a && b',
+						condition: 'a&&b',
 					},
 					{
 						name: 'second-rule',
 						status: 'error',
-						condition: 'a && !b && c',
+						condition: 'a&&!b&&c',
 					},
 					{
 						name: 'third-rule',
 						status: 'warn',
-						condition: 'a || b || !c',
+						condition: 'a||b||!c',
 					},
 				])],
 			])],
