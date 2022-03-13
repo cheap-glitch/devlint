@@ -60,17 +60,14 @@ export enum RuleStatus {
 
 export type RulesMap = NestedSetMap<FsPath, PropertyPath, RuleObject>;
 
-export function parseRules(rulesMap: RulesMap, rulesObject: JsonObject): RuleObject[] {
-	const rulesList: RuleObject[] = [];
+export function parseRules(rulesMap: RulesMap, rulesObject: JsonObject): void {
 	// TODO [>=0.5.0]: wrap function call in try/catch block?
-	parseRulesObject(rulesMap, rulesList, rulesObject, '.' as FsPath, undefined as PropertyPath);
-
-	return rulesList;
+	parseRulesObject(rulesMap, rulesObject, '.' as FsPath, undefined as PropertyPath);
 }
 
 const ruleRegex = /^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?:\((?<condition>(?:!?\w+)(?:(?:&&|\|\|)(?:!?\w+))*)\))?(?:@(?<directive>extend|replace))?$/u;
 
-function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObject: JsonObject, fsPath: FsPath, propertyPath: PropertyPath): void {
+function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: FsPath, propertyPath: PropertyPath): void {
 	for (const [key, properties] of Object.entries(rulesObject)) {
 		if (properties === null) {
 			throw new Error(`Property "${key}" has a value of \`null\``);
@@ -120,9 +117,6 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 				}
 
 				registerRule(rulesMap, normalizePath(fsPath), normalizePropertyPath(propertyPath), ruleObject, match.groups.directive as RuleDirective);
-
-				// TODO [>=0.3.0]: Drop `rulesList`
-				rulesList.push(ruleObject);
 			}
 
 			continue;
@@ -138,16 +132,16 @@ function parseRulesObject(rulesMap: RulesMap, rulesList: RuleObject[], rulesObje
 
 				const [fsSubpath, propertySubpath] = target.split('#', 2);
 
-				parseRulesObject(rulesMap, rulesList, properties, joinPathSegments([fsPath, fsSubpath]), propertySubpath as PropertyPath);
+				parseRulesObject(rulesMap, properties, joinPathSegments([fsPath, fsSubpath]), propertySubpath as PropertyPath);
 				continue;
 			}
 
 			if (propertyPath !== undefined) {
-				parseRulesObject(rulesMap, rulesList, properties, fsPath, joinPropertyPathSegments([propertyPath, target]));
+				parseRulesObject(rulesMap, properties, fsPath, joinPropertyPathSegments([propertyPath, target]));
 				continue;
 			}
 
-			parseRulesObject(rulesMap, rulesList, properties, joinPathSegments([fsPath, target]), propertyPath);
+			parseRulesObject(rulesMap, properties, joinPathSegments([fsPath, target]), propertyPath);
 			continue;
 		}
 

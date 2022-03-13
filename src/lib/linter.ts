@@ -67,20 +67,24 @@ export async function lintDirectory(
 
 	const conditionsMap = new Map<string, boolean[]>();
 	const conditionsRules = new NestedSetMap<FsPath, PropertyPath, RuleObject & { conditionName?: string; subConditionIndex?: number }>();
+
 	for (const [conditionName, conditionRulesObjects] of Object.entries(conditionsObject)) {
 		conditionsMap.set(conditionName, []);
 
 		for (const [subConditionIndex, subConditionRulesObject] of wrapInArray(conditionRulesObjects).entries()) {
 			if (!isJsonObject(subConditionRulesObject)) {
-				// TODO [>0.3.0]: replace all plain Error with custom error classes
+				// TODO [>0.3.0]: Replace all plain Error with custom error classes
 				throw new Error(`The value(s) of "${conditionName}" must be object(s)`);
 			}
 
-			const addedRules: Array<RuleObject & { conditionName?: string; subConditionIndex?: number }> = parseRules(conditionsRules, subConditionRulesObject);
-			for (const rule of addedRules) {
-				rule.conditionName = conditionName;
-				rule.subConditionIndex = subConditionIndex;
-			}
+			parseRules(conditionsRules, subConditionRulesObject);
+			// TODO [>0.4.0]: Replace this with an optional "base rule object" parameter in `parseRules`
+			conditionsRules.forEachNestedValue(rule => {
+				if (rule.conditionName === undefined) {
+					rule.conditionName = conditionName;
+					rule.subConditionIndex = subConditionIndex;
+				}
+			});
 		}
 	}
 	expandFsGlobs(directory, conditionsRules);
@@ -173,7 +177,6 @@ export async function lintDirectory(
 				}
 
 				const { targetType, validator } = loadRulePlugin(rule.name);
-				// eslint-ignore-next-line unicorn/no-await-in-loop
 				const result = executeRuleValidator(directory, rule, fsPath, propertyPath, targetType, validator, fileContents, lines, jsonValue, jsonAst);
 
 				if (result instanceof RuleError) {

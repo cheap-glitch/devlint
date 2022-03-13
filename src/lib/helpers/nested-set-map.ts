@@ -5,8 +5,14 @@ export class NestedSetMap<FirstKeyType, SecondKeyType, ValueType> {
 		this.map = new Map();
 	}
 
-	entriesArray(): Array<[FirstKeyType, Map<SecondKeyType, Set<ValueType>>]> {
-		return [...this.map.entries()];
+	forEachNestedValue(callback: (element: ValueType) => void): void {
+		for (const subMap of this.map.values()) {
+			for (const subMapSet of subMap.values()) {
+				for (const nestedValue of subMapSet.values()) {
+					callback(nestedValue);
+				}
+			}
+		}
 	}
 
 	get(firstKey: FirstKeyType, secondKey: SecondKeyType): Set<ValueType> | undefined {
@@ -35,5 +41,9 @@ export class NestedSetMap<FirstKeyType, SecondKeyType, ValueType> {
 		} else {
 			set.add(values);
 		}
+	}
+
+	entriesArray(): Array<[FirstKeyType, Map<SecondKeyType, Set<ValueType>>]> {
+		return [...this.map.entries()];
 	}
 }
