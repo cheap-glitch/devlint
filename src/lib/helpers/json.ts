@@ -8,13 +8,6 @@ import type { PropertyPathSegments } from './properties';
 
 type TypeFunction = typeof Boolean | typeof Number | typeof String;
 
-export function formatJsonValue(jsonValue: JsonValue): string {
-	// TODO [>=0.4.0]: parse string to remove double spaces NOT INSIDE QUOTES + write tests
-	const jsonString = JSON.stringify(jsonValue, undefined, 1).replaceAll(/\s+/ug, ' ');
-
-	return (jsonString.startsWith('"') ? '' : '"') + jsonString + (jsonString.endsWith('"') ? '' : '"');
-}
-
 export function matchJsonValues(
 	model: Record<string, JsonValue | TypeFunction> | JsonValue | TypeFunction | undefined,
 	jsonValue: JsonValue | undefined,
@@ -129,6 +122,13 @@ export function tryParsingJsonValue(json: string): JsonValue | SyntaxError {
 	}
 
 	return jsonValue;
+}
+
+export function formatJsonValue(jsonValue: JsonValue): string {
+	// TODO [>=0.4.0]: parse string to remove double spaces NOT INSIDE QUOTES + write tests
+	const jsonString = JSON.stringify(jsonValue, undefined, 1).replaceAll(/\s+/ug, ' ');
+
+	return (jsonString.startsWith('"') ? '' : '"') + jsonString + (jsonString.endsWith('"') ? '' : '"');
 }
 
 export const jsonTypes = [
