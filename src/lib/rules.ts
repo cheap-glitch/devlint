@@ -87,68 +87,8 @@ function parseRulesObject<RuleObjectBase extends AnyObject>(
 			throw new Error(`Property "${key}" has a value of \`null\``);
 		}
 
-		// Rule definition
-		if (typeof properties === 'string' || typeof properties === 'number' || Array.isArray(properties)) {
-			const ruleName = key;
-			if (Array.isArray(properties) && properties.length !== 2) {
-				throw new Error(`The value of "${ruleName}" must be an array of two elements`);
-			}
-
-			const rawStatus = Array.isArray(properties) ? properties[0] : properties;
-			if (typeof rawStatus !== 'string' && typeof rawStatus !== 'number') {
-				throw new TypeError(`The status of "${ruleName}" must be a string or a number`);
-			}
-
-			const status = parseRuleStatus(rawStatus, ruleName);
-			if (status === RuleStatus.Off) {
-				continue;
-			}
-
-			const parameter = Array.isArray(properties) ? properties[1] : undefined;
-			for (const ruleDeclaration of ruleName.split(',')) {
-				const match = ruleDeclaration
-					.replaceAll(/\s+/ug, '')
-					.match(ruleRegex);
-
-				if (!match || !match.groups || !match.groups.name) {
-					// TODO [>0.3.0]: don't throw an error here?
-					throw new Error(`Invalid rule declaration "${ruleDeclaration}"`);
-				}
-
-				const ruleObject: RuleObjectBase & RuleObject = {
-					...ruleObjectBase,
-					name: match.groups.name,
-					status,
-				};
-
-				if (parameter !== undefined) {
-					ruleObject.parameter = parameter;
-				}
-				if (match.groups.flags.includes('!')) {
-					ruleObject.isStrict = true;
-				}
-				if (match.groups.flags.includes('?')) {
-					ruleObject.isPermissive = true;
-				}
-				if (match.groups.condition) {
-					ruleObject.condition = match.groups.condition;
-					validateConditionalExpression(ruleObject.condition);
-				}
-
-				registerRule(
-					rulesMap,
-					normalizePath(fsPath),
-					normalizePropertyPath(propertyPath),
-					ruleObject,
-					match.groups.directive as RuleDirective,
-				);
-			}
-
-			continue;
-		}
-
 		// Sub-target
-		if (typeof properties === 'object') {
+		if (isJsonObject(properties)) {
 			const target = key;
 			if (target.includes(PROPERTY_PATH_STARTING_CHARACTER)) {
 				if (propertyPath !== undefined) {
@@ -176,7 +116,65 @@ function parseRulesObject<RuleObjectBase extends AnyObject>(
 			continue;
 		}
 
-		throw new Error(`Invalid rule declaration "${key}"`);
+		if (typeof properties !== 'string' && typeof properties !== 'number' && !Array.isArray(properties)) {
+			throw new TypeError(`Invalid configuration for rule "${key}"`);
+		}
+
+		// Rule definition
+		const ruleName = key;
+		if (Array.isArray(properties) && properties.length !== 2) {
+			throw new Error(`The value of "${ruleName}" must be an array of two elements`);
+		}
+
+		const rawStatus = Array.isArray(properties) ? properties[0] : properties;
+		if (typeof rawStatus !== 'string' && typeof rawStatus !== 'number') {
+			throw new TypeError(`The status of "${ruleName}" must be a string or a number`);
+		}
+
+		const status = parseRuleStatus(rawStatus, ruleName);
+		if (status === RuleStatus.Off) {
+			continue;
+		}
+
+		const parameter = Array.isArray(properties) ? properties[1] : undefined;
+		for (const ruleDeclaration of ruleName.split(',')) {
+			const match = ruleDeclaration
+				.replaceAll(/\s+/ug, '')
+				.match(ruleRegex);
+
+			if (!match || !match.groups || !match.groups.name) {
+				// TODO [>0.3.0]: don't throw an error here?
+				throw new Error(`Invalid rule declaration "${ruleDeclaration}"`);
+			}
+
+			const ruleObject: RuleObjectBase & RuleObject = {
+				...ruleObjectBase,
+				name: match.groups.name,
+				status,
+			};
+
+			if (parameter !== undefined) {
+				ruleObject.parameter = parameter;
+			}
+			if (match.groups.flags.includes('!')) {
+				ruleObject.isStrict = true;
+			}
+			if (match.groups.flags.includes('?')) {
+				ruleObject.isPermissive = true;
+			}
+			if (match.groups.condition) {
+				ruleObject.condition = match.groups.condition;
+				validateConditionalExpression(ruleObject.condition);
+			}
+
+			registerRule(
+				rulesMap,
+				normalizePath(fsPath),
+				normalizePropertyPath(propertyPath),
+				ruleObject,
+				match.groups.directive as RuleDirective,
+			);
+		}
 	}
 }
 

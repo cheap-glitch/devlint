@@ -30,8 +30,8 @@ describe('parseRules', () => {
 		expect(() => parseRulesMap({ 'rule-name (condition && condition || condition)': 'warn' })).toThrow("Conditional expressions can't mix logical operators");
 
 		expect(() => parseRulesMap({ 'rule-name': null })).toThrow('Property "rule-name" has a value of `null`');
-		expect(() => parseRulesMap({ 'rule-name': true })).toThrow('Invalid rule declaration');
-		expect(() => parseRulesMap({ 'rule-name': false })).toThrow('Invalid rule declaration');
+		expect(() => parseRulesMap({ 'rule-name': true })).toThrow('Invalid configuration for rule "rule-name"');
+		expect(() => parseRulesMap({ 'rule-name': false })).toThrow('Invalid configuration for rule "rule-name"');
 		expect(() => parseRulesMap({ 'rule-name': [null, 'foo'] })).toThrow('The status of "rule-name" must be a string or a number');
 		expect(() => parseRulesMap({ 'rule-name': [true, ['foo']] })).toThrow('The status of "rule-name" must be a string or a number');
 		expect(() => parseRulesMap({ 'rule-name': [true, ['foo'], { bar: 1 }] })).toThrow('The value of "rule-name" must be an array of two elements');
