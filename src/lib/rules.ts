@@ -58,16 +58,30 @@ export enum RuleStatus {
 	Error = 'error',
 }
 
-export type RulesMap = NestedSetMap<FsPath, PropertyPath, RuleObject>;
+type AnyObject = Record<string, unknown>;
 
-export function parseRules(rulesMap: RulesMap, rulesObject: JsonObject): void {
+// eslint-disable-next-line @typescript-eslint/ban-types -- This allows skipping the type parameter
+export type RulesMap<RuleObjectBase extends AnyObject = {}> = NestedSetMap<FsPath, PropertyPath, RuleObjectBase & RuleObject>;
+
+export function parseRules<RuleObjectBase extends AnyObject>(
+	rulesMap: RulesMap<RuleObjectBase>,
+	rulesObject: JsonObject,
+	ruleObjectBase?: RuleObjectBase,
+): void {
 	// TODO [>=0.5.0]: wrap function call in try/catch block?
-	parseRulesObject(rulesMap, rulesObject, '.' as FsPath, undefined as PropertyPath);
+	// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Don't create a superfluous intermediary variable
+	parseRulesObject(rulesMap, rulesObject, '.' as FsPath, undefined as PropertyPath, ruleObjectBase ?? {} as AnyObject);
 }
 
 const ruleRegex = /^(?<name>[\w-]+)(?<flags>[!?]{0,2})(?:\((?<condition>(?:!?\w+)(?:(?:&&|\|\|)(?:!?\w+))*)\))?(?:@(?<directive>extend|replace))?$/u;
 
-function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: FsPath, propertyPath: PropertyPath): void {
+function parseRulesObject<RuleObjectBase extends AnyObject>(
+	rulesMap: RulesMap<RuleObjectBase>,
+	rulesObject: JsonObject,
+	fsPath: FsPath,
+	propertyPath: PropertyPath,
+	ruleObjectBase: RuleObjectBase,
+): void {
 	for (const [key, properties] of Object.entries(rulesObject)) {
 		if (properties === null) {
 			throw new Error(`Property "${key}" has a value of \`null\``);
@@ -101,7 +115,12 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: F
 					throw new Error(`Invalid rule declaration "${ruleDeclaration}"`);
 				}
 
-				const ruleObject: RuleObject = { name: match.groups.name, status };
+				const ruleObject: RuleObjectBase & RuleObject = {
+					...ruleObjectBase,
+					name: match.groups.name,
+					status,
+				};
+
 				if (parameter !== undefined) {
 					ruleObject.parameter = parameter;
 				}
@@ -116,7 +135,13 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: F
 					validateConditionalExpression(ruleObject.condition);
 				}
 
-				registerRule(rulesMap, normalizePath(fsPath), normalizePropertyPath(propertyPath), ruleObject, match.groups.directive as RuleDirective);
+				registerRule(
+					rulesMap,
+					normalizePath(fsPath),
+					normalizePropertyPath(propertyPath),
+					ruleObject,
+					match.groups.directive as RuleDirective,
+				);
 			}
 
 			continue;
@@ -131,17 +156,23 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: F
 				}
 
 				const [fsSubpath, propertySubpath] = target.split('#', 2);
+				parseRulesObject(
+					rulesMap,
+					properties,
+					joinPathSegments([fsPath, fsSubpath]),
+					propertySubpath as PropertyPath,
+					ruleObjectBase,
+				);
 
-				parseRulesObject(rulesMap, properties, joinPathSegments([fsPath, fsSubpath]), propertySubpath as PropertyPath);
 				continue;
 			}
 
 			if (propertyPath !== undefined) {
-				parseRulesObject(rulesMap, properties, fsPath, joinPropertyPathSegments([propertyPath, target]));
+				parseRulesObject(rulesMap, properties, fsPath, joinPropertyPathSegments([propertyPath, target]), ruleObjectBase);
 				continue;
 			}
 
-			parseRulesObject(rulesMap, properties, joinPathSegments([fsPath, target]), propertyPath);
+			parseRulesObject(rulesMap, properties, joinPathSegments([fsPath, target]), propertyPath, ruleObjectBase);
 			continue;
 		}
 
@@ -149,7 +180,13 @@ function parseRulesObject(rulesMap: RulesMap, rulesObject: JsonObject, fsPath: F
 	}
 }
 
-function registerRule(rulesMap: RulesMap, fsPath: FsPath, propertyPath: PropertyPath, rule: RuleObject, directive: RuleDirective): void {
+function registerRule<RuleObjectBase extends AnyObject>(
+	rulesMap: RulesMap<RuleObjectBase>,
+	fsPath: FsPath,
+	propertyPath: PropertyPath,
+	rule: RuleObjectBase & RuleObject,
+	directive: RuleDirective,
+): void {
 	rulesMap.set(fsPath, propertyPath, rule);
 
 	if (!directive) {

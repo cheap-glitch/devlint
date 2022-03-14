@@ -66,7 +66,7 @@ export async function lintDirectory(
 	const pluginsFilenames = await BUILTIN_RULE_PLUGINS_FILENAMES();
 
 	const conditionsMap = new Map<string, boolean[]>();
-	const conditionsRules = new NestedSetMap<FsPath, PropertyPath, RuleObject & { conditionName?: string; subConditionIndex?: number }>();
+	const conditionsRules: RulesMap<{ conditionName?: string; subConditionIndex?: number }> = new NestedSetMap();
 
 	for (const [conditionName, conditionRulesObjects] of Object.entries(conditionsObject)) {
 		conditionsMap.set(conditionName, []);
@@ -77,13 +77,9 @@ export async function lintDirectory(
 				throw new Error(`The value(s) of "${conditionName}" must be object(s)`);
 			}
 
-			parseRules(conditionsRules, subConditionRulesObject);
-			// TODO [>0.4.0]: Replace this with an optional "base rule object" parameter in `parseRules`
-			conditionsRules.forEachNestedValue(rule => {
-				if (rule.conditionName === undefined) {
-					rule.conditionName = conditionName;
-					rule.subConditionIndex = subConditionIndex;
-				}
+			parseRules(conditionsRules, subConditionRulesObject, {
+				conditionName,
+				subConditionIndex,
 			});
 		}
 	}
