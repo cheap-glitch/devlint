@@ -44,15 +44,16 @@ export function checkStringCase(testedString: string, caseStyle: string): boolea
 }
 
 export function isMatchingString(model: string, testedString: string): boolean {
-	if (isRegex(model)) {
-		return new RegExp(model.slice(1, -1), 'u').test(testedString);
-	}
+	return isRegex(model) ? buildRegex(model).test(testedString) : model === testedString;
+}
 
-	return model === testedString;
+export function buildRegex(model: string): RegExp {
+	// TODO [>0.3.0]: Wrap in a try/catch block and report useful error messages
+	return new RegExp(model.replaceAll(/^\/|\/m?$/ug, ''), model.endsWith('m') ? 'um' : 'u');
 }
 
 export function isRegex(model: string): boolean {
-	return model.startsWith('/') && model.endsWith('/');
+	return model.startsWith('/') && (model.endsWith('/') || model.endsWith('/m'));
 }
 
 export function findMatchLocation(lines: Line[], matchText: string, matchIndex: number): RuleErrorLocation {

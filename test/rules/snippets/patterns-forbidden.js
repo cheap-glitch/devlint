@@ -53,7 +53,7 @@ module.exports = {
 			'pattern "Non" is forbidden', { line: 3, column: 22, char: 177 }, { line: 3, column: 24, char: 179 },
 		], // }}}
 
-		'matching regex pattern': [[ // {{{
+		'matching regex pattern #1': [[ // {{{
 		`
 			Lorem ipsum dolor sit amet,  consectetur adipiscing elit. Si verbum sequimur,
 			primum  longius verbum  praepositum  quam bonum.  Teneo,  inquit, finem  illi
@@ -63,6 +63,30 @@ module.exports = {
 			['/^Lorem/'],
 		],
 			'pattern "Lorem" is forbidden', { line: 1, column: 1, char: 0 }, { line: 1, column: 5, char: 4 },
+		], // }}}
+
+		'matching regex pattern #2': [[ // {{{
+		`
+			Lorem ipsum dolor sit amet,  consectetur adipiscing elit. Si verbum sequimur,
+			primum  longius verbum  praepositum  quam bonum.  Teneo,  inquit, finem  illi
+			videri nihil dolere. Non laboro, inquit,  de nomine. Aliter enim nosmet ipsos
+			nosse non possumus.
+		`,
+			['/^videri/m'],
+		],
+			'pattern "videri" is forbidden', { line: 3, column: 1, char: 156 }, { line: 3, column: 6, char: 161 },
+		], // }}}
+
+		'matching regex pattern #3': [[ // {{{
+		`
+			Lorem ipsum dolor sit amet,  consectetur adipiscing elit. Si verbum sequimur,
+			primum  longius verbum  praepositum  quam bonum.  Teneo,  inquit, finem  illi
+			videri nihil dolere. Non laboro, inquit,  de nomine. Aliter enim nosmet ipsos
+			nosse non possumus.
+		`,
+			['/ill[io]$/m'],
+		],
+			'pattern "illi" is forbidden', { line: 2, column: 74, char: 151 }, { line: 2, column: 77, char: 154 },
 		], // }}}
 
 	},

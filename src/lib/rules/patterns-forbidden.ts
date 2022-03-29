@@ -1,4 +1,4 @@
-import { isRegex, findMatchLocation } from '../helpers/text';
+import { isRegex, buildRegex, findMatchLocation } from '../helpers/text';
 import { RuleTargetType, RuleError, RuleErrorType } from '../rules';
 
 import type { RuleContext, RuleResult } from '../rules';
@@ -18,8 +18,7 @@ export function validator({ contents, lines, parameter: forbiddenPatterns }: Rul
 		let match;
 		let matchIndex = -1;
 		if (isRegex(pattern)) {
-			// TODO [>0.3.0]: Wrap in a try/catch block and report useful error messages
-			const results = contents.match(new RegExp(pattern.slice(1, -1), 'u'));
+			const results = contents.match(buildRegex(pattern));
 			if (results) {
 				match = results[0];
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- If there's a result, it also has an index
