@@ -69,7 +69,7 @@ export async function cli(): Promise<void> {
 	for (const [directory, { conditions, results: directoryResults }] of results) {
 		if (verbosityLevel >= 2 && conditions.size > 0) {
 			// TODO [2022-03-01]: move this in `reports.ts`
-			console.log('\nConditions status in "' + getAbsolutePath([directory]) + '":\n');
+			console.log('\n' + getAbsolutePath([directory]) + '\n');
 			for (const [name, status] of conditions.entries()) {
 				console.log(getConditionsStatusReport(name, status));
 			}
