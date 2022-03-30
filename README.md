@@ -12,7 +12,7 @@
 
 ## Installation
 
-```shell
+```
 npm i -D devlint
 ```
 
@@ -30,10 +30,10 @@ Contributions are welcomed! Please open an issue before submitting substantial c
 
 ## Related
 
- * [yamllint](https://github.com/adrienverge/yamllint) - Linter for YAML (Python)
- * [markdownlint](https://github.com/DavidAnson/markdownlint) - Linter for Markdown (JavaScript)
- * [dotenv-linter](https://github.com/dotenv-linter/dotenv-linter) - Linter for `.env` files (Rust)
- * [vim-json-with-comments](https://github.com/cheap-glitch/vim-json-with-comments) - Edit the DevLint JSON config file in (Neo)Vim with proper highlighting for comments
+ * [`yamllint`](https://github.com/adrienverge/yamllint) – Linter for YAML (Python)
+ * [`markdownlint`](https://github.com/DavidAnson/markdownlint) – Linter for Markdown (JavaScript)
+ * [`dotenv-linter`](https://github.com/dotenv-linter/dotenv-linter) – Linter for `.env` files (Rust)
+ * [`vim-json-with-comments`](https://github.com/cheap-glitch/vim-json-with-comments) – Edit the DevLint JSON config file in (Neo)Vim with proper highlighting for comments
 
 ## License
 
