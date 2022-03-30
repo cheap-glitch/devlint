@@ -30,7 +30,7 @@ export function validator({ contents, lines, parameter: forbiddenPatterns }: Rul
 		}
 
 		if (match !== undefined && matchIndex !== -1) {
-			return new RuleError(`pattern "${match}" is forbidden`, findMatchLocation(lines, match, matchIndex), lines);
+			return new RuleError(`pattern ${JSON.stringify(match)} is forbidden`, findMatchLocation(lines, match, matchIndex), lines);
 		}
 	}
 
