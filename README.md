@@ -1,8 +1,8 @@
 # DevLint
 
-![License](https://badgen.net/github/license/cheap-glitch/devlint?color=green)
-![Latest release](https://badgen.net/github/release/cheap-glitch/devlint?color=green)
-[![Coverage status](https://coveralls.io/repos/github/cheap-glitch/devlint/badge.svg?branch=main)](https://coveralls.io/github/cheap-glitch/devlint?branch=main)
+[![License](https://shields.io/github/license/cheap-glitch/devlint)](LICENSE)
+[![Latest release](https://shields.io/github/v/release/cheap-glitch/devlint?sort=semver&label=latest%20release&color=green)](https://github.com/cheap-glitch/devlint/releases/latest)
+[![Coverage status](https://shields.io/coveralls/github/cheap-glitch/devlint)](https://coveralls.io/github/cheap-glitch/devlint)
 
 ## Features
 
